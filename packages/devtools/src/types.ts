@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/devtools/types
- * @description Internal type definitions for the `@enterstellar-ai/devtools` package.
+ * @module @enterstellar/devtools/types
+ * @description Internal type definitions for the `@enterstellar/devtools` package.
  *
  * These types define the data shapes used by the DevTools panel, hooks,
  * and utility functions. Following Enterstellar convention (Design Choice T1):
@@ -17,7 +17,7 @@
  * @internal
  */
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -33,40 +33,40 @@ import type { ZoneTrace } from '@enterstellar-ai/types';
  * @see Design Choice DT5 — 500 traces in memory
  */
 export type DevToolsConfig = {
-    /**
-     * Maximum traces retained in the DevTools ring buffer.
-     * Oldest traces are evicted when this limit is reached.
-     *
-     * @default 500
-     * @see Design Choice DT5
-     */
-    readonly maxTraces?: number;
+  /**
+   * Maximum traces retained in the DevTools ring buffer.
+   * Oldest traces are evicted when this limit is reached.
+   *
+   * @default 500
+   * @see Design Choice DT5
+   */
+  readonly maxTraces?: number;
 
-    /**
-     * Whether the DevTools panel is visible on initial mount.
-     * Useful for debugging sessions where you want immediate visibility.
-     *
-     * @default false
-     */
-    readonly defaultOpen?: boolean;
+  /**
+   * Whether the DevTools panel is visible on initial mount.
+   * Useful for debugging sessions where you want immediate visibility.
+   *
+   * @default false
+   */
+  readonly defaultOpen?: boolean;
 
-    /**
-     * Keyboard shortcut string to toggle the panel.
-     * Format: modifier keys joined with `+` (e.g., `'ctrl+shift+a'`).
-     * Modifiers: `ctrl`, `shift`, `alt`, `meta`.
-     *
-     * @default 'ctrl+shift+a'
-     * @see Design Choice DT2
-     */
-    readonly shortcut?: string;
+  /**
+   * Keyboard shortcut string to toggle the panel.
+   * Format: modifier keys joined with `+` (e.g., `'ctrl+shift+a'`).
+   * Modifiers: `ctrl`, `shift`, `alt`, `meta`.
+   *
+   * @default 'ctrl+shift+a'
+   * @see Design Choice DT2
+   */
+  readonly shortcut?: string;
 
-    /**
-     * Position of the floating toggle button (⚡) within the viewport.
-     *
-     * @default 'bottom-right'
-     * @see Design Choice DT2
-     */
-    readonly position?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+  /**
+   * Position of the floating toggle button (⚡) within the viewport.
+   *
+   * @default 'bottom-right'
+   * @see Design Choice DT2
+   */
+  readonly position?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 };
 
 // ---------------------------------------------------------------------------
@@ -82,12 +82,12 @@ export type DevToolsConfig = {
  * @see Design Choice DT4 — tab phasing
  */
 export type DevToolsTab =
-    | 'trace-timeline'
-    | 'component-inspector'
-    | 'validation-log'
-    | 'cache-dashboard'
-    | 'performance-profiler'
-    | 'replay-mode';
+  | 'trace-timeline'
+  | 'component-inspector'
+  | 'validation-log'
+  | 'cache-dashboard'
+  | 'performance-profiler'
+  | 'replay-mode';
 
 // ---------------------------------------------------------------------------
 // Trace Filtering
@@ -100,17 +100,17 @@ export type DevToolsTab =
  * for that criterion. Filters are combined with logical AND.
  */
 export type TraceFilter = {
-    /** Filter by zone name (exact match). */
-    readonly zone?: string;
+  /** Filter by zone name (exact match). */
+  readonly zone?: string;
 
-    /** Filter by resolved component name (exact match). */
-    readonly component?: string;
+  /** Filter by resolved component name (exact match). */
+  readonly component?: string;
 
-    /** Filter by compilation status. */
-    readonly status?: 'pass' | 'fail' | 'corrected';
+  /** Filter by compilation status. */
+  readonly status?: 'pass' | 'fail' | 'corrected';
 
-    /** Free-text search across intent, component name, and error messages. */
-    readonly search?: string;
+  /** Free-text search across intent, component name, and error messages. */
+  readonly search?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -126,17 +126,17 @@ export type TraceFilter = {
  * @see Design Choice DT8 — JSON export via download
  */
 export type TraceExportBundle = {
-    /** ISO 8601 timestamp of when the export was created. */
-    readonly exportedAt: string;
+  /** ISO 8601 timestamp of when the export was created. */
+  readonly exportedAt: string;
 
-    /** The `@enterstellar-ai/types` SDK version that produced these traces. */
-    readonly sdkVersion: string;
+  /** The `@enterstellar/types` SDK version that produced these traces. */
+  readonly sdkVersion: string;
 
-    /** All traces captured in the DevTools buffer at export time. */
-    readonly traces: readonly ZoneTrace[];
+  /** All traces captured in the DevTools buffer at export time. */
+  readonly traces: readonly ZoneTrace[];
 
-    /** Snapshot of zone configurations at export time. */
-    readonly zoneConfigs: Readonly<Record<string, unknown>>;
+  /** Snapshot of zone configurations at export time. */
+  readonly zoneConfigs: Readonly<Record<string, unknown>>;
 };
 
 // ---------------------------------------------------------------------------
@@ -147,8 +147,8 @@ export type TraceExportBundle = {
  * Minimal cache interface for the DevTools Cache Dashboard.
  *
  * Defines a protocol (structural contract) rather than importing
- * `RenderCache` from `@enterstellar-ai/cache` directly. This avoids a hard
- * peer dependency: consumers who don't use `@enterstellar-ai/cache` can still
+ * `RenderCache` from `@enterstellar/cache` directly. This avoids a hard
+ * peer dependency: consumers who don't use `@enterstellar/cache` can still
  * use DevTools without installing it.
  *
  * Any object that satisfies this shape works — including the real
@@ -158,28 +158,28 @@ export type TraceExportBundle = {
  * @see Bible §4.4 — Cache Dashboard tab
  */
 export type DevToolsCacheAdapter = {
-    /**
-     * Returns current cache performance statistics.
-     *
-     * The returned object shape matches `CacheStats` from `@enterstellar-ai/cache`:
-     * `hits`, `misses`, `entries` (count), and `hitRate` (0.0–1.0).
-     *
-     * @returns Cache performance statistics snapshot.
-     */
-    readonly getStats: () => {
-        readonly hits: number;
-        readonly misses: number;
-        readonly entries: number;
-        readonly hitRate: number;
-    };
+  /**
+   * Returns current cache performance statistics.
+   *
+   * The returned object shape matches `CacheStats` from `@enterstellar/cache`:
+   * `hits`, `misses`, `entries` (count), and `hitRate` (0.0–1.0).
+   *
+   * @returns Cache performance statistics snapshot.
+   */
+  readonly getStats: () => {
+    readonly hits: number;
+    readonly misses: number;
+    readonly entries: number;
+    readonly hitRate: number;
+  };
 
-    /**
-     * Invalidates all cache entries.
-     *
-     * Used by the Cache Dashboard "Clear Cache" button.
-     * After clearing, `getStats()` should reflect `entries: 0`.
-     */
-    readonly invalidateAll: () => void;
+  /**
+   * Invalidates all cache entries.
+   *
+   * Used by the Cache Dashboard "Clear Cache" button.
+   * After clearing, `getStats()` should reflect `entries: 0`.
+   */
+  readonly invalidateAll: () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -196,20 +196,20 @@ export type DevToolsCacheAdapter = {
  * @see Design Choice DT5 — 500 traces in memory
  */
 export type LatencyStats = {
-    /** 50th percentile (median) latency in milliseconds. */
-    readonly p50: number;
-    /** 95th percentile latency in milliseconds. */
-    readonly p95: number;
-    /** 99th percentile latency in milliseconds. */
-    readonly p99: number;
-    /** Arithmetic mean latency in milliseconds. */
-    readonly mean: number;
-    /** Minimum observed latency in milliseconds. */
-    readonly min: number;
-    /** Maximum observed latency in milliseconds. */
-    readonly max: number;
-    /** Total number of data points used for computation. */
-    readonly count: number;
+  /** 50th percentile (median) latency in milliseconds. */
+  readonly p50: number;
+  /** 95th percentile latency in milliseconds. */
+  readonly p95: number;
+  /** 99th percentile latency in milliseconds. */
+  readonly p99: number;
+  /** Arithmetic mean latency in milliseconds. */
+  readonly mean: number;
+  /** Minimum observed latency in milliseconds. */
+  readonly min: number;
+  /** Maximum observed latency in milliseconds. */
+  readonly max: number;
+  /** Total number of data points used for computation. */
+  readonly count: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -230,34 +230,34 @@ export type LatencyStats = {
  * @see Bible §4.4 — Replay Mode tab
  */
 export type ReplayStep = {
-    /**
-     * Machine-readable step identifier.
-     * Used as the React key and for step navigation.
-     *
-     * @example 'intent', 'compilation', 'validation', 'provenance', 'output', 'performance'
-     */
-    readonly name: string;
+  /**
+   * Machine-readable step identifier.
+   * Used as the React key and for step navigation.
+   *
+   * @example 'intent', 'compilation', 'validation', 'provenance', 'output', 'performance'
+   */
+  readonly name: string;
 
-    /**
-     * Human-readable label displayed in the step header.
-     *
-     * @example 'Intent Received', 'Compilation', 'Validation Errors'
-     */
-    readonly label: string;
+  /**
+   * Human-readable label displayed in the step header.
+   *
+   * @example 'Intent Received', 'Compilation', 'Validation Errors'
+   */
+  readonly label: string;
 
-    /**
-     * Step data rendered via `JsonViewer`.
-     * Shape varies per step — `unknown` is intentional for flexibility.
-     */
-    readonly data: unknown;
+  /**
+   * Step data rendered via `JsonViewer`.
+   * Shape varies per step — `unknown` is intentional for flexibility.
+   */
+  readonly data: unknown;
 
-    /**
-     * Step outcome status.
-     * - `'completed'` — step executed successfully (green indicator).
-     * - `'failed'` — step produced errors (red indicator).
-     * - `'skipped'` — step data unavailable at this trace level (grey indicator).
-     */
-    readonly status: 'completed' | 'failed' | 'skipped';
+  /**
+   * Step outcome status.
+   * - `'completed'` — step executed successfully (green indicator).
+   * - `'failed'` — step produced errors (red indicator).
+   * - `'skipped'` — step data unavailable at this trace level (grey indicator).
+   */
+  readonly status: 'completed' | 'failed' | 'skipped';
 };
 
 // ---------------------------------------------------------------------------
@@ -272,14 +272,14 @@ export type ReplayStep = {
  * @internal
  */
 export type TraceRowProps = {
-    /** The trace to render. */
-    readonly trace: ZoneTrace;
+  /** The trace to render. */
+  readonly trace: ZoneTrace;
 
-    /** Whether this row is currently selected/expanded. */
-    readonly isSelected: boolean;
+  /** Whether this row is currently selected/expanded. */
+  readonly isSelected: boolean;
 
-    /** Callback fired when the row is clicked. */
-    readonly onSelect: (traceId: string) => void;
+  /** Callback fired when the row is clicked. */
+  readonly onSelect: (traceId: string) => void;
 };
 
 /**
@@ -290,8 +290,8 @@ export type TraceRowProps = {
  * @internal
  */
 export type StatusBadgeProps = {
-    /** Compilation status to display. */
-    readonly status: 'pass' | 'fail' | 'corrected';
+  /** Compilation status to display. */
+  readonly status: 'pass' | 'fail' | 'corrected';
 };
 
 /**
@@ -302,14 +302,14 @@ export type StatusBadgeProps = {
  * @internal
  */
 export type JsonViewerProps = {
-    /** The data to render as a JSON tree. */
-    readonly data: unknown;
+  /** The data to render as a JSON tree. */
+  readonly data: unknown;
 
-    /** Label shown at the root of the tree. */
-    readonly label?: string;
+  /** Label shown at the root of the tree. */
+  readonly label?: string;
 
-    /** Whether the root node starts expanded. */
-    readonly defaultExpanded?: boolean;
+  /** Whether the root node starts expanded. */
+  readonly defaultExpanded?: boolean;
 };
 
 /**
@@ -320,17 +320,17 @@ export type JsonViewerProps = {
  * @internal
  */
 export type FilterBarProps = {
-    /** Current filter state. */
-    readonly filter: TraceFilter;
+  /** Current filter state. */
+  readonly filter: TraceFilter;
 
-    /** Callback fired when any filter criterion changes. */
-    readonly onFilterChange: (filter: TraceFilter) => void;
+  /** Callback fired when any filter criterion changes. */
+  readonly onFilterChange: (filter: TraceFilter) => void;
 
-    /** Available zone names for the zone dropdown. */
-    readonly availableZones: readonly string[];
+  /** Available zone names for the zone dropdown. */
+  readonly availableZones: readonly string[];
 
-    /** Available component names for the component dropdown. */
-    readonly availableComponents: readonly string[];
+  /** Available component names for the component dropdown. */
+  readonly availableComponents: readonly string[];
 };
 
 /**
@@ -342,12 +342,12 @@ export type FilterBarProps = {
  * @internal
  */
 export type ToggleButtonProps = {
-    /** Whether the DevTools panel is currently open. */
-    readonly isOpen: boolean;
+  /** Whether the DevTools panel is currently open. */
+  readonly isOpen: boolean;
 
-    /** Callback fired when the button is clicked. */
-    readonly onToggle: () => void;
+  /** Callback fired when the button is clicked. */
+  readonly onToggle: () => void;
 
-    /** Viewport position for the button. */
-    readonly position: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+  /** Viewport position for the button. */
+  readonly position: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 };

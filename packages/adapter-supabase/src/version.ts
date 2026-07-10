@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/adapter-supabase/version
- * @description Package version constant for `@enterstellar-ai/adapter-supabase`.
+ * @module @enterstellar/adapter-supabase/version
+ * @description Package version constant for `@enterstellar/adapter-supabase`.
  *
  * Used by DevTools for version display and runtime compatibility checks.
  * Must be kept in sync with the `version` field in `package.json`.
@@ -9,7 +9,7 @@
  */
 
 /**
- * Current version of the `@enterstellar-ai/adapter-supabase` package.
+ * Current version of the `@enterstellar/adapter-supabase` package.
  *
  * @remarks
  * This value MUST match the `version` field in `package.json`.

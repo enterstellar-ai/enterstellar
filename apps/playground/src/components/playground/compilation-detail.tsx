@@ -14,7 +14,7 @@
  * - Self-correction attempt count
  *
  * @see implementation_plan.md §4.11 — Compilation Detail
- * @see CompilationResult from @enterstellar-ai/types — full type (used in future)
+ * @see CompilationResult from @enterstellar/types — full type (used in future)
  */
 'use client';
 
@@ -56,7 +56,11 @@ interface CompilationDetailProps {
 const statusConfig: Record<string, { label: string; icon: string; color: string }> = {
   pass: { label: 'Compiled', icon: '✅', color: 'text-success bg-success/10 border-success/30' },
   fail: { label: 'Failed', icon: '🔴', color: 'text-error bg-error/10 border-error/30' },
-  corrected: { label: 'Corrected', icon: '🔄', color: 'text-warning bg-warning/10 border-warning/30' },
+  corrected: {
+    label: 'Corrected',
+    icon: '🔄',
+    color: 'text-warning bg-warning/10 border-warning/30',
+  },
 };
 
 /**
@@ -90,7 +94,12 @@ export function CompilationDetail({
 }: CompilationDetailProps): React.JSX.Element {
   const [showProps, setShowProps] = useState(false);
 
-  const badge = statusConfig[status] ?? statusConfig['pass'] ?? { label: 'Compiled', icon: '✅', color: 'text-success bg-success/10 border-success/30' };
+  const badge = statusConfig[status] ??
+    statusConfig['pass'] ?? {
+      label: 'Compiled',
+      icon: '✅',
+      color: 'text-success bg-success/10 border-success/30',
+    };
   const confidencePercent = Math.round(confidence * 100);
   const propsJson = JSON.stringify(props, null, 2);
 
@@ -108,19 +117,17 @@ export function CompilationDetail({
       {/* Header row — component name + status badge */}
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-neutral-100">
-            {componentName}
-          </span>
-          <span className="text-[9px] font-mono text-playground-muted">
-            → {zoneName}
-          </span>
+          <span className="text-xs font-semibold text-neutral-100">{componentName}</span>
+          <span className="text-[9px] font-mono text-playground-muted">→ {zoneName}</span>
         </div>
 
         {/* Status badge */}
-        <span className={cn(
-          'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border',
-          badge.color,
-        )}>
+        <span
+          className={cn(
+            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+            badge.color,
+          )}
+        >
           <span>{badge.icon}</span>
           <span>{badge.label}</span>
         </span>
@@ -129,9 +136,7 @@ export function CompilationDetail({
       {/* Confidence bar */}
       <div className="px-3 pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-playground-muted shrink-0">
-            Confidence
-          </span>
+          <span className="text-[9px] text-playground-muted shrink-0">Confidence</span>
           <div className="flex-1 h-1.5 rounded-full bg-playground-border/30 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
@@ -147,14 +152,16 @@ export function CompilationDetail({
               )}
             />
           </div>
-          <span className={cn(
-            'text-[9px] font-mono shrink-0',
-            confidencePercent >= 90
-              ? 'text-success'
-              : confidencePercent >= 70
-                ? 'text-warning'
-                : 'text-error',
-          )}>
+          <span
+            className={cn(
+              'text-[9px] font-mono shrink-0',
+              confidencePercent >= 90
+                ? 'text-success'
+                : confidencePercent >= 70
+                  ? 'text-warning'
+                  : 'text-error',
+            )}
+          >
             {String(confidencePercent)}%
           </span>
         </div>
@@ -164,7 +171,9 @@ export function CompilationDetail({
       <div className="border-t border-playground-border/20">
         <button
           type="button"
-          onClick={() => { setShowProps((v) => !v); }}
+          onClick={() => {
+            setShowProps((v) => !v);
+          }}
           className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-medium text-playground-muted hover:text-neutral-200 transition-colors cursor-pointer"
         >
           <span>Props ({Object.keys(props).length} fields)</span>

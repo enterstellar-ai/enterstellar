@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/version
+ * @module @enterstellar/agent-sdk/version
  * @description SDK version constant for runtime compatibility checks and telemetry.
  *
  * Follows Design Choice T14 — every Enterstellar module exports a version constant.
@@ -10,7 +10,7 @@
  */
 
 /**
- * Current version of the `@enterstellar-ai/agent-sdk` package.
+ * Current version of the `@enterstellar/agent-sdk` package.
  *
  * Follows semver. Incremented via Changesets on each release.
  * The value `'0.0.0'` indicates a pre-release development version.

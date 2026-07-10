@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/contracts-shadcn",
+  "name": "@enterstellar/contracts-shadcn",
   "description": "shadcn/ui component contracts — pre-built ComponentContracts for shadcn/ui components.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,15 +54,15 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/react": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/react": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/react": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/react": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "@types/react": "^19.2.14",
     "zod": "^4.3.6"
   }

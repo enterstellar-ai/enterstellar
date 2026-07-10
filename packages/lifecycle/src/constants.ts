@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/lifecycle/constants
+ * @module @enterstellar/lifecycle/constants
  * @description Default configuration values and the exhaustive state transition map.
  *
  * The transition map is the single source of truth for valid lifecycle
@@ -39,12 +39,12 @@ import type { LifecycleState } from './types.js';
  * @see Design Choice LC2
  */
 export const VALID_TRANSITIONS: Readonly<Record<LifecycleState, readonly LifecycleState[]>> = {
-    idle: ['loading'],
-    loading: ['streaming', 'ready', 'error', 'empty'],
-    streaming: ['ready', 'error'],
-    ready: ['streaming', 'empty'],
-    error: ['loading'],
-    empty: [],
+  idle: ['loading'],
+  loading: ['streaming', 'ready', 'error', 'empty'],
+  streaming: ['ready', 'error'],
+  ready: ['streaming', 'empty'],
+  error: ['loading'],
+  empty: [],
 } as const;
 
 // ---------------------------------------------------------------------------

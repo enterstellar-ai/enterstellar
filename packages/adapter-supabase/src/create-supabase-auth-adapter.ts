@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapter-supabase/create-supabase-auth-adapter
+ * @module @enterstellar/adapter-supabase/create-supabase-auth-adapter
  * @description Factory function for creating a Supabase-backed `AuthAdapter`.
  *
  * This factory maps Supabase SDK auth calls to the Enterstellar `AuthAdapter` interface:
@@ -8,7 +8,7 @@
  * - `onAuthChange(cb)` → `client.auth.onAuthStateChange()` → returns `unsubscribe`
  *
  * It builds an `AuthAdapterConfig` and delegates to `createAuthAdapter()` from
- * `@enterstellar-ai/adapters`, which handles all validation (ENS-7001) and AD5 error
+ * `@enterstellar/adapters`, which handles all validation (ENS-7001) and AD5 error
  * wrapping (ENS-7005 / ENS-7002). This factory is purely an SDK-to-Enterstellar translator.
  *
  * @see Bible §4.15
@@ -17,9 +17,9 @@
  * @see Design Choice AD5 — error wrapping delegated to createAuthAdapter()
  */
 
-import type { AuthAdapter } from '@enterstellar-ai/types';
+import type { AuthAdapter } from '@enterstellar/types';
 
-import { createAuthAdapter } from '@enterstellar-ai/adapters';
+import { createAuthAdapter } from '@enterstellar/adapters';
 
 import type { SupabaseAuthConfig } from './types.js';
 
@@ -49,16 +49,16 @@ const DEFAULT_NAME = 'supabase-auth';
  * @internal
  */
 function defaultRoleExtractor(user: unknown): string[] {
-    if (typeof user !== 'object' || user === null) return [];
+  if (typeof user !== 'object' || user === null) return [];
 
-    const metadata = (user as Record<string, unknown>)['user_metadata'];
-    if (typeof metadata !== 'object' || metadata === null) return [];
+  const metadata = (user as Record<string, unknown>)['user_metadata'];
+  if (typeof metadata !== 'object' || metadata === null) return [];
 
-    const roles = (metadata as Record<string, unknown>)['roles'];
-    if (!Array.isArray(roles)) return [];
+  const roles = (metadata as Record<string, unknown>)['roles'];
+  if (!Array.isArray(roles)) return [];
 
-    // Ensure all elements are strings — reject non-string values silently
-    return roles.filter((role): role is string => typeof role === 'string');
+  // Ensure all elements are strings — reject non-string values silently
+  return roles.filter((role): role is string => typeof role === 'string');
 }
 
 // ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ function defaultRoleExtractor(user: unknown): string[] {
  * Creates a Supabase-backed `AuthAdapter`.
  *
  * Maps Supabase SDK auth methods to the Enterstellar `AuthAdapter` interface,
- * then delegates to `createAuthAdapter()` from `@enterstellar-ai/adapters` for
+ * then delegates to `createAuthAdapter()` from `@enterstellar/adapters` for
  * config validation and AD5 error wrapping.
  *
  * @param config - Supabase auth configuration with client and optional overrides.
@@ -79,7 +79,7 @@ function defaultRoleExtractor(user: unknown): string[] {
  * @example
  * ```ts
  * import { createClient } from '@supabase/supabase-js';
- * import { createSupabaseAuthAdapter } from '@enterstellar-ai/adapter-supabase';
+ * import { createSupabaseAuthAdapter } from '@enterstellar/adapter-supabase';
  *
  * const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  *
@@ -100,80 +100,82 @@ function defaultRoleExtractor(user: unknown): string[] {
  * ```
  */
 export function createSupabaseAuthAdapter(config: SupabaseAuthConfig): AuthAdapter {
-    const { client, name = DEFAULT_NAME, roleExtractor = defaultRoleExtractor } = config;
+  const { client, name = DEFAULT_NAME, roleExtractor = defaultRoleExtractor } = config;
 
-    // -----------------------------------------------------------------------
-    // Internal helper: extract Enterstellar session from Supabase session
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Internal helper: extract Enterstellar session from Supabase session
+  // -----------------------------------------------------------------------
+
+  /**
+   * Converts a raw Supabase session into the Enterstellar session shape.
+   * Returns `null` if the session is null or the user is missing.
+   *
+   * @param session - The raw Supabase session object (or null).
+   * @returns Enterstellar session `{ userId, roles }` or `null`.
+   */
+  function toEnterstellarSession(
+    session: { user: { id: string } } | null,
+  ): { userId: string; roles: string[] } | null {
+    if (!session?.user) return null;
+
+    return {
+      userId: session.user.id,
+      roles: roleExtractor(session.user),
+    };
+  }
+
+  // -----------------------------------------------------------------------
+  // Build AuthAdapterConfig and delegate to createAuthAdapter()
+  // -----------------------------------------------------------------------
+
+  return createAuthAdapter({
+    name,
 
     /**
-     * Converts a raw Supabase session into the Enterstellar session shape.
-     * Returns `null` if the session is null or the user is missing.
+     * Maps to `client.auth.getSession()`.
      *
-     * @param session - The raw Supabase session object (or null).
-     * @returns Enterstellar session `{ userId, roles }` or `null`.
+     * Extracts `{ userId, roles }` from the Supabase session.
+     * Returns `null` if unauthenticated (no active session).
      */
-    function toEnterstellarSession(
-        session: { user: { id: string } } | null,
-    ): { userId: string; roles: string[] } | null {
-        if (!session?.user) return null;
+    async getSession(): Promise<{ userId: string; roles: string[] } | null> {
+      const { data } = await client.auth.getSession();
+      return toEnterstellarSession(data.session);
+    },
 
-        return {
-            userId: session.user.id,
-            roles: roleExtractor(session.user),
-        };
-    }
+    /**
+     * Maps to `getSession()` → checks `roles.includes(role)`.
+     *
+     * DRY pattern: re-uses `getSession()` logic to avoid duplicating
+     * the session fetch and role extraction. Returns `false` if
+     * unauthenticated (no session).
+     *
+     * @param role - The role to check (e.g., `'clinician'`, `'admin'`).
+     */
+    async hasRole(role: string): Promise<boolean> {
+      const { data } = await client.auth.getSession();
+      const session = toEnterstellarSession(data.session);
+      if (!session) return false;
+      return session.roles.includes(role);
+    },
 
-    // -----------------------------------------------------------------------
-    // Build AuthAdapterConfig and delegate to createAuthAdapter()
-    // -----------------------------------------------------------------------
-
-    return createAuthAdapter({
-        name,
-
-        /**
-         * Maps to `client.auth.getSession()`.
-         *
-         * Extracts `{ userId, roles }` from the Supabase session.
-         * Returns `null` if unauthenticated (no active session).
-         */
-        async getSession(): Promise<{ userId: string; roles: string[] } | null> {
-            const { data } = await client.auth.getSession();
-            return toEnterstellarSession(data.session);
-        },
-
-        /**
-         * Maps to `getSession()` → checks `roles.includes(role)`.
-         *
-         * DRY pattern: re-uses `getSession()` logic to avoid duplicating
-         * the session fetch and role extraction. Returns `false` if
-         * unauthenticated (no session).
-         *
-         * @param role - The role to check (e.g., `'clinician'`, `'admin'`).
-         */
-        async hasRole(role: string): Promise<boolean> {
-            const { data } = await client.auth.getSession();
-            const session = toEnterstellarSession(data.session);
-            if (!session) return false;
-            return session.roles.includes(role);
-        },
-
-        /**
-         * Maps to `client.auth.onAuthStateChange()`.
-         *
-         * Subscribes to Supabase auth state changes and translates each
-         * event into the Enterstellar session shape. Returns a synchronous
-         * unsubscribe function.
-         *
-         * @param callback - Called with the new Enterstellar session or `null`.
-         */
-        onAuthChange(
-            callback: (session: { userId: string; roles: string[] } | null) => void,
-        ): () => void {
-            const { data } = client.auth.onAuthStateChange((_event, session) => {
-                callback(toEnterstellarSession(session));
-            });
-            return () => { data.subscription.unsubscribe(); };
-        },
-    });
+    /**
+     * Maps to `client.auth.onAuthStateChange()`.
+     *
+     * Subscribes to Supabase auth state changes and translates each
+     * event into the Enterstellar session shape. Returns a synchronous
+     * unsubscribe function.
+     *
+     * @param callback - Called with the new Enterstellar session or `null`.
+     */
+    onAuthChange(
+      callback: (session: { userId: string; roles: string[] } | null) => void,
+    ): () => void {
+      const { data } = client.auth.onAuthStateChange((_event, session) => {
+        callback(toEnterstellarSession(session));
+      });
+      return () => {
+        data.subscription.unsubscribe();
+      };
+    },
+  });
 }

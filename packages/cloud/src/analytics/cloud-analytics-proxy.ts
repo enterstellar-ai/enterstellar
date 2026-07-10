@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/analytics/cloud-analytics-proxy
+ * @module @enterstellar/cloud/analytics/cloud-analytics-proxy
  * @description Proxies analytics queries to Enterstellar Cloud.
  *
  * Provides two methods mapping to two distinct Cloud endpoints:
@@ -32,12 +32,7 @@
 
 import type { IPUTracker } from '../metering/ipu-tracker.js';
 import type { CloudHttpTransport } from '../transport/cloud-http.js';
-import type {
-    AnalyticsQuery,
-    AnalyticsResult,
-    CloudIPU,
-    CloudResult,
-} from '../types.js';
+import type { AnalyticsQuery, AnalyticsResult, CloudIPU, CloudResult } from '../types.js';
 
 import { IPU_COSTS } from '../metering/ipu-costs.js';
 import { OPERATION_TIMEOUTS } from '../transport/cloud-http.js';
@@ -53,38 +48,38 @@ import { createQuotaExceededError } from '../errors.js';
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface CloudAnalyticsProxy {
-    /**
-     * Query trace analytics from ClickHouse via the Analytics Worker.
-     *
-     * Proxies to `POST /v1/traces/analytics`. Fixed query types with
-     * optional filters (TA5). Results are returned as generic rows —
-     * the schema varies by `queryType`.
-     *
-     * **IPU cost:** 5 per invocation (§9.1).
-     *
-     * @param query - Analytics query with `queryType` and optional `filters`.
-     * @returns Analytics result rows wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-C4290` if quota exceeded (SD3).
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    analytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>>;
+  /**
+   * Query trace analytics from ClickHouse via the Analytics Worker.
+   *
+   * Proxies to `POST /v1/traces/analytics`. Fixed query types with
+   * optional filters (TA5). Results are returned as generic rows —
+   * the schema varies by `queryType`.
+   *
+   * **IPU cost:** 5 per invocation (§9.1).
+   *
+   * @param query - Analytics query with `queryType` and optional `filters`.
+   * @returns Analytics result rows wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-C4290` if quota exceeded (SD3).
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  analytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>>;
 
-    /**
-     * Query business/product analytics from ClickHouse.
-     *
-     * Proxies to `POST /v1/analytics/query`. Separate from trace
-     * analytics — powers the Business Intelligence dashboard (TA10).
-     *
-     * **IPU cost:** 5 per invocation (§9.1).
-     *
-     * @param query - Analytics query with `queryType` and optional `filters`.
-     * @returns Analytics result rows wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-C4290` if quota exceeded (SD3).
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    businessAnalytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>>;
+  /**
+   * Query business/product analytics from ClickHouse.
+   *
+   * Proxies to `POST /v1/analytics/query`. Separate from trace
+   * analytics — powers the Business Intelligence dashboard (TA10).
+   *
+   * **IPU cost:** 5 per invocation (§9.1).
+   *
+   * @param query - Analytics query with `queryType` and optional `filters`.
+   * @returns Analytics result rows wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-C4290` if quota exceeded (SD3).
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  businessAnalytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -101,20 +96,20 @@ export interface CloudAnalyticsProxy {
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -153,94 +148,81 @@ function buildIPU(
  * @internal
  */
 export function createCloudAnalyticsProxy(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
 ): CloudAnalyticsProxy {
-    /**
-     * Shared implementation for both analytics endpoints.
-     *
-     * Executes the full request lifecycle: pre-flight check → transport
-     * call → reconcile → record → build `CloudResult<AnalyticsResult>`.
-     *
-     * @param path - The API endpoint path (e.g., `'/v1/traces/analytics'`).
-     * @param query - The analytics query payload.
-     * @param costConstant - The IPU cost for this operation.
-     * @returns Analytics result wrapped in `CloudResult<T>`.
-     */
-    async function executeAnalyticsRequest(
-        path: string,
-        query: AnalyticsQuery,
-        costConstant: number,
-    ): Promise<CloudResult<AnalyticsResult>> {
-        // ---------------------------------------------------------------
-        // Pre-flight quota check (SD3).
-        // ---------------------------------------------------------------
-        if (tracker.isOverQuota()) {
-            throw createQuotaExceededError({
-                code: 'ENS-C4290',
-                message: 'IPU quota exceeded (pre-flight check)',
-            });
-        }
-
-        // ---------------------------------------------------------------
-        // Execute the cloud API call.
-        // Uses 30s timeout for OLAP queries (F21).
-        // POST method per F17 (JSON body cannot be sent via GET).
-        // ---------------------------------------------------------------
-        const response = await transport.request<AnalyticsResult>({
-            method: 'POST',
-            path,
-            body: query,
-            ipuCost: costConstant,
-            operationTimeout: OPERATION_TIMEOUTS.analytics,
-        });
-
-        // ---------------------------------------------------------------
-        // Reconcile IPU tracker with server headers (CL1).
-        // ---------------------------------------------------------------
-        if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-            tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-        }
-
-        // Record local cost estimate.
-        tracker.record(costConstant);
-
-        // ---------------------------------------------------------------
-        // Build CloudResult<AnalyticsResult> (SD7).
-        // ---------------------------------------------------------------
-        const ipu = buildIPU(
-            response.ipuUsed,
-            response.ipuRemaining,
-            response.ipuCost,
-            isAnonymous,
-        );
-
-        // Defensive fallback: if data is null, construct an empty result
-        // with the original queryType for client-side discrimination.
-        const data: AnalyticsResult = response.data ?? {
-            rows: [],
-            queryType: query.queryType,
-        };
-
-        return { data, ipu };
+  /**
+   * Shared implementation for both analytics endpoints.
+   *
+   * Executes the full request lifecycle: pre-flight check → transport
+   * call → reconcile → record → build `CloudResult<AnalyticsResult>`.
+   *
+   * @param path - The API endpoint path (e.g., `'/v1/traces/analytics'`).
+   * @param query - The analytics query payload.
+   * @param costConstant - The IPU cost for this operation.
+   * @returns Analytics result wrapped in `CloudResult<T>`.
+   */
+  async function executeAnalyticsRequest(
+    path: string,
+    query: AnalyticsQuery,
+    costConstant: number,
+  ): Promise<CloudResult<AnalyticsResult>> {
+    // ---------------------------------------------------------------
+    // Pre-flight quota check (SD3).
+    // ---------------------------------------------------------------
+    if (tracker.isOverQuota()) {
+      throw createQuotaExceededError({
+        code: 'ENS-C4290',
+        message: 'IPU quota exceeded (pre-flight check)',
+      });
     }
 
-    return {
-        async analytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>> {
-            return executeAnalyticsRequest(
-                '/v1/traces/analytics',
-                query,
-                IPU_COSTS.TRACE_ANALYTICS,
-            );
-        },
+    // ---------------------------------------------------------------
+    // Execute the cloud API call.
+    // Uses 30s timeout for OLAP queries (F21).
+    // POST method per F17 (JSON body cannot be sent via GET).
+    // ---------------------------------------------------------------
+    const response = await transport.request<AnalyticsResult>({
+      method: 'POST',
+      path,
+      body: query,
+      ipuCost: costConstant,
+      operationTimeout: OPERATION_TIMEOUTS.analytics,
+    });
 
-        async businessAnalytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>> {
-            return executeAnalyticsRequest(
-                '/v1/analytics/query',
-                query,
-                IPU_COSTS.BUSINESS_ANALYTICS,
-            );
-        },
+    // ---------------------------------------------------------------
+    // Reconcile IPU tracker with server headers (CL1).
+    // ---------------------------------------------------------------
+    if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+      tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+    }
+
+    // Record local cost estimate.
+    tracker.record(costConstant);
+
+    // ---------------------------------------------------------------
+    // Build CloudResult<AnalyticsResult> (SD7).
+    // ---------------------------------------------------------------
+    const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
+
+    // Defensive fallback: if data is null, construct an empty result
+    // with the original queryType for client-side discrimination.
+    const data: AnalyticsResult = response.data ?? {
+      rows: [],
+      queryType: query.queryType,
     };
+
+    return { data, ipu };
+  }
+
+  return {
+    async analytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>> {
+      return executeAnalyticsRequest('/v1/traces/analytics', query, IPU_COSTS.TRACE_ANALYTICS);
+    },
+
+    async businessAnalytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>> {
+      return executeAnalyticsRequest('/v1/analytics/query', query, IPU_COSTS.BUSINESS_ANALYTICS);
+    },
+  };
 }

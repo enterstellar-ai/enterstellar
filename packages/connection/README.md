@@ -1,10 +1,10 @@
-# @enterstellar-ai/connection
+# @enterstellar/connection
 
 > Transport-managed bidirectional agent communication — WebSocket, SSE, polling, auto 3-tier fallback, reconnect, backpressure, and cross-device state sync.
 
 ## Purpose
 
-`@enterstellar-ai/connection` provides `createAgentConnection()`, a factory that returns an `EnterstellarAgentConnection` for bidirectional communication between Enterstellar zones and AI agents. It handles 3-tier transport selection (WebSocket → SSE → polling), exponential backoff reconnection, intent backpressure buffering, typed event routing, and `UserSignal` dispatch with Zod runtime validation.
+`@enterstellar/connection` provides `createAgentConnection()`, a factory that returns an `EnterstellarAgentConnection` for bidirectional communication between Enterstellar zones and AI agents. It handles 3-tier transport selection (WebSocket → SSE → polling), exponential backoff reconnection, intent backpressure buffering, typed event routing, and `UserSignal` dispatch with Zod runtime validation.
 
 It also provides `createStoreSyncRuntime()` for cross-device `EnterstellarStore` synchronization — wiring an `EnterstellarStore` to a remote sync endpoint with REST initial fetch and incremental transport updates.
 
@@ -13,10 +13,10 @@ It also provides `createStoreSyncRuntime()` for cross-device `EnterstellarStore`
 - **P1:** Fire-and-forget `dispatch()` — promise resolves when enqueued, delivery is best-effort.
 - **P5:** Backpressure buffer with `ENS-3010` drop warnings and configurable oldest/newest strategy.
 - **P7:** Event whitelist — only `intent`, `lifecycle`, `data`, `message`, `reconnect` events are classified; unknown types silently ignored.
-- **P11:** Separate package — `@enterstellar-ai/connection` is independent of `@enterstellar-ai/react`.
+- **P11:** Separate package — `@enterstellar/connection` is independent of `@enterstellar/react`.
 - **P12:** `onRawEvent()` escape hatch for protocol-level debugging.
 - **R1:** Plain objects with closures, not classes. All returned objects are frozen.
-- **RE3:** This package is consumer-managed — `Provider` in `@enterstellar-ai/react` accepts a connection but never creates one.
+- **RE3:** This package is consumer-managed — `Provider` in `@enterstellar/react` accepts a connection but never creates one.
 - **S11:** Auto mode = 3-tier fallback: WebSocket (1s timeout) → SSE → polling (30s interval).
 - **L15:** Zero framework imports — uses only Web APIs (`WebSocket`, `EventSource`, `fetch`, `setTimeout`).
 
@@ -25,7 +25,7 @@ It also provides `createStoreSyncRuntime()` for cross-device `EnterstellarStore`
 ## Quick Start
 
 ```ts
-import { createAgentConnection } from '@enterstellar-ai/connection';
+import { createAgentConnection } from '@enterstellar/connection';
 
 // 1. Create a connection
 const connection = createAgentConnection({
@@ -115,7 +115,7 @@ Wires an `EnterstellarStore` to a remote sync endpoint for cross-device state sy
 4. Feedback loop prevention: inbound restores suppress outbound pushes.
 
 ```ts
-import { createStoreSyncRuntime } from '@enterstellar-ai/connection';
+import { createStoreSyncRuntime } from '@enterstellar/connection';
 
 const syncRuntime = await createStoreSyncRuntime(store, {
   enabled: true,
@@ -140,15 +140,15 @@ syncRuntime.destroy();
 
 ### Exported Types
 
-| Type                 | Description                                                                   |
-| :------------------- | :---------------------------------------------------------------------------- |
-| `ConnectionInput`    | User-facing factory input with partial config and defaults.                   |
-| `TransportType`      | `'websocket' \| 'sse' \| 'polling' \| 'auto'`.                                |
-| `BackpressureConfig` | Intent buffer configuration.                                                  |
-| `ReconnectConfig`    | Reconnect configuration.                                                      |
-| `DropStrategy`       | `'oldest' \| 'newest'`.                                                       |
-| `StoreSyncRuntime`   | Return type of `createStoreSyncRuntime`: `{ connected, destroy() }`.          |
-| `SyncConfig`         | Re-export from `@enterstellar-ai/types`: `{ enabled, endpoint, debounceMs }`. |
+| Type                 | Description                                                                |
+| :------------------- | :------------------------------------------------------------------------- |
+| `ConnectionInput`    | User-facing factory input with partial config and defaults.                |
+| `TransportType`      | `'websocket' \| 'sse' \| 'polling' \| 'auto'`.                             |
+| `BackpressureConfig` | Intent buffer configuration.                                               |
+| `ReconnectConfig`    | Reconnect configuration.                                                   |
+| `DropStrategy`       | `'oldest' \| 'newest'`.                                                    |
+| `StoreSyncRuntime`   | Return type of `createStoreSyncRuntime`: `{ connected, destroy() }`.       |
+| `SyncConfig`         | Re-export from `@enterstellar/types`: `{ enabled, endpoint, debounceMs }`. |
 
 ### Error Codes
 
@@ -206,7 +206,7 @@ When the intent buffer reaches `maxBuffer`:
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags. Overrides `composite: false` for tsup DTS. |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. Single entry: `src/index.ts`.                                      |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `zod ^4.3.6`
 
 ---
 

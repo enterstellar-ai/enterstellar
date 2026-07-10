@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-tsconfig
+ * @module @enterstellar/cli/templates/template-tsconfig
  * @description Generates a `tsconfig.json` for the scaffolded Enterstellar project.
  *
  * Embeds Enterstellar's full 15-flag ultra-strict TypeScript configuration inline
@@ -31,38 +31,38 @@ import type { ProjectTemplate } from './template-package-json.js';
  * Plus build flags for ESM support.
  */
 const STRICT_COMPILER_OPTIONS = {
-    /* Tier 1 — Core Strict */
-    strict: true,
-    strictNullChecks: true,
-    strictBindCallApply: true,
-    strictFunctionTypes: true,
-    strictPropertyInitialization: true,
+  /* Tier 1 — Core Strict */
+  strict: true,
+  strictNullChecks: true,
+  strictBindCallApply: true,
+  strictFunctionTypes: true,
+  strictPropertyInitialization: true,
 
-    /* Tier 2 — Extended (Enterprise-Grade) */
-    noImplicitAny: true,
-    noImplicitReturns: true,
-    noImplicitThis: true,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
+  /* Tier 2 — Extended (Enterprise-Grade) */
+  noImplicitAny: true,
+  noImplicitReturns: true,
+  noImplicitThis: true,
+  noUnusedLocals: true,
+  noUnusedParameters: true,
 
-    /* Tier 3 — Ultra-Strict (Compiler-Grade) */
-    noUncheckedIndexedAccess: true,
-    exactOptionalPropertyTypes: true,
-    noPropertyAccessFromIndexSignature: true,
-    noFallthroughCasesInSwitch: true,
-    useUnknownInCatchVariables: true,
+  /* Tier 3 — Ultra-Strict (Compiler-Grade) */
+  noUncheckedIndexedAccess: true,
+  exactOptionalPropertyTypes: true,
+  noPropertyAccessFromIndexSignature: true,
+  noFallthroughCasesInSwitch: true,
+  useUnknownInCatchVariables: true,
 
-    /* Build flags */
-    target: 'ES2022',
-    module: 'NodeNext',
-    moduleResolution: 'NodeNext',
-    isolatedModules: true,
-    esModuleInterop: true,
-    forceConsistentCasingInFileNames: true,
-    resolveJsonModule: true,
-    skipLibCheck: true,
-    declaration: true,
-    sourceMap: true,
+  /* Build flags */
+  target: 'ES2022',
+  module: 'NodeNext',
+  moduleResolution: 'NodeNext',
+  isolatedModules: true,
+  esModuleInterop: true,
+  forceConsistentCasingInFileNames: true,
+  resolveJsonModule: true,
+  skipLibCheck: true,
+  declaration: true,
+  sourceMap: true,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -88,8 +88,8 @@ const STRICT_COMPILER_OPTIONS = {
  * ```
  */
 export function generateTsconfig(template: ProjectTemplate): string {
-    const tsconfig = buildTsconfigObject(template);
-    return JSON.stringify(tsconfig, null, 2) + '\n';
+  const tsconfig = buildTsconfigObject(template);
+  return JSON.stringify(tsconfig, null, 2) + '\n';
 }
 
 // ---------------------------------------------------------------------------
@@ -100,59 +100,57 @@ export function generateTsconfig(template: ProjectTemplate): string {
  * Builds the tsconfig object for a given template.
  * Exhaustive switch — every template variant is handled.
  */
-function buildTsconfigObject(
-    template: ProjectTemplate,
-): Record<string, unknown> {
-    switch (template) {
-        case 'nextjs': {
-            return {
-                compilerOptions: {
-                    ...STRICT_COMPILER_OPTIONS,
-                    jsx: 'preserve',
-                    lib: ['dom', 'dom.iterable', 'esnext'],
-                    allowJs: true,
-                    incremental: true,
-                    plugins: [{ name: 'next' }],
-                    paths: {
-                        '@/*': ['./src/*'],
-                    },
-                },
-                include: ['next-env.d.ts', '**/*.ts', '**/*.tsx'],
-                exclude: ['node_modules'],
-            };
-        }
-        case 'vite-react': {
-            return {
-                compilerOptions: {
-                    ...STRICT_COMPILER_OPTIONS,
-                    jsx: 'react-jsx',
-                    lib: ['dom', 'dom.iterable', 'esnext'],
-                },
-                include: ['src'],
-                exclude: ['node_modules'],
-            };
-        }
-        case 'minimal': {
-            return {
-                compilerOptions: {
-                    ...STRICT_COMPILER_OPTIONS,
-                    jsx: 'react-jsx',
-                    lib: ['dom', 'dom.iterable', 'esnext'],
-                },
-                include: ['src'],
-                exclude: ['node_modules'],
-            };
-        }
-        case 'full': {
-            return {
-                compilerOptions: {
-                    ...STRICT_COMPILER_OPTIONS,
-                    jsx: 'react-jsx',
-                    lib: ['dom', 'dom.iterable', 'esnext'],
-                },
-                include: ['src'],
-                exclude: ['node_modules'],
-            };
-        }
+function buildTsconfigObject(template: ProjectTemplate): Record<string, unknown> {
+  switch (template) {
+    case 'nextjs': {
+      return {
+        compilerOptions: {
+          ...STRICT_COMPILER_OPTIONS,
+          jsx: 'preserve',
+          lib: ['dom', 'dom.iterable', 'esnext'],
+          allowJs: true,
+          incremental: true,
+          plugins: [{ name: 'next' }],
+          paths: {
+            '@/*': ['./src/*'],
+          },
+        },
+        include: ['next-env.d.ts', '**/*.ts', '**/*.tsx'],
+        exclude: ['node_modules'],
+      };
     }
+    case 'vite-react': {
+      return {
+        compilerOptions: {
+          ...STRICT_COMPILER_OPTIONS,
+          jsx: 'react-jsx',
+          lib: ['dom', 'dom.iterable', 'esnext'],
+        },
+        include: ['src'],
+        exclude: ['node_modules'],
+      };
+    }
+    case 'minimal': {
+      return {
+        compilerOptions: {
+          ...STRICT_COMPILER_OPTIONS,
+          jsx: 'react-jsx',
+          lib: ['dom', 'dom.iterable', 'esnext'],
+        },
+        include: ['src'],
+        exclude: ['node_modules'],
+      };
+    }
+    case 'full': {
+      return {
+        compilerOptions: {
+          ...STRICT_COMPILER_OPTIONS,
+          jsx: 'react-jsx',
+          lib: ['dom', 'dom.iterable', 'esnext'],
+        },
+        include: ['src'],
+        exclude: ['node_modules'],
+      };
+    }
+  }
 }

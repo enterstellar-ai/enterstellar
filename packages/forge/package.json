@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/forge",
+  "name": "@enterstellar/forge",
   "description": "Component forge — LocalForge (templates) and CloudForge (LLM) contract generation.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,15 +54,15 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/compiler": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/compiler": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/compiler": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/compiler": "workspace:*",
     "zod": "^4.3.6"
   }
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/bin
+ * @module @enterstellar/cli/bin
  * @description Main entrypoint for the `enterstellar` CLI binary.
  *
  * Routes `process.argv` to the appropriate subcommand:
@@ -39,7 +39,7 @@ import { CLI_VERSION } from './version.js';
  * Includes all available commands with descriptions and usage examples.
  */
 function printHelp(): void {
-    const help = `
+  const help = `
 ${pc.bold('enterstellar')} — Enterstellar CLI for project scaffolding and component generation.
 
 ${pc.bold('Usage:')}
@@ -67,7 +67,7 @@ ${pc.bold('Examples:')}
 ${pc.dim(`v${CLI_VERSION} · https://enterstellar.dev/docs/cli`)}
 `;
 
-    console.log(help);
+  console.log(help);
 }
 
 // ---------------------------------------------------------------------------
@@ -85,80 +85,76 @@ ${pc.dim(`v${CLI_VERSION} · https://enterstellar.dev/docs/cli`)}
  * - `1` — Error (EnterstellarError or unknown)
  */
 async function main(): Promise<void> {
-    const args = process.argv.slice(2);
-    const command = args[0];
+  const args = process.argv.slice(2);
+  const command = args[0];
 
-    // No args or help flag → print help
-    if (command === undefined || command === '--help' || command === '-h') {
-        printHelp();
-        return;
+  // No args or help flag → print help
+  if (command === undefined || command === '--help' || command === '-h') {
+    printHelp();
+    return;
+  }
+
+  // Version flag
+  if (command === '--version' || command === '-v') {
+    console.log(CLI_VERSION);
+    return;
+  }
+
+  // Route: enterstellar init [directory]
+  if (command === 'init') {
+    const directoryArg = args[1];
+    await initCommand(directoryArg);
+    return;
+  }
+
+  // Route: enterstellar migrate <path> [flags]
+  // Dynamic import keeps ts-morph (~2MB) out of the cold-start path
+  // for `enterstellar init` and `enterstellar add component`.
+  if (command === 'migrate') {
+    const pathArgs = args.slice(1).filter((a: string) => !a.startsWith('--'));
+    const { migrateCommand } = await import('./commands/migrate.js');
+    await migrateCommand(pathArgs, args.slice(1));
+    return;
+  }
+
+  // Route: enterstellar review [path] [flags]
+  // Dynamic import keeps annotation parsing out of the cold-start path.
+  if (command === 'review') {
+    const pathArgs = args.slice(1).filter((a: string) => !a.startsWith('--'));
+    const { reviewCommand } = await import('./commands/review.js');
+    await reviewCommand(pathArgs, args.slice(1));
+    return;
+  }
+
+  // Route: enterstellar add component <Name>
+  if (command === 'add') {
+    const subcommand = args[1];
+
+    if (subcommand !== 'component') {
+      console.error(pc.red(`Unknown subcommand: enterstellar add ${subcommand ?? '(missing)'}`));
+      console.error(`Run ${pc.bold('enterstellar --help')} for available commands.\n`);
+      process.exitCode = 1;
+      return;
     }
 
-    // Version flag
-    if (command === '--version' || command === '-v') {
-        console.log(CLI_VERSION);
-        return;
+    const componentName = args[2];
+
+    if (componentName === undefined || componentName.length === 0) {
+      console.error(pc.red('Missing component name.'));
+      console.error(`Usage: ${pc.bold('enterstellar add component <Name>')}\n`);
+      console.error(`Example: ${pc.dim('enterstellar add component PatientVitals')}\n`);
+      process.exitCode = 1;
+      return;
     }
 
-    // Route: enterstellar init [directory]
-    if (command === 'init') {
-        const directoryArg = args[1];
-        await initCommand(directoryArg);
-        return;
-    }
+    await addComponentCommand(componentName);
+    return;
+  }
 
-    // Route: enterstellar migrate <path> [flags]
-    // Dynamic import keeps ts-morph (~2MB) out of the cold-start path
-    // for `enterstellar init` and `enterstellar add component`.
-    if (command === 'migrate') {
-        const pathArgs = args.slice(1).filter((a: string) => !a.startsWith('--'));
-        const { migrateCommand } = await import('./commands/migrate.js');
-        await migrateCommand(pathArgs, args.slice(1));
-        return;
-    }
-
-    // Route: enterstellar review [path] [flags]
-    // Dynamic import keeps annotation parsing out of the cold-start path.
-    if (command === 'review') {
-        const pathArgs = args.slice(1).filter((a: string) => !a.startsWith('--'));
-        const { reviewCommand } = await import('./commands/review.js');
-        await reviewCommand(pathArgs, args.slice(1));
-        return;
-    }
-
-    // Route: enterstellar add component <Name>
-    if (command === 'add') {
-        const subcommand = args[1];
-
-        if (subcommand !== 'component') {
-            console.error(
-                pc.red(`Unknown subcommand: enterstellar add ${subcommand ?? '(missing)'}`),
-            );
-            console.error(`Run ${pc.bold('enterstellar --help')} for available commands.\n`);
-            process.exitCode = 1;
-            return;
-        }
-
-        const componentName = args[2];
-
-        if (componentName === undefined || componentName.length === 0) {
-            console.error(
-                pc.red('Missing component name.'),
-            );
-            console.error(`Usage: ${pc.bold('enterstellar add component <Name>')}\n`);
-            console.error(`Example: ${pc.dim('enterstellar add component PatientVitals')}\n`);
-            process.exitCode = 1;
-            return;
-        }
-
-        await addComponentCommand(componentName);
-        return;
-    }
-
-    // Unknown command
-    console.error(pc.red(`Unknown command: ${command}`));
-    console.error(`Run ${pc.bold('enterstellar --help')} for available commands.\n`);
-    process.exitCode = 1;
+  // Unknown command
+  console.error(pc.red(`Unknown command: ${command}`));
+  console.error(`Run ${pc.bold('enterstellar --help')} for available commands.\n`);
+  process.exitCode = 1;
 }
 
 // ---------------------------------------------------------------------------

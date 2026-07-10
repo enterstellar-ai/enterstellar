@@ -17,7 +17,7 @@
 # └─────────────────────────────────────────────────────────────────────────┘
 #
 # Secrets required:
-#   NPM_TOKEN — npm Automation token scoped to @enterstellar-ai/* packages.
+#   NPM_TOKEN — npm Automation token scoped to @enterstellar/* packages.
 #               Must be added manually: Settings → Secrets → Actions → NPM_TOKEN
 #   GITHUB_TOKEN — provided automatically by GitHub Actions.
 #
@@ -118,5 +118,5 @@ jobs:
           # NPM_TOKEN must be set as a repository secret:
           # GitHub → Settings → Secrets and variables → Actions → New secret
           # Name: NPM_TOKEN
-          # Value: npm Automation token with write access to @enterstellar-ai/* scope
+          # Value: npm Automation token with write access to @enterstellar/* scope
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

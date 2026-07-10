@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cache/with-registry-invalidation
+ * @module @enterstellar/cache/with-registry-invalidation
  * @description Wires registry events to cache invalidation.
  *
  * Higher-order function that subscribes to `EnterstellarRegistry` events (`update`,
@@ -10,7 +10,7 @@
  *
  * **Dependency model:** `EnterstellarRegistry` is imported as a **type-only** import.
  * The registry instance is injected at runtime by the consumer. There is NO
- * hard dependency on `@enterstellar-ai/registry` in `package.json`. This avoids
+ * hard dependency on `@enterstellar/registry` in `package.json`. This avoids
  * circular dependencies and keeps the cache self-contained.
  *
  * **L15 compliance:** Zero framework imports. Pure TypeScript.
@@ -19,7 +19,7 @@
  * @see Design Choice CA5 — evict ALL entries for a changed component.
  */
 
-import type { ComponentContract } from '@enterstellar-ai/types';
+import type { ComponentContract } from '@enterstellar/types';
 
 import type { RenderCache } from './types.js';
 
@@ -30,24 +30,24 @@ import type { RenderCache } from './types.js';
 /**
  * Minimal interface required from an `EnterstellarRegistry` for cache invalidation.
  *
- * This avoids importing the full `EnterstellarRegistry` type from `@enterstellar-ai/registry`,
- * keeping `@enterstellar-ai/cache` decoupled. Any object that satisfies this interface
+ * This avoids importing the full `EnterstellarRegistry` type from `@enterstellar/registry`,
+ * keeping `@enterstellar/cache` decoupled. Any object that satisfies this interface
  * (including the real `EnterstellarRegistry`) can be used.
  *
  * @see Design Choice R18 — registry emits `register`, `unregister`, `update` events.
  */
 export interface CacheInvalidationSource {
-    /**
-     * Subscribes to a registry event.
-     *
-     * @param event - The event type to listen for.
-     * @param handler - Callback receiving the affected contract.
-     * @returns An unsubscribe function.
-     */
-    on(
-        event: 'register' | 'unregister' | 'update',
-        handler: (contract: ComponentContract) => void,
-    ): () => void;
+  /**
+   * Subscribes to a registry event.
+   *
+   * @param event - The event type to listen for.
+   * @param handler - Callback receiving the affected contract.
+   * @returns An unsubscribe function.
+   */
+  on(
+    event: 'register' | 'unregister' | 'update',
+    handler: (contract: ComponentContract) => void,
+  ): () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -59,14 +59,14 @@ export interface CacheInvalidationSource {
  * Contains the cache (unchanged) and a dispose function for cleanup.
  */
 export type RegistryInvalidationBinding = {
-    /** The same `RenderCache` instance passed in (for chaining convenience). */
-    readonly cache: RenderCache;
+  /** The same `RenderCache` instance passed in (for chaining convenience). */
+  readonly cache: RenderCache;
 
-    /**
-     * Unsubscribes all registry event listeners.
-     * Safe to call multiple times — subsequent calls are no-ops.
-     */
-    readonly dispose: () => void;
+  /**
+   * Unsubscribes all registry event listeners.
+   * Safe to call multiple times — subsequent calls are no-ops.
+   */
+  readonly dispose: () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -96,8 +96,8 @@ export type RegistryInvalidationBinding = {
  *
  * @example
  * ```ts
- * import { createRenderCache, withRegistryInvalidation } from '@enterstellar-ai/cache';
- * import { createRegistry } from '@enterstellar-ai/registry';
+ * import { createRenderCache, withRegistryInvalidation } from '@enterstellar/cache';
+ * import { createRegistry } from '@enterstellar/registry';
  *
  * const cache = createRenderCache();
  * const registry = createRegistry({ components: [...] });
@@ -112,38 +112,38 @@ export type RegistryInvalidationBinding = {
  * ```
  */
 export function withRegistryInvalidation(
-    cache: RenderCache,
-    registry: CacheInvalidationSource,
+  cache: RenderCache,
+  registry: CacheInvalidationSource,
 ): RegistryInvalidationBinding {
-    /** Whether dispose has already been called. */
-    let disposed = false;
+  /** Whether dispose has already been called. */
+  let disposed = false;
 
-    /**
-     * Handler for `update` and `unregister` events.
-     * Evicts all cache entries for the affected component.
-     *
-     * @param contract - The component contract that was updated or removed.
-     */
-    const handleInvalidation = (contract: ComponentContract): void => {
-        cache.invalidateByComponent(contract.name);
-    };
+  /**
+   * Handler for `update` and `unregister` events.
+   * Evicts all cache entries for the affected component.
+   *
+   * @param contract - The component contract that was updated or removed.
+   */
+  const handleInvalidation = (contract: ComponentContract): void => {
+    cache.invalidateByComponent(contract.name);
+  };
 
-    // Subscribe to invalidation-triggering events
-    const unsubUpdate = registry.on('update', handleInvalidation);
-    const unsubUnregister = registry.on('unregister', handleInvalidation);
+  // Subscribe to invalidation-triggering events
+  const unsubUpdate = registry.on('update', handleInvalidation);
+  const unsubUnregister = registry.on('unregister', handleInvalidation);
 
-    /**
-     * Unsubscribes all event listeners.
-     * Safe to call multiple times — subsequent calls are no-ops.
-     */
-    const dispose = (): void => {
-        if (disposed) {
-            return;
-        }
-        disposed = true;
-        unsubUpdate();
-        unsubUnregister();
-    };
+  /**
+   * Unsubscribes all event listeners.
+   * Safe to call multiple times — subsequent calls are no-ops.
+   */
+  const dispose = (): void => {
+    if (disposed) {
+      return;
+    }
+    disposed = true;
+    unsubUpdate();
+    unsubUnregister();
+  };
 
-    return { cache, dispose };
+  return { cache, dispose };
 }

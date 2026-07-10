@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/cache",
+  "name": "@enterstellar/cache",
   "description": "LRU render cache for compiled intents — deterministic zone acceleration.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,11 +54,11 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "zod": "^4.3.6"
   }
 }

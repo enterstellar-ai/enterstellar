@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/cloud/version
- * @description SDK version constant for `@enterstellar-ai/cloud`.
+ * @module @enterstellar/cloud/version
+ * @description SDK version constant for `@enterstellar/cloud`.
  *
  * Used by the transport layer to set the `User-Agent` header on all
  * outgoing requests (`User-Agent: enterstellar-cloud-sdk/{CLOUD_SDK_VERSION}`),
@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * The current version of the `@enterstellar-ai/cloud` SDK.
+ * The current version of the `@enterstellar/cloud` SDK.
  *
  * @remarks
  * - Follows semver (major.minor.patch).
@@ -29,7 +29,7 @@
  *
  * @example
  * ```ts
- * import { CLOUD_SDK_VERSION } from '@enterstellar-ai/cloud';
+ * import { CLOUD_SDK_VERSION } from '@enterstellar/cloud';
  *
  * console.log(`Running enterstellar-cloud-sdk v${CLOUD_SDK_VERSION}`);
  * // → "Running enterstellar-cloud-sdk v0.1.0"

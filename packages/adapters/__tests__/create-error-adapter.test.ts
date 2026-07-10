@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/__tests__/create-error-adapter
+ * @module @enterstellar/adapters/__tests__/create-error-adapter
  * @description Unit tests for `createErrorAdapter()` and `createNoopErrorAdapter()`.
  *
  * Tests:
@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { createErrorAdapter, createNoopErrorAdapter } from '../src/create-error-adapter.js';
 import type { ErrorAdapterConfig } from '../src/types.js';
@@ -26,16 +26,14 @@ import type { ErrorAdapterConfig } from '../src/types.js';
 // ---------------------------------------------------------------------------
 
 /** Creates a minimal valid ErrorAdapterConfig with spy functions. */
-function createValidConfig(
-    overrides?: Partial<ErrorAdapterConfig>,
-): ErrorAdapterConfig {
-    return {
-        name: 'test-error',
-        report: vi.fn().mockResolvedValue(undefined),
-        shouldRetry: vi.fn().mockResolvedValue(true),
-        sanitize: vi.fn().mockResolvedValue(new Error('sanitized')),
-        ...overrides,
-    };
+function createValidConfig(overrides?: Partial<ErrorAdapterConfig>): ErrorAdapterConfig {
+  return {
+    name: 'test-error',
+    report: vi.fn().mockResolvedValue(undefined),
+    shouldRetry: vi.fn().mockResolvedValue(true),
+    sanitize: vi.fn().mockResolvedValue(new Error('sanitized')),
+    ...overrides,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -43,20 +41,20 @@ function createValidConfig(
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — valid creation', () => {
-    it('creates an adapter from valid config', () => {
-        const adapter = createErrorAdapter(createValidConfig());
+  it('creates an adapter from valid config', () => {
+    const adapter = createErrorAdapter(createValidConfig());
 
-        expect(adapter).toBeDefined();
-        expect(typeof adapter.report).toBe('function');
-        expect(typeof adapter.shouldRetry).toBe('function');
-        expect(typeof adapter.sanitize).toBe('function');
-    });
+    expect(adapter).toBeDefined();
+    expect(typeof adapter.report).toBe('function');
+    expect(typeof adapter.shouldRetry).toBe('function');
+    expect(typeof adapter.sanitize).toBe('function');
+  });
 
-    it('returns a frozen object (R4 pattern)', () => {
-        const adapter = createErrorAdapter(createValidConfig());
+  it('returns a frozen object (R4 pattern)', () => {
+    const adapter = createErrorAdapter(createValidConfig());
 
-        expect(Object.isFrozen(adapter)).toBe(true);
-    });
+    expect(Object.isFrozen(adapter)).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -64,26 +62,26 @@ describe('createErrorAdapter — valid creation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — method delegation (report)', () => {
-    it('report() delegates to config', async () => {
-        const config = createValidConfig();
-        const adapter = createErrorAdapter(config);
-        const testError = new Error('test error');
-        const context = { zone: 'main', component: 'PatientVitals' };
+  it('report() delegates to config', async () => {
+    const config = createValidConfig();
+    const adapter = createErrorAdapter(config);
+    const testError = new Error('test error');
+    const context = { zone: 'main', component: 'PatientVitals' };
 
-        await adapter.report(testError, context);
+    await adapter.report(testError, context);
 
-        expect(config.report).toHaveBeenCalledWith(testError, context);
-    });
+    expect(config.report).toHaveBeenCalledWith(testError, context);
+  });
 
-    it('report() delegates without context when not provided', async () => {
-        const config = createValidConfig();
-        const adapter = createErrorAdapter(config);
-        const testError = new Error('test error');
+  it('report() delegates without context when not provided', async () => {
+    const config = createValidConfig();
+    const adapter = createErrorAdapter(config);
+    const testError = new Error('test error');
 
-        await adapter.report(testError);
+    await adapter.report(testError);
 
-        expect(config.report).toHaveBeenCalledWith(testError, undefined);
-    });
+    expect(config.report).toHaveBeenCalledWith(testError, undefined);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -91,41 +89,41 @@ describe('createErrorAdapter — method delegation (report)', () => {
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — method delegation (shouldRetry)', () => {
-    it('shouldRetry() delegates to config and returns true', async () => {
-        const config = createValidConfig({
-            shouldRetry: vi.fn().mockResolvedValue(true),
-        });
-        const adapter = createErrorAdapter(config);
-        const testError = new Error('transient failure');
-
-        const result = await adapter.shouldRetry(testError, 1);
-
-        expect(config.shouldRetry).toHaveBeenCalledWith(testError, 1);
-        expect(result).toBe(true);
+  it('shouldRetry() delegates to config and returns true', async () => {
+    const config = createValidConfig({
+      shouldRetry: vi.fn().mockResolvedValue(true),
     });
+    const adapter = createErrorAdapter(config);
+    const testError = new Error('transient failure');
 
-    it('shouldRetry() returns false when config resolves to false', async () => {
-        const config = createValidConfig({
-            shouldRetry: vi.fn().mockResolvedValue(false),
-        });
-        const adapter = createErrorAdapter(config);
+    const result = await adapter.shouldRetry(testError, 1);
 
-        const result = await adapter.shouldRetry(new Error('fatal'), 3);
+    expect(config.shouldRetry).toHaveBeenCalledWith(testError, 1);
+    expect(result).toBe(true);
+  });
 
-        expect(result).toBe(false);
+  it('shouldRetry() returns false when config resolves to false', async () => {
+    const config = createValidConfig({
+      shouldRetry: vi.fn().mockResolvedValue(false),
     });
+    const adapter = createErrorAdapter(config);
 
-    it('shouldRetry() passes the attempt number correctly', async () => {
-        const config = createValidConfig({
-            shouldRetry: vi.fn().mockResolvedValue(true),
-        });
-        const adapter = createErrorAdapter(config);
-        const testError = new Error('test');
+    const result = await adapter.shouldRetry(new Error('fatal'), 3);
 
-        await adapter.shouldRetry(testError, 5);
+    expect(result).toBe(false);
+  });
 
-        expect(config.shouldRetry).toHaveBeenCalledWith(testError, 5);
+  it('shouldRetry() passes the attempt number correctly', async () => {
+    const config = createValidConfig({
+      shouldRetry: vi.fn().mockResolvedValue(true),
     });
+    const adapter = createErrorAdapter(config);
+    const testError = new Error('test');
+
+    await adapter.shouldRetry(testError, 5);
+
+    expect(config.shouldRetry).toHaveBeenCalledWith(testError, 5);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -133,33 +131,31 @@ describe('createErrorAdapter — method delegation (shouldRetry)', () => {
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — method delegation (sanitize)', () => {
-    it('sanitize() delegates to config and returns sanitized error', async () => {
-        const sanitizedError = new Error('[REDACTED]');
-        const config = createValidConfig({
-            sanitize: vi.fn().mockResolvedValue(sanitizedError),
-        });
-        const adapter = createErrorAdapter(config);
-        const rawError = new Error('SSN-123-45-6789');
-
-        const result = await adapter.sanitize(rawError);
-
-        expect(config.sanitize).toHaveBeenCalledWith(rawError);
-        expect(result).toBe(sanitizedError);
+  it('sanitize() delegates to config and returns sanitized error', async () => {
+    const sanitizedError = new Error('[REDACTED]');
+    const config = createValidConfig({
+      sanitize: vi.fn().mockResolvedValue(sanitizedError),
     });
+    const adapter = createErrorAdapter(config);
+    const rawError = new Error('SSN-123-45-6789');
 
-    it('sanitize() returns the original error when config passes through', async () => {
-        const config = createValidConfig({
-            sanitize: vi.fn().mockImplementation(
-                (e: Error) => Promise.resolve(e),
-            ),
-        });
-        const adapter = createErrorAdapter(config);
-        const rawError = new Error('safe message');
+    const result = await adapter.sanitize(rawError);
 
-        const result = await adapter.sanitize(rawError);
+    expect(config.sanitize).toHaveBeenCalledWith(rawError);
+    expect(result).toBe(sanitizedError);
+  });
 
-        expect(result).toBe(rawError);
+  it('sanitize() returns the original error when config passes through', async () => {
+    const config = createValidConfig({
+      sanitize: vi.fn().mockImplementation((e: Error) => Promise.resolve(e)),
     });
+    const adapter = createErrorAdapter(config);
+    const rawError = new Error('safe message');
+
+    const result = await adapter.sanitize(rawError);
+
+    expect(result).toBe(rawError);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -167,42 +163,42 @@ describe('createErrorAdapter — method delegation (sanitize)', () => {
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — AD5 error wrapping (report → ENS-7002)', () => {
-    it('wraps report() errors in ENS-7002', async () => {
-        const originalError = new Error('Sentry down');
-        const config = createValidConfig({
-            report: vi.fn().mockRejectedValue(originalError),
-        });
-        const adapter = createErrorAdapter(config);
-
-        try {
-            await adapter.report(new Error('test'));
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7002');
-            expect(error.module).toBe('adapters');
-            expect(error.recoverable).toBe(true);
-            expect(error.cause).toBe(originalError);
-        }
+  it('wraps report() errors in ENS-7002', async () => {
+    const originalError = new Error('Sentry down');
+    const config = createValidConfig({
+      report: vi.fn().mockRejectedValue(originalError),
     });
+    const adapter = createErrorAdapter(config);
 
-    it('includes adapter name and method in ENS-7002 message', async () => {
-        const config = createValidConfig({
-            name: 'sentry-error',
-            report: vi.fn().mockRejectedValue(new Error('fail')),
-        });
-        const adapter = createErrorAdapter(config);
+    try {
+      await adapter.report(new Error('test'));
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7002');
+      expect(error.module).toBe('adapters');
+      expect(error.recoverable).toBe(true);
+      expect(error.cause).toBe(originalError);
+    }
+  });
 
-        try {
-            await adapter.report(new Error('test'));
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.message).toContain('sentry-error');
-            expect(error.message).toContain('report');
-        }
+  it('includes adapter name and method in ENS-7002 message', async () => {
+    const config = createValidConfig({
+      name: 'sentry-error',
+      report: vi.fn().mockRejectedValue(new Error('fail')),
     });
+    const adapter = createErrorAdapter(config);
+
+    try {
+      await adapter.report(new Error('test'));
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.message).toContain('sentry-error');
+      expect(error.message).toContain('report');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -210,40 +206,40 @@ describe('createErrorAdapter — AD5 error wrapping (report → ENS-7002)', () =
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — AD5 error wrapping (shouldRetry → ENS-7002)', () => {
-    it('wraps shouldRetry() errors in ENS-7002', async () => {
-        const originalError = new TypeError('retry logic broken');
-        const config = createValidConfig({
-            shouldRetry: vi.fn().mockRejectedValue(originalError),
-        });
-        const adapter = createErrorAdapter(config);
-
-        try {
-            await adapter.shouldRetry(new Error('test'), 1);
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7002');
-            expect(error.recoverable).toBe(true);
-            expect(error.cause).toBe(originalError);
-        }
+  it('wraps shouldRetry() errors in ENS-7002', async () => {
+    const originalError = new TypeError('retry logic broken');
+    const config = createValidConfig({
+      shouldRetry: vi.fn().mockRejectedValue(originalError),
     });
+    const adapter = createErrorAdapter(config);
 
-    it('includes method name in ENS-7002 message', async () => {
-        const config = createValidConfig({
-            name: 'datadog-error',
-            shouldRetry: vi.fn().mockRejectedValue(new Error('fail')),
-        });
-        const adapter = createErrorAdapter(config);
+    try {
+      await adapter.shouldRetry(new Error('test'), 1);
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7002');
+      expect(error.recoverable).toBe(true);
+      expect(error.cause).toBe(originalError);
+    }
+  });
 
-        try {
-            await adapter.shouldRetry(new Error('test'), 1);
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.message).toContain('shouldRetry');
-        }
+  it('includes method name in ENS-7002 message', async () => {
+    const config = createValidConfig({
+      name: 'datadog-error',
+      shouldRetry: vi.fn().mockRejectedValue(new Error('fail')),
     });
+    const adapter = createErrorAdapter(config);
+
+    try {
+      await adapter.shouldRetry(new Error('test'), 1);
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.message).toContain('shouldRetry');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -251,40 +247,40 @@ describe('createErrorAdapter — AD5 error wrapping (shouldRetry → ENS-7002)',
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — AD5 error wrapping (sanitize → ENS-7002)', () => {
-    it('wraps sanitize() errors in ENS-7002', async () => {
-        const originalError = new RangeError('sanitization failed');
-        const config = createValidConfig({
-            sanitize: vi.fn().mockRejectedValue(originalError),
-        });
-        const adapter = createErrorAdapter(config);
-
-        try {
-            await adapter.sanitize(new Error('test'));
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7002');
-            expect(error.recoverable).toBe(true);
-            expect(error.cause).toBe(originalError);
-        }
+  it('wraps sanitize() errors in ENS-7002', async () => {
+    const originalError = new RangeError('sanitization failed');
+    const config = createValidConfig({
+      sanitize: vi.fn().mockRejectedValue(originalError),
     });
+    const adapter = createErrorAdapter(config);
 
-    it('includes method name in ENS-7002 message', async () => {
-        const config = createValidConfig({
-            name: 'custom-error',
-            sanitize: vi.fn().mockRejectedValue(new Error('fail')),
-        });
-        const adapter = createErrorAdapter(config);
+    try {
+      await adapter.sanitize(new Error('test'));
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7002');
+      expect(error.recoverable).toBe(true);
+      expect(error.cause).toBe(originalError);
+    }
+  });
 
-        try {
-            await adapter.sanitize(new Error('test'));
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.message).toContain('sanitize');
-        }
+  it('includes method name in ENS-7002 message', async () => {
+    const config = createValidConfig({
+      name: 'custom-error',
+      sanitize: vi.fn().mockRejectedValue(new Error('fail')),
     });
+    const adapter = createErrorAdapter(config);
+
+    try {
+      await adapter.sanitize(new Error('test'));
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.message).toContain('sanitize');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -292,36 +288,36 @@ describe('createErrorAdapter — AD5 error wrapping (sanitize → ENS-7002)', ()
 // ---------------------------------------------------------------------------
 
 describe('createErrorAdapter — config validation (ENS-7001)', () => {
-    it('throws ENS-7001 when name is empty', () => {
-        expect(() => {
-            createErrorAdapter(createValidConfig({ name: '' }));
-        }).toThrow(EnterstellarError);
+  it('throws ENS-7001 when name is empty', () => {
+    expect(() => {
+      createErrorAdapter(createValidConfig({ name: '' }));
+    }).toThrow(EnterstellarError);
 
-        try {
-            createErrorAdapter(createValidConfig({ name: '' }));
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-        }
-    });
+    try {
+      createErrorAdapter(createValidConfig({ name: '' }));
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+    }
+  });
 
-    it('throws ENS-7001 when a required method is missing', () => {
-        const config = {
-            name: 'test-error',
-            report: vi.fn().mockResolvedValue(undefined),
-            sanitize: vi.fn().mockResolvedValue(new Error('sanitized')),
-            // shouldRetry intentionally omitted
-        } as unknown as ErrorAdapterConfig;
+  it('throws ENS-7001 when a required method is missing', () => {
+    const config = {
+      name: 'test-error',
+      report: vi.fn().mockResolvedValue(undefined),
+      sanitize: vi.fn().mockResolvedValue(new Error('sanitized')),
+      // shouldRetry intentionally omitted
+    } as unknown as ErrorAdapterConfig;
 
-        expect(() => createErrorAdapter(config)).toThrow(EnterstellarError);
-        try {
-            createErrorAdapter(config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('shouldRetry');
-        }
-    });
+    expect(() => createErrorAdapter(config)).toThrow(EnterstellarError);
+    try {
+      createErrorAdapter(config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('shouldRetry');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -329,32 +325,32 @@ describe('createErrorAdapter — config validation (ENS-7001)', () => {
 // ---------------------------------------------------------------------------
 
 describe('createNoopErrorAdapter', () => {
-    it('creates a frozen adapter', () => {
-        const adapter = createNoopErrorAdapter();
+  it('creates a frozen adapter', () => {
+    const adapter = createNoopErrorAdapter();
 
-        expect(Object.isFrozen(adapter)).toBe(true);
-    });
+    expect(Object.isFrozen(adapter)).toBe(true);
+  });
 
-    it('report() resolves without error', async () => {
-        const adapter = createNoopErrorAdapter();
+  it('report() resolves without error', async () => {
+    const adapter = createNoopErrorAdapter();
 
-        await expect(adapter.report(new Error('test'))).resolves.toBeUndefined();
-    });
+    await expect(adapter.report(new Error('test'))).resolves.toBeUndefined();
+  });
 
-    it('shouldRetry() resolves to false (never retry in noop mode)', async () => {
-        const adapter = createNoopErrorAdapter();
+  it('shouldRetry() resolves to false (never retry in noop mode)', async () => {
+    const adapter = createNoopErrorAdapter();
 
-        const result = await adapter.shouldRetry(new Error('test'), 1);
+    const result = await adapter.shouldRetry(new Error('test'), 1);
 
-        expect(result).toBe(false);
-    });
+    expect(result).toBe(false);
+  });
 
-    it('sanitize() resolves to the original error unchanged (identity)', async () => {
-        const adapter = createNoopErrorAdapter();
-        const original = new Error('test error');
+  it('sanitize() resolves to the original error unchanged (identity)', async () => {
+    const adapter = createNoopErrorAdapter();
+    const original = new Error('test error');
 
-        const result = await adapter.sanitize(original);
+    const result = await adapter.sanitize(original);
 
-        expect(result).toBe(original);
-    });
+    expect(result).toBe(original);
+  });
 });

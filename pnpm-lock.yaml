@@ -233,19 +233,19 @@ importers:
       '@ai-sdk/groq':
         specifier: ^3.0.32
         version: 3.0.39(zod@4.4.3)
-      '@enterstellar-ai/cache':
+      '@enterstellar/cache':
         specifier: workspace:*
         version: link:../../packages/cache
-      '@enterstellar-ai/devtools':
+      '@enterstellar/devtools':
         specifier: workspace:*
         version: link:../../packages/devtools
-      '@enterstellar-ai/react':
+      '@enterstellar/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../../packages/registry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../../packages/types
       ai:
@@ -310,12 +310,317 @@ importers:
 
   examples/full-app: {}
 
+  legacy/adapter-firebase:
+    dependencies:
+      '@enterstellar/adapter-firebase':
+        specifier: workspace:*
+        version: link:../../packages/adapter-firebase
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/adapter-supabase:
+    dependencies:
+      '@enterstellar/adapter-supabase':
+        specifier: workspace:*
+        version: link:../../packages/adapter-supabase
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/adapters:
+    dependencies:
+      '@enterstellar/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/agent-sdk:
+    dependencies:
+      '@enterstellar/agent-sdk':
+        specifier: workspace:*
+        version: link:../../packages/agent-sdk
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/cache:
+    dependencies:
+      '@enterstellar/cache':
+        specifier: workspace:*
+        version: link:../../packages/cache
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/cli:
+    dependencies:
+      '@enterstellar/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/cloud:
+    dependencies:
+      '@enterstellar/cloud':
+        specifier: workspace:*
+        version: link:../../packages/cloud
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/compiler:
+    dependencies:
+      '@enterstellar/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/connection:
+    dependencies:
+      '@enterstellar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/contract-protocol:
+    dependencies:
+      '@enterstellar/contract-protocol':
+        specifier: workspace:*
+        version: link:../../packages/contract-protocol
+
+  legacy/contracts-shadcn:
+    dependencies:
+      '@enterstellar/contracts-shadcn':
+        specifier: workspace:*
+        version: link:../../packages/contracts-shadcn
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/devtools:
+    dependencies:
+      '@enterstellar/devtools':
+        specifier: workspace:*
+        version: link:../../packages/devtools
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/forge:
+    dependencies:
+      '@enterstellar/forge':
+        specifier: workspace:*
+        version: link:../../packages/forge
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/global-index:
+    dependencies:
+      '@enterstellar/global-index':
+        specifier: workspace:*
+        version: link:../../packages/global-index
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/lifecycle:
+    dependencies:
+      '@enterstellar/lifecycle':
+        specifier: workspace:*
+        version: link:../../packages/lifecycle
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/migration:
+    dependencies:
+      '@enterstellar/migration':
+        specifier: workspace:*
+        version: link:../../packages/migration
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/normalizer:
+    dependencies:
+      '@enterstellar/normalizer':
+        specifier: workspace:*
+        version: link:../../packages/normalizer
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/react:
+    dependencies:
+      '@enterstellar/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/registry:
+    dependencies:
+      '@enterstellar/registry':
+        specifier: workspace:*
+        version: link:../../packages/registry
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/semantic-index:
+    dependencies:
+      '@enterstellar/semantic-index':
+        specifier: workspace:*
+        version: link:../../packages/semantic-index
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/state:
+    dependencies:
+      '@enterstellar/state':
+        specifier: workspace:*
+        version: link:../../packages/state
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/telemetry:
+    dependencies:
+      '@enterstellar/telemetry':
+        specifier: workspace:*
+        version: link:../../packages/telemetry
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/test:
+    dependencies:
+      '@enterstellar/test':
+        specifier: workspace:*
+        version: link:../../packages/test
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  legacy/types:
+    dependencies:
+      '@enterstellar/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/adapter-firebase:
     devDependencies:
-      '@enterstellar-ai/adapters':
+      '@enterstellar/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       firebase:
@@ -324,10 +629,10 @@ importers:
 
   packages/adapter-supabase:
     devDependencies:
-      '@enterstellar-ai/adapters':
+      '@enterstellar/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@supabase/supabase-js':
@@ -336,28 +641,28 @@ importers:
 
   packages/adapters:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
 
   packages/agent-sdk:
     devDependencies:
-      '@enterstellar-ai/compiler':
+      '@enterstellar/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@enterstellar-ai/forge':
+      '@enterstellar/forge':
         specifier: workspace:*
         version: link:../forge
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/semantic-index':
+      '@enterstellar/semantic-index':
         specifier: workspace:*
         version: link:../semantic-index
-      '@enterstellar-ai/state':
+      '@enterstellar/state':
         specifier: workspace:*
         version: link:../state
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -366,7 +671,7 @@ importers:
 
   packages/cache:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -378,7 +683,7 @@ importers:
       '@clack/prompts':
         specifier: ^0.9.1
         version: 0.9.1
-      '@enterstellar-ai/migration':
+      '@enterstellar/migration':
         specifier: workspace:*
         version: link:../migration
       fast-glob:
@@ -391,7 +696,7 @@ importers:
         specifier: ^4.3.6
         version: 4.4.3
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@types/node':
@@ -404,16 +709,16 @@ importers:
         specifier: ^3.0.6
         version: 3.1.0
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
 
   packages/compiler:
     devDependencies:
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -422,13 +727,13 @@ importers:
 
   packages/connection:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
 
   packages/contract-protocol:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@types/node':
@@ -449,13 +754,13 @@ importers:
 
   packages/contracts-shadcn:
     devDependencies:
-      '@enterstellar-ai/react':
+      '@enterstellar/react':
         specifier: workspace:*
         version: link:../react
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@types/react':
@@ -467,10 +772,10 @@ importers:
 
   packages/devtools:
     devDependencies:
-      '@enterstellar-ai/react':
+      '@enterstellar/react':
         specifier: workspace:*
         version: link:../react
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@testing-library/jest-dom':
@@ -497,13 +802,13 @@ importers:
 
   packages/forge:
     devDependencies:
-      '@enterstellar-ai/compiler':
+      '@enterstellar/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -512,10 +817,10 @@ importers:
 
   packages/global-index:
     devDependencies:
-      '@enterstellar-ai/cloud':
+      '@enterstellar/cloud':
         specifier: workspace:*
         version: link:../cloud
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -524,7 +829,7 @@ importers:
 
   packages/lifecycle:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -537,10 +842,10 @@ importers:
         specifier: ^28.0.0
         version: 28.0.0
     devDependencies:
-      '@enterstellar-ai/compiler':
+      '@enterstellar/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@types/node':
@@ -552,7 +857,7 @@ importers:
 
   packages/normalizer:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -561,31 +866,31 @@ importers:
 
   packages/react:
     dependencies:
-      '@enterstellar-ai/adapters':
+      '@enterstellar/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@enterstellar-ai/cache':
+      '@enterstellar/cache':
         specifier: workspace:*
         version: link:../cache
-      '@enterstellar-ai/compiler':
+      '@enterstellar/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@enterstellar-ai/connection':
+      '@enterstellar/connection':
         specifier: workspace:*
         version: link:../connection
-      '@enterstellar-ai/lifecycle':
+      '@enterstellar/lifecycle':
         specifier: workspace:*
         version: link:../lifecycle
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/state':
+      '@enterstellar/state':
         specifier: workspace:*
         version: link:../state
-      '@enterstellar-ai/telemetry':
+      '@enterstellar/telemetry':
         specifier: workspace:*
         version: link:../telemetry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
@@ -616,7 +921,7 @@ importers:
 
   packages/registry:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -625,10 +930,10 @@ importers:
 
   packages/semantic-index:
     devDependencies:
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       zod:
@@ -641,7 +946,7 @@ importers:
         specifier: ^6.2.2
         version: 6.2.5
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       fake-indexeddb:
@@ -653,7 +958,7 @@ importers:
 
   packages/telemetry:
     devDependencies:
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       fake-indexeddb:
@@ -666,13 +971,13 @@ importers:
         specifier: ^4.3.6
         version: 4.4.3
     devDependencies:
-      '@enterstellar-ai/compiler':
+      '@enterstellar/compiler':
         specifier: workspace:*
         version: link:../compiler
-      '@enterstellar-ai/registry':
+      '@enterstellar/registry':
         specifier: workspace:*
         version: link:../registry
-      '@enterstellar-ai/types':
+      '@enterstellar/types':
         specifier: workspace:*
         version: link:../types
       '@types/node':
@@ -7092,6 +7397,7 @@ packages:
         integrity: sha512-Y+csSm2GD/PCSh6Isd/WiMjNAydu0VBiG9J7EdQsNA5P9uXvLayqjmTsNlK5Gs9IhblFZqOU0yid5Il5JPoLiQ==,
       }
     engines: { node: '>=18' }
+    deprecated: Deprecated and no longer maintained. Use @conventional-changelog/git-client instead.
     hasBin: true
 
   github-slugger@2.0.0:

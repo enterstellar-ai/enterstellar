@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/__tests__/review-command
+ * @module @enterstellar/cli/__tests__/review-command
  * @description Integration tests for the `enterstellar review` command handler.
  *
  * Tests the end-to-end flow: fixture `.contract.ts` files → annotation
@@ -25,12 +25,12 @@ import { reviewCommand } from '../src/commands/review.js';
 // ---------------------------------------------------------------------------
 
 function createTempDir(prefix: string): string {
-    const dir = join(
-        tmpdir(),
-        `enterstellar-review-test-${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    );
-    mkdirSync(dir, { recursive: true });
-    return dir;
+  const dir = join(
+    tmpdir(),
+    `enterstellar-review-test-${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
+  mkdirSync(dir, { recursive: true });
+  return dir;
 }
 
 const tempDirs: string[] = [];
@@ -40,16 +40,16 @@ const tempDirs: string[] = [];
  * Returns the project root path.
  */
 function createFixtureProject(files: Record<string, string>): string {
-    const root = createTempDir('review');
-    tempDirs.push(root);
+  const root = createTempDir('review');
+  tempDirs.push(root);
 
-    for (const [relativePath, content] of Object.entries(files)) {
-        const fullPath = join(root, relativePath);
-        mkdirSync(join(fullPath, '..'), { recursive: true });
-        writeFileSync(fullPath, content, 'utf-8');
-    }
+  for (const [relativePath, content] of Object.entries(files)) {
+    const fullPath = join(root, relativePath);
+    mkdirSync(join(fullPath, '..'), { recursive: true });
+    writeFileSync(fullPath, content, 'utf-8');
+  }
 
-    return root;
+  return root;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,24 +103,28 @@ let errorSpy: ReturnType<typeof vi.spyOn>;
 let stdoutWriteSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
-    logSpy = vi.spyOn(console, 'log').mockImplementation(() => { /* noop */ });
-    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => { /* noop */ });
-    stdoutWriteSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+  logSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+    /* noop */
+  });
+  errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+    /* noop */
+  });
+  stdoutWriteSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
 });
 
 afterEach(() => {
-    logSpy.mockRestore();
-    errorSpy.mockRestore();
-    stdoutWriteSpy.mockRestore();
+  logSpy.mockRestore();
+  errorSpy.mockRestore();
+  stdoutWriteSpy.mockRestore();
 
-    for (const dir of tempDirs) {
-        try {
-            rmSync(dir, { recursive: true, force: true });
-        } catch {
-            // Best-effort cleanup.
-        }
+  for (const dir of tempDirs) {
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch {
+      // Best-effort cleanup.
     }
-    tempDirs.length = 0;
+  }
+  tempDirs.length = 0;
 });
 
 // ---------------------------------------------------------------------------
@@ -128,89 +132,85 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('reviewCommand', () => {
-    it('prints text output listing annotations from fixture files', async () => {
-        const root = createFixtureProject({
-            'src/DataTable.contract.ts': CONTRACT_WITH_REVIEW,
-            'src/Card.contract.ts': CONTRACT_WITH_WARN,
-        });
-
-        await reviewCommand([root], [root]);
-
-        // Text output goes to console.log.
-        expect(logSpy).toHaveBeenCalled();
-        const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
-
-        // Should list both annotations.
-        expect(output).toContain('annotations');
-        expect(output).toContain('GENERIC_TYPE');
-        expect(output).toContain('description');
+  it('prints text output listing annotations from fixture files', async () => {
+    const root = createFixtureProject({
+      'src/DataTable.contract.ts': CONTRACT_WITH_REVIEW,
+      'src/Card.contract.ts': CONTRACT_WITH_WARN,
     });
 
-    it('outputs valid JSON when --json flag is used', async () => {
-        const root = createFixtureProject({
-            'src/DataTable.contract.ts': CONTRACT_WITH_REVIEW,
-            'src/Card.contract.ts': CONTRACT_WITH_WARN,
-        });
+    await reviewCommand([root], [root]);
 
-        await reviewCommand([root], [root, '--json']);
+    // Text output goes to console.log.
+    expect(logSpy).toHaveBeenCalled();
+    const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
 
-        // JSON output goes to process.stdout.write.
-        expect(stdoutWriteSpy).toHaveBeenCalled();
-        const jsonOutput = stdoutWriteSpy.mock.calls
-            .map((c) => String(c[0]))
-            .join('');
+    // Should list both annotations.
+    expect(output).toContain('annotations');
+    expect(output).toContain('GENERIC_TYPE');
+    expect(output).toContain('description');
+  });
 
-        // Must be valid JSON.
-        const parsed = JSON.parse(jsonOutput.trim()) as Record<string, unknown>;
-        expect(parsed).toHaveProperty('totalAnnotations');
-        expect(parsed).toHaveProperty('totalFiles');
-        expect(parsed).toHaveProperty('files');
-
-        // Should have exactly 2 annotated files.
-        expect(parsed['totalAnnotations']).toBe(2);
-        expect(parsed['totalFiles']).toBe(2);
+  it('outputs valid JSON when --json flag is used', async () => {
+    const root = createFixtureProject({
+      'src/DataTable.contract.ts': CONTRACT_WITH_REVIEW,
+      'src/Card.contract.ts': CONTRACT_WITH_WARN,
     });
 
-    it('prints stub message for --fix flag and returns early', async () => {
-        const root = createFixtureProject({
-            'src/DataTable.contract.ts': CONTRACT_WITH_REVIEW,
-        });
+    await reviewCommand([root], [root, '--json']);
 
-        await reviewCommand([root], [root, '--fix']);
+    // JSON output goes to process.stdout.write.
+    expect(stdoutWriteSpy).toHaveBeenCalled();
+    const jsonOutput = stdoutWriteSpy.mock.calls.map((c) => String(c[0])).join('');
 
-        expect(logSpy).toHaveBeenCalled();
-        const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
-        expect(output).toContain('not yet implemented');
-        expect(output).toContain('v2');
+    // Must be valid JSON.
+    const parsed = JSON.parse(jsonOutput.trim()) as Record<string, unknown>;
+    expect(parsed).toHaveProperty('totalAnnotations');
+    expect(parsed).toHaveProperty('totalFiles');
+    expect(parsed).toHaveProperty('files');
+
+    // Should have exactly 2 annotated files.
+    expect(parsed['totalAnnotations']).toBe(2);
+    expect(parsed['totalFiles']).toBe(2);
+  });
+
+  it('prints stub message for --fix flag and returns early', async () => {
+    const root = createFixtureProject({
+      'src/DataTable.contract.ts': CONTRACT_WITH_REVIEW,
     });
 
-    it('handles directories with no .contract.ts files gracefully', async () => {
-        const root = createFixtureProject({
-            'src/utils.ts': 'export const add = (a: number, b: number) => a + b;',
-        });
+    await reviewCommand([root], [root, '--fix']);
 
-        await reviewCommand([root], [root]);
+    expect(logSpy).toHaveBeenCalled();
+    const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    expect(output).toContain('not yet implemented');
+    expect(output).toContain('v2');
+  });
 
-        expect(logSpy).toHaveBeenCalled();
-        const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
-        expect(output).toContain('No .contract.ts files found');
+  it('handles directories with no .contract.ts files gracefully', async () => {
+    const root = createFixtureProject({
+      'src/utils.ts': 'export const add = (a: number, b: number) => a + b;',
     });
 
-    it('filters out clean contract files (zero annotations) from output', async () => {
-        const root = createFixtureProject({
-            'src/Button.contract.ts': CLEAN_CONTRACT,
-            'src/Card.contract.ts': CONTRACT_WITH_WARN,
-        });
+    await reviewCommand([root], [root]);
 
-        await reviewCommand([root], [root, '--json']);
+    expect(logSpy).toHaveBeenCalled();
+    const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    expect(output).toContain('No .contract.ts files found');
+  });
 
-        const jsonOutput = stdoutWriteSpy.mock.calls
-            .map((c) => String(c[0]))
-            .join('');
-        const parsed = JSON.parse(jsonOutput.trim()) as Record<string, unknown>;
-
-        // Only Card should appear (Button has no annotations).
-        expect(parsed['totalFiles']).toBe(1);
-        expect(parsed['totalAnnotations']).toBe(1);
+  it('filters out clean contract files (zero annotations) from output', async () => {
+    const root = createFixtureProject({
+      'src/Button.contract.ts': CLEAN_CONTRACT,
+      'src/Card.contract.ts': CONTRACT_WITH_WARN,
     });
+
+    await reviewCommand([root], [root, '--json']);
+
+    const jsonOutput = stdoutWriteSpy.mock.calls.map((c) => String(c[0])).join('');
+    const parsed = JSON.parse(jsonOutput.trim()) as Record<string, unknown>;
+
+    // Only Card should appear (Button has no annotations).
+    expect(parsed['totalFiles']).toBe(1);
+    expect(parsed['totalAnnotations']).toBe(1);
+  });
 });

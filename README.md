@@ -8,7 +8,7 @@
 
 **The TypeScript of Generative UI.**
 
-[![npm](https://img.shields.io/npm/v/@enterstellar-ai/react?style=flat-square&color=0f172a&labelColor=0f172a&logo=npm&logoColor=white)](https://www.npmjs.com/package/@enterstellar-ai/react)
+[![npm](https://img.shields.io/npm/v/@enterstellar/react?style=flat-square&color=0f172a&labelColor=0f172a&logo=npm&logoColor=white)](https://www.npmjs.com/package/@enterstellar/react)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white&labelColor=0f172a)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/github/license/enterstellar/enterstellar?style=flat-square&color=0f172a&labelColor=0f172a)](./LICENSE)
 
@@ -50,15 +50,15 @@ npx create-enterstellar-app my-app
 Alternatively, you can install manually into an existing app:
 
 ```bash
-npm install @enterstellar-ai/react @enterstellar-ai/registry
+npm install @enterstellar/react @enterstellar/registry
 ```
 
-> All engine packages are bundled as dependencies of `@enterstellar-ai/react`. You do not need to install them separately.
+> All engine packages are bundled as dependencies of `@enterstellar/react`. You do not need to install them separately.
 
 **Step 1 — Define a component contract:**
 
 ```tsx
-import { defineComponent } from '@enterstellar-ai/react';
+import { defineComponent } from '@enterstellar/react';
 import { z } from 'zod';
 
 // defineComponent validates immediately and freezes the contract.
@@ -93,9 +93,9 @@ const { contract } = defineComponent({
 **Step 2 — Create a registry and wrap your app:**
 
 ```tsx
-import { Provider, Zone } from '@enterstellar-ai/react';
-import { createRegistry } from '@enterstellar-ai/registry';
-import { createAgentConnection } from '@enterstellar-ai/connection';
+import { Provider, Zone } from '@enterstellar/react';
+import { createRegistry } from '@enterstellar/registry';
+import { createAgentConnection } from '@enterstellar/connection';
 
 const registry = createRegistry({ components: [contract] });
 const connection = createAgentConnection({ url: 'wss://agent.example.com' });
@@ -113,7 +113,7 @@ export default function App() {
 **Step 3 — Drop a Zone wherever you want AI-driven content:**
 
 ```tsx
-import { Zone } from '@enterstellar-ai/react';
+import { Zone } from '@enterstellar/react';
 
 // Zone is the boundary between your static UI and AI-generated content.
 // determinism={1.0} means fully locked — always the same component for the same intent.
@@ -176,50 +176,50 @@ The three-tier self-correction loop (deterministic coercion → contract example
 
 ## The Ecosystem
 
-| Package                                                              | Description                                                                                                           |
-| :------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
-| [`@enterstellar-ai/react`](./packages/react)                         | React integration — Provider, Zone, lifecycle management, render cache, and hooks                                     |
-| [`@enterstellar-ai/registry`](./packages/registry)                   | Component contract registry — `defineComponent()`, `createRegistry()`, and validation rules                           |
-| [`@enterstellar-ai/compiler`](./packages/compiler)                   | Deterministic GenUI compiler — schema validation, design token enforcement, accessibility audits, and self-correction |
-| [`@enterstellar-ai/types`](./packages/types)                         | Shared type definitions, Zod schemas, and type guards for the Enterstellar ecosystem                                  |
-| [`@enterstellar-ai/state`](./packages/state)                         | Framework-agnostic persistent state — snapshot/restore, cross-device sync, migrations                                 |
-| [`@enterstellar-ai/forge`](./packages/forge)                         | Component forge — LocalForge (templates) and CloudForge (LLM) contract generation                                     |
-| [`@enterstellar-ai/test`](./packages/test)                           | Intent-based testing framework — deterministic harness, assertion helpers, VCR fixtures                               |
-| [`@enterstellar-ai/devtools`](./packages/devtools)                   | Embedded DevTools panel — trace inspector, component inspector, cache dashboard, replay                               |
-| [`@enterstellar-ai/agent-sdk`](./packages/agent-sdk)                 | AI agent SDK — MCP server with tools for component search, forge, validate, and analyze                               |
-| [`@enterstellar-ai/connection`](./packages/connection)               | Agent connection factory — WebSocket/SSE/polling with auto-reconnect and backpressure                                 |
-| [`@enterstellar-ai/normalizer`](./packages/normalizer)               | Protocol normalizer — converts AG-UI, A2UI, MCP, and custom events to `ComponentIntent`                               |
-| [`@enterstellar-ai/semantic-index`](./packages/semantic-index)       | Semantic component search — embedding-based retrieval via cloud, local, or hybrid provider                            |
-| [`@enterstellar-ai/telemetry`](./packages/telemetry)                 | ForgeSignal collection and upload — zero-PII telemetry for the Forge training corpus                                  |
-| [`@enterstellar-ai/lifecycle`](./packages/lifecycle)                 | Component lifecycle state machine — loading, streaming, ready, error, and empty states                                |
-| [`@enterstellar-ai/cache`](./packages/cache)                         | LRU render cache for compiled intents — deterministic zone acceleration                                               |
-| [`@enterstellar-ai/adapters`](./packages/adapters)                   | Infrastructure adapter interfaces — auth, data, error handling, and analytics contracts                               |
-| [`@enterstellar-ai/adapter-supabase`](./packages/adapter-supabase)   | Supabase adapter — Auth and Data adapter implementations for Supabase                                                 |
-| [`@enterstellar-ai/adapter-firebase`](./packages/adapter-firebase)   | Firebase adapter — Auth and Data adapter implementations for Firebase                                                 |
-| [`@enterstellar-ai/contracts-shadcn`](./packages/contracts-shadcn)   | shadcn/ui component contracts — pre-built `ComponentContract`s for shadcn/ui components                               |
-| [`@enterstellar-ai/migration`](./packages/migration)                 | Component migration pipeline — AST extraction, LLM enrichment, and contract assembly                                  |
-| [`@enterstellar-ai/global-index`](./packages/global-index)           | Federated contract registry — discover and publish `ComponentContract`s globally                                      |
-| [`@enterstellar-ai/contract-protocol`](./packages/contract-protocol) | JSON Schema protocol spec — language-agnostic definitions for non-TypeScript renderers                                |
-| [`@enterstellar-ai/cloud`](./packages/cloud)                         | Enterstellar Cloud SDK — IPU metering, trace aggregation, and CloudForge relay                                        |
-| [`@enterstellar-ai/cli`](./packages/cli)                             | Enterstellar CLI — project scaffolding (`enterstellar init`) and component generation                                 |
+| Package                                                           | Description                                                                                                           |
+| :---------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| [`@enterstellar/react`](./packages/react)                         | React integration — Provider, Zone, lifecycle management, render cache, and hooks                                     |
+| [`@enterstellar/registry`](./packages/registry)                   | Component contract registry — `defineComponent()`, `createRegistry()`, and validation rules                           |
+| [`@enterstellar/compiler`](./packages/compiler)                   | Deterministic GenUI compiler — schema validation, design token enforcement, accessibility audits, and self-correction |
+| [`@enterstellar/types`](./packages/types)                         | Shared type definitions, Zod schemas, and type guards for the Enterstellar ecosystem                                  |
+| [`@enterstellar/state`](./packages/state)                         | Framework-agnostic persistent state — snapshot/restore, cross-device sync, migrations                                 |
+| [`@enterstellar/forge`](./packages/forge)                         | Component forge — LocalForge (templates) and CloudForge (LLM) contract generation                                     |
+| [`@enterstellar/test`](./packages/test)                           | Intent-based testing framework — deterministic harness, assertion helpers, VCR fixtures                               |
+| [`@enterstellar/devtools`](./packages/devtools)                   | Embedded DevTools panel — trace inspector, component inspector, cache dashboard, replay                               |
+| [`@enterstellar/agent-sdk`](./packages/agent-sdk)                 | AI agent SDK — MCP server with tools for component search, forge, validate, and analyze                               |
+| [`@enterstellar/connection`](./packages/connection)               | Agent connection factory — WebSocket/SSE/polling with auto-reconnect and backpressure                                 |
+| [`@enterstellar/normalizer`](./packages/normalizer)               | Protocol normalizer — converts AG-UI, A2UI, MCP, and custom events to `ComponentIntent`                               |
+| [`@enterstellar/semantic-index`](./packages/semantic-index)       | Semantic component search — embedding-based retrieval via cloud, local, or hybrid provider                            |
+| [`@enterstellar/telemetry`](./packages/telemetry)                 | ForgeSignal collection and upload — zero-PII telemetry for the Forge training corpus                                  |
+| [`@enterstellar/lifecycle`](./packages/lifecycle)                 | Component lifecycle state machine — loading, streaming, ready, error, and empty states                                |
+| [`@enterstellar/cache`](./packages/cache)                         | LRU render cache for compiled intents — deterministic zone acceleration                                               |
+| [`@enterstellar/adapters`](./packages/adapters)                   | Infrastructure adapter interfaces — auth, data, error handling, and analytics contracts                               |
+| [`@enterstellar/adapter-supabase`](./packages/adapter-supabase)   | Supabase adapter — Auth and Data adapter implementations for Supabase                                                 |
+| [`@enterstellar/adapter-firebase`](./packages/adapter-firebase)   | Firebase adapter — Auth and Data adapter implementations for Firebase                                                 |
+| [`@enterstellar/contracts-shadcn`](./packages/contracts-shadcn)   | shadcn/ui component contracts — pre-built `ComponentContract`s for shadcn/ui components                               |
+| [`@enterstellar/migration`](./packages/migration)                 | Component migration pipeline — AST extraction, LLM enrichment, and contract assembly                                  |
+| [`@enterstellar/global-index`](./packages/global-index)           | Federated contract registry — discover and publish `ComponentContract`s globally                                      |
+| [`@enterstellar/contract-protocol`](./packages/contract-protocol) | JSON Schema protocol spec — language-agnostic definitions for non-TypeScript renderers                                |
+| [`@enterstellar/cloud`](./packages/cloud)                         | Enterstellar Cloud SDK — IPU metering, trace aggregation, and CloudForge relay                                        |
+| [`@enterstellar/cli`](./packages/cli)                             | Enterstellar CLI — project scaffolding (`enterstellar init`) and component generation                                 |
 
 ---
 
 ## Roadmap
 
-| Status         | Item                                                                                      |
-| :------------- | :---------------------------------------------------------------------------------------- |
-| ✅ Released    | `@enterstellar-ai/types`, `@enterstellar-ai/registry`, `@enterstellar-ai/compiler`        |
-| ✅ Released    | `@enterstellar-ai/react`, `@enterstellar-ai/state`, `@enterstellar-ai/telemetry`          |
-| ✅ Released    | `@enterstellar-ai/forge`, `@enterstellar-ai/lifecycle`, `@enterstellar-ai/cache`          |
-| ✅ Released    | `@enterstellar-ai/connection`, `@enterstellar-ai/normalizer`, `@enterstellar-ai/adapters` |
-| ✅ Released    | `@enterstellar-ai/test`, `@enterstellar-ai/devtools`, `@enterstellar-ai/agent-sdk`        |
-| ✅ Released    | `@enterstellar-ai/contracts-shadcn`, `@enterstellar-ai/migration`, `@enterstellar-ai/cli` |
-| 🔵 In progress | Tauri renderer (`@enterstellar-ai/tauri`)                                                 |
-| 🔵 In progress | Expo/React Native renderer (`@enterstellar-ai/native`)                                    |
-| 🔵 In progress | Enterstellar Cloud (hosted ForgeSignal corpus + semantic index)                           |
-| 🗓 Planned     | VS Code extension — contract authoring, intent preview, DevTools                          |
-| 🗓 Planned     | Storybook integration — contract browser with live intent testing                         |
+| Status         | Item                                                                             |
+| :------------- | :------------------------------------------------------------------------------- |
+| ✅ Released    | `@enterstellar/types`, `@enterstellar/registry`, `@enterstellar/compiler`        |
+| ✅ Released    | `@enterstellar/react`, `@enterstellar/state`, `@enterstellar/telemetry`          |
+| ✅ Released    | `@enterstellar/forge`, `@enterstellar/lifecycle`, `@enterstellar/cache`          |
+| ✅ Released    | `@enterstellar/connection`, `@enterstellar/normalizer`, `@enterstellar/adapters` |
+| ✅ Released    | `@enterstellar/test`, `@enterstellar/devtools`, `@enterstellar/agent-sdk`        |
+| ✅ Released    | `@enterstellar/contracts-shadcn`, `@enterstellar/migration`, `@enterstellar/cli` |
+| 🔵 In progress | Tauri renderer (`@enterstellar/tauri`)                                           |
+| 🔵 In progress | Expo/React Native renderer (`@enterstellar/native`)                              |
+| 🔵 In progress | Enterstellar Cloud (hosted ForgeSignal corpus + semantic index)                  |
+| 🗓 Planned     | VS Code extension — contract authoring, intent preview, DevTools                 |
+| 🗓 Planned     | Storybook integration — contract browser with live intent testing                |
 
 ---
 

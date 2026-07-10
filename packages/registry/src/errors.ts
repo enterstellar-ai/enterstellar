@@ -1,8 +1,8 @@
 /**
- * @module @enterstellar-ai/registry/errors
+ * @module @enterstellar/registry/errors
  * @description Registry-specific error factories.
  *
- * Every error uses `EnterstellarError` from `@enterstellar-ai/types` with the `ENS-1xxx` code range.
+ * Every error uses `EnterstellarError` from `@enterstellar/types` with the `ENS-1xxx` code range.
  * Each code maps to one of the 10 registration-time validation rules.
  *
  * **Error philosophy:** Registration rule violations are developer errors —
@@ -13,7 +13,7 @@
  * @see Design Choice C14 — ~15 error codes across 5 ranges
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Error Code Constants
@@ -50,12 +50,12 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * @returns An `EnterstellarError` with code `ENS-1001`.
  */
 export function duplicateNameError(name: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1001',
-        'registry',
-        `[ENS-1001] Duplicate component name: '${name}'. Each component name must be unique within the registry.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1001',
+    'registry',
+    `[ENS-1001] Duplicate component name: '${name}'. Each component name must be unique within the registry.`,
+    false,
+  );
 }
 
 /**
@@ -65,12 +65,12 @@ export function duplicateNameError(name: string): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1002`.
  */
 export function invalidNameError(name: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1002',
-        'registry',
-        `[ENS-1002] Component name must be PascalCase: got '${name}'. Names must start with an uppercase letter and contain only alphanumeric characters.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1002',
+    'registry',
+    `[ENS-1002] Component name must be PascalCase: got '${name}'. Names must start with an uppercase letter and contain only alphanumeric characters.`,
+    false,
+  );
 }
 
 /**
@@ -80,12 +80,12 @@ export function invalidNameError(name: string): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1003`.
  */
 export function descriptionTooLongError(length: number): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1003',
-        'registry',
-        `[ENS-1003] Description exceeds 120 characters (${String(length)}). Write a concise description — no auto-truncation.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1003',
+    'registry',
+    `[ENS-1003] Description exceeds 120 characters (${String(length)}). Write a concise description — no auto-truncation.`,
+    false,
+  );
 }
 
 /**
@@ -96,12 +96,12 @@ export function descriptionTooLongError(length: number): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1004`.
  */
 export function invalidTagCountError(count: number): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1004',
-        'registry',
-        `[ENS-1004] Tags must have 1–10 entries, got ${String(count)}. Provide at least one semantic tag for matching.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1004',
+    'registry',
+    `[ENS-1004] Tags must have 1–10 entries, got ${String(count)}. Provide at least one semantic tag for matching.`,
+    false,
+  );
 }
 
 /**
@@ -111,12 +111,12 @@ export function invalidTagCountError(count: number): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1005`.
  */
 export function missingStateError(state: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1005',
-        'registry',
-        `[ENS-1005] Missing required lifecycle state: '${state}'. All four states (loading, error, empty, ready) are required (L9).`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1005',
+    'registry',
+    `[ENS-1005] Missing required lifecycle state: '${state}'. All four states (loading, error, empty, ready) are required (L9).`,
+    false,
+  );
 }
 
 /**
@@ -128,12 +128,12 @@ export function missingStateError(state: string): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1006`.
  */
 export function invalidReadyStateError(expected: string, received: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1006',
-        'registry',
-        `[ENS-1006] states.ready must reference the component's own name: expected '${expected}', got '${received}'.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1006',
+    'registry',
+    `[ENS-1006] states.ready must reference the component's own name: expected '${expected}', got '${received}'.`,
+    false,
+  );
 }
 
 /**
@@ -144,12 +144,12 @@ export function invalidReadyStateError(expected: string, received: string): Ente
  * @returns An `EnterstellarError` with code `ENS-1007`.
  */
 export function invalidTokenValueError(key: string, value: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1007',
-        'registry',
-        `[ENS-1007] Token value must start with 'token:': key '${key}' has value '${value}'.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1007',
+    'registry',
+    `[ENS-1007] Token value must start with 'token:': key '${key}' has value '${value}'.`,
+    false,
+  );
 }
 
 /**
@@ -158,12 +158,12 @@ export function invalidTokenValueError(key: string, value: string): Enterstellar
  * @returns An `EnterstellarError` with code `ENS-1008`.
  */
 export function invalidPropsSchemaError(): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1008',
-        'registry',
-        '[ENS-1008] Props must be a Zod schema with a safeParse method. Received a non-schema value.',
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1008',
+    'registry',
+    '[ENS-1008] Props must be a Zod schema with a safeParse method. Received a non-schema value.',
+    false,
+  );
 }
 
 /**
@@ -173,12 +173,12 @@ export function invalidPropsSchemaError(): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1009`.
  */
 export function invalidAriaRoleError(role: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1009',
-        'registry',
-        `[ENS-1009] Invalid WAI-ARIA role: '${role}'. Use a valid role from the WAI-ARIA specification.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1009',
+    'registry',
+    `[ENS-1009] Invalid WAI-ARIA role: '${role}'. Use a valid role from the WAI-ARIA specification.`,
+    false,
+  );
 }
 
 /**
@@ -187,10 +187,10 @@ export function invalidAriaRoleError(role: string): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-1010`.
  */
 export function missingDescriptionError(): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-1010',
-        'registry',
-        '[ENS-1010] Description is required. Provide a concise, human-readable description (max 120 characters).',
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-1010',
+    'registry',
+    '[ENS-1010] Description is required. Provide a concise, human-readable description (max 120 characters).',
+    false,
+  );
 }

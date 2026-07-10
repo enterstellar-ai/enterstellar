@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/contract-protocol/__tests__/generate
+ * @module @enterstellar/contract-protocol/__tests__/generate
  * @description Tests for the schema generator (`scripts/generate.ts`).
  *
  * Validates the generator's output against the contract protocol requirements:
@@ -43,16 +43,16 @@ const HAND_CRAFTED_SCHEMA = 'design-tokens-dtcg.json';
 
 /**
  * Auto-generated schema filenames produced by `scripts/generate.ts`.
- * These are the 7 schemas derived from `@enterstellar-ai/types` Zod schemas.
+ * These are the 7 schemas derived from `@enterstellar/types` Zod schemas.
  */
 const AUTO_GENERATED_SCHEMAS: readonly string[] = [
-    'component-contract.json',
-    'component-intent.json',
-    'compilation-result.json',
-    'agent-trace.json',
-    'forge-signal.json',
-    'user-signal.json',
-    'zone-config.json',
+  'component-contract.json',
+  'component-intent.json',
+  'compilation-result.json',
+  'agent-trace.json',
+  'forge-signal.json',
+  'user-signal.json',
+  'zone-config.json',
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -66,9 +66,9 @@ const AUTO_GENERATED_SCHEMAS: readonly string[] = [
  * @returns The parsed JSON as a `Record<string, unknown>`.
  */
 function loadSchema(filename: string): Record<string, unknown> {
-    const filepath = resolve(SCHEMAS_DIR, filename);
-    const raw = readFileSync(filepath, 'utf-8');
-    return JSON.parse(raw) as Record<string, unknown>;
+  const filepath = resolve(SCHEMAS_DIR, filename);
+  const raw = readFileSync(filepath, 'utf-8');
+  return JSON.parse(raw) as Record<string, unknown>;
 }
 
 /**
@@ -78,7 +78,7 @@ function loadSchema(filename: string): Record<string, unknown> {
  * @returns The raw file content as a string.
  */
 function readSchemaRaw(filename: string): string {
-    return readFileSync(resolve(SCHEMAS_DIR, filename), 'utf-8');
+  return readFileSync(resolve(SCHEMAS_DIR, filename), 'utf-8');
 }
 
 // ---------------------------------------------------------------------------
@@ -86,125 +86,119 @@ function readSchemaRaw(filename: string): string {
 // ---------------------------------------------------------------------------
 
 describe('Schema Generator', () => {
-    // -------------------------------------------------------------------------
-    // Schema count
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Schema count
+  // -------------------------------------------------------------------------
 
-    describe('Schema Count', () => {
-        it('should have exactly 8 JSON schemas in schemas/', () => {
-            const jsonFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-            expect(jsonFiles).toHaveLength(8);
-        });
-
-        it('should have all 7 auto-generated schemas', () => {
-            for (const filename of AUTO_GENERATED_SCHEMAS) {
-                const filepath = resolve(SCHEMAS_DIR, filename);
-                expect(existsSync(filepath)).toBe(true);
-            }
-        });
-
-        it('should have the hand-crafted DTCG schema', () => {
-            const filepath = resolve(SCHEMAS_DIR, HAND_CRAFTED_SCHEMA);
-            expect(existsSync(filepath)).toBe(true);
-        });
+  describe('Schema Count', () => {
+    it('should have exactly 8 JSON schemas in schemas/', () => {
+      const jsonFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
+      expect(jsonFiles).toHaveLength(8);
     });
 
-    // -------------------------------------------------------------------------
-    // Draft-07 compliance
-    // -------------------------------------------------------------------------
-
-    describe('Draft-07 Compliance', () => {
-        const allSchemaFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
-
-        it.each(allSchemaFiles)('%s should have $schema set to Draft-07 URI', (filename) => {
-            const schema = loadSchema(filename);
-            expect(schema['$schema']).toBe(DRAFT_07_URI);
-        });
-
-        it.each(allSchemaFiles)('%s should be a valid JSON object with "type"', (filename) => {
-            const schema = loadSchema(filename);
-            expect(typeof schema).toBe('object');
-            expect(schema).not.toBeNull();
-            // Every Enterstellar schema defines a top-level type.
-            expect(schema['type']).toBeDefined();
-        });
+    it('should have all 7 auto-generated schemas', () => {
+      for (const filename of AUTO_GENERATED_SCHEMAS) {
+        const filepath = resolve(SCHEMAS_DIR, filename);
+        expect(existsSync(filepath)).toBe(true);
+      }
     });
 
-    // -------------------------------------------------------------------------
-    // Relative $id (CP7)
-    // -------------------------------------------------------------------------
+    it('should have the hand-crafted DTCG schema', () => {
+      const filepath = resolve(SCHEMAS_DIR, HAND_CRAFTED_SCHEMA);
+      expect(existsSync(filepath)).toBe(true);
+    });
+  });
 
-    describe('Relative $id (CP7)', () => {
-        const allSchemaFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
+  // -------------------------------------------------------------------------
+  // Draft-07 compliance
+  // -------------------------------------------------------------------------
 
-        it.each(allSchemaFiles)('%s should have a relative $id starting with "./"', (filename) => {
-            const schema = loadSchema(filename);
-            const id = schema['$id'];
-            expect(typeof id).toBe('string');
-            expect(id as string).toMatch(/^\.\//);
-        });
+  describe('Draft-07 Compliance', () => {
+    const allSchemaFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
 
-        it.each(allSchemaFiles)('%s should NOT contain absolute URIs in $id', (filename) => {
-            const schema = loadSchema(filename);
-            const id = schema['$id'];
-            expect(typeof id).toBe('string');
-            expect(id as string).not.toContain('://');
-        });
+    it.each(allSchemaFiles)('%s should have $schema set to Draft-07 URI', (filename) => {
+      const schema = loadSchema(filename);
+      expect(schema['$schema']).toBe(DRAFT_07_URI);
     });
 
-    // -------------------------------------------------------------------------
-    // Auto-generated schema metadata
-    // -------------------------------------------------------------------------
+    it.each(allSchemaFiles)('%s should be a valid JSON object with "type"', (filename) => {
+      const schema = loadSchema(filename);
+      expect(typeof schema).toBe('object');
+      expect(schema).not.toBeNull();
+      // Every Enterstellar schema defines a top-level type.
+      expect(schema['type']).toBeDefined();
+    });
+  });
 
-    describe('Auto-Generated Schema Metadata', () => {
-        it.each(AUTO_GENERATED_SCHEMAS)(
-            '%s should have title and description',
-            (filename) => {
-                const schema = loadSchema(filename);
+  // -------------------------------------------------------------------------
+  // Relative $id (CP7)
+  // -------------------------------------------------------------------------
 
-                expect(schema['title']).toBeDefined();
-                expect(typeof schema['title']).toBe('string');
-                expect((schema['title'] as string).length).toBeGreaterThan(0);
+  describe('Relative $id (CP7)', () => {
+    const allSchemaFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith('.json'));
 
-                expect(schema['description']).toBeDefined();
-                expect(typeof schema['description']).toBe('string');
-                expect((schema['description'] as string).length).toBeGreaterThan(0);
-            },
-        );
-
-        it.each(AUTO_GENERATED_SCHEMAS)(
-            '%s $id should match "./{filename}"',
-            (filename) => {
-                const schema = loadSchema(filename);
-                expect(schema['$id']).toBe(`./${filename}`);
-            },
-        );
+    it.each(allSchemaFiles)('%s should have a relative $id starting with "./"', (filename) => {
+      const schema = loadSchema(filename);
+      const id = schema['$id'];
+      expect(typeof id).toBe('string');
+      expect(id as string).toMatch(/^\.\//);
     });
 
-    // -------------------------------------------------------------------------
-    // Deterministic output
-    // -------------------------------------------------------------------------
-
-    describe('Deterministic Output', () => {
-        it('should produce identical schemas when run twice', () => {
-            // Capture current schema content.
-            const contentBefore = new Map<string, string>();
-            for (const filename of AUTO_GENERATED_SCHEMAS) {
-                contentBefore.set(filename, readSchemaRaw(filename));
-            }
-
-            // Re-run the generator.
-            execSync('npx tsx scripts/generate.ts', {
-                cwd: PACKAGE_ROOT,
-                stdio: 'pipe',
-            });
-
-            // Compare: content must be byte-identical.
-            for (const filename of AUTO_GENERATED_SCHEMAS) {
-                const contentAfter = readSchemaRaw(filename);
-                const before = contentBefore.get(filename);
-                expect(contentAfter).toBe(before);
-            }
-        });
+    it.each(allSchemaFiles)('%s should NOT contain absolute URIs in $id', (filename) => {
+      const schema = loadSchema(filename);
+      const id = schema['$id'];
+      expect(typeof id).toBe('string');
+      expect(id as string).not.toContain('://');
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // Auto-generated schema metadata
+  // -------------------------------------------------------------------------
+
+  describe('Auto-Generated Schema Metadata', () => {
+    it.each(AUTO_GENERATED_SCHEMAS)('%s should have title and description', (filename) => {
+      const schema = loadSchema(filename);
+
+      expect(schema['title']).toBeDefined();
+      expect(typeof schema['title']).toBe('string');
+      expect((schema['title'] as string).length).toBeGreaterThan(0);
+
+      expect(schema['description']).toBeDefined();
+      expect(typeof schema['description']).toBe('string');
+      expect((schema['description'] as string).length).toBeGreaterThan(0);
+    });
+
+    it.each(AUTO_GENERATED_SCHEMAS)('%s $id should match "./{filename}"', (filename) => {
+      const schema = loadSchema(filename);
+      expect(schema['$id']).toBe(`./${filename}`);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Deterministic output
+  // -------------------------------------------------------------------------
+
+  describe('Deterministic Output', () => {
+    it('should produce identical schemas when run twice', () => {
+      // Capture current schema content.
+      const contentBefore = new Map<string, string>();
+      for (const filename of AUTO_GENERATED_SCHEMAS) {
+        contentBefore.set(filename, readSchemaRaw(filename));
+      }
+
+      // Re-run the generator.
+      execSync('npx tsx scripts/generate.ts', {
+        cwd: PACKAGE_ROOT,
+        stdio: 'pipe',
+      });
+
+      // Compare: content must be byte-identical.
+      for (const filename of AUTO_GENERATED_SCHEMAS) {
+        const contentAfter = readSchemaRaw(filename);
+        const before = contentBefore.get(filename);
+        expect(contentAfter).toBe(before);
+      }
+    });
+  });
 });

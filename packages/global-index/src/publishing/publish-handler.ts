@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/publishing/publish-handler
+ * @module @enterstellar/global-index/publishing/publish-handler
  * @description Internal HTTP methods for contract publishing and earnings.
  *
  * Provides two operations against the Global Index service:
@@ -21,19 +21,13 @@
 
 import { z } from 'zod';
 
-import type { ComponentContract } from '@enterstellar-ai/types';
+import type { ComponentContract } from '@enterstellar/types';
 
 import { createRegistrationError, createValidationError } from '../errors.js';
 import { execute } from '../transport.js';
 import type { TransportConfig } from '../transport.js';
-import {
-    GlobalSearchResultSchema,
-    PublishEarningsSchema,
-} from '../types.js';
-import type {
-    GlobalSearchResult,
-    PublishEarnings,
-} from '../types.js';
+import { GlobalSearchResultSchema, PublishEarningsSchema } from '../types.js';
+import type { GlobalSearchResult, PublishEarnings } from '../types.js';
 import { verifyContract } from '../discovery/contract-verifier.js';
 
 // ---------------------------------------------------------------------------
@@ -47,7 +41,7 @@ import { verifyContract } from '../discovery/contract-verifier.js';
  * @internal
  */
 const PublishResponseSchema = z.object({
-    result: GlobalSearchResultSchema,
+  result: GlobalSearchResultSchema,
 });
 
 /**
@@ -57,7 +51,7 @@ const PublishResponseSchema = z.object({
  * @internal
  */
 const PublisherStatsResponseSchema = z.object({
-    stats: PublishEarningsSchema,
+  stats: PublishEarningsSchema,
 });
 
 // ---------------------------------------------------------------------------
@@ -90,35 +84,37 @@ const PublisherStatsResponseSchema = z.object({
  * @internal
  */
 export async function publishContract(
-    config: TransportConfig,
-    contract: ComponentContract,
+  config: TransportConfig,
+  contract: ComponentContract,
 ): Promise<GlobalSearchResult> {
-    // -----------------------------------------------------------------------
-    // Local pre-validation (fail-fast)
-    // -----------------------------------------------------------------------
-    const verification = verifyContract(contract);
+  // -----------------------------------------------------------------------
+  // Local pre-validation (fail-fast)
+  // -----------------------------------------------------------------------
+  const verification = verifyContract(contract);
 
-    if (!verification.valid) {
-        const issuesSummary = verification.issues
-            .map(i => `  - ${i.path}: ${i.message}`)
-            .join('\n');
+  if (!verification.valid) {
+    const issuesSummary = verification.issues.map((i) => `  - ${i.path}: ${i.message}`).join('\n');
 
-        throw createValidationError(
-            `Contract failed local validation before publish:\n${issuesSummary}`,
-        );
-    }
+    throw createValidationError(
+      `Contract failed local validation before publish:\n${issuesSummary}`,
+    );
+  }
 
-    // -----------------------------------------------------------------------
-    // HTTP request
-    // -----------------------------------------------------------------------
-    const response = await execute(config, {
-        method: 'POST',
-        path: '/v1/contracts',
-        body: contract,
-    }, PublishResponseSchema);
+  // -----------------------------------------------------------------------
+  // HTTP request
+  // -----------------------------------------------------------------------
+  const response = await execute(
+    config,
+    {
+      method: 'POST',
+      path: '/v1/contracts',
+      body: contract,
+    },
+    PublishResponseSchema,
+  );
 
-    // Cast: Zod validates the envelope; contract field is a full ComponentContract at runtime.
-    return response.data.result as unknown as GlobalSearchResult;
+  // Cast: Zod validates the envelope; contract field is a full ComponentContract at runtime.
+  return response.data.result as unknown as GlobalSearchResult;
 }
 
 // ---------------------------------------------------------------------------
@@ -142,25 +138,27 @@ export async function publishContract(
  * @internal
  */
 export async function getPublisherStats(
-    config: TransportConfig,
-    publisher: string,
+  config: TransportConfig,
+  publisher: string,
 ): Promise<PublishEarnings> {
-    // -----------------------------------------------------------------------
-    // Guard: empty publisher ID
-    // -----------------------------------------------------------------------
-    if (publisher.trim() === '') {
-        throw createRegistrationError(
-            'Publisher identifier must not be empty.',
-        );
-    }
+  // -----------------------------------------------------------------------
+  // Guard: empty publisher ID
+  // -----------------------------------------------------------------------
+  if (publisher.trim() === '') {
+    throw createRegistrationError('Publisher identifier must not be empty.');
+  }
 
-    // -----------------------------------------------------------------------
-    // HTTP request
-    // -----------------------------------------------------------------------
-    const response = await execute(config, {
-        method: 'GET',
-        path: `/v1/publishers/${encodeURIComponent(publisher)}/stats`,
-    }, PublisherStatsResponseSchema);
+  // -----------------------------------------------------------------------
+  // HTTP request
+  // -----------------------------------------------------------------------
+  const response = await execute(
+    config,
+    {
+      method: 'GET',
+      path: `/v1/publishers/${encodeURIComponent(publisher)}/stats`,
+    },
+    PublisherStatsResponseSchema,
+  );
 
-    return response.data.stats;
+  return response.data.stats;
 }

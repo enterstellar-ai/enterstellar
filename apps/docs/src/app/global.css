@@ -34,7 +34,7 @@
 @theme {
   --spacing-page: 1436px;
 
-  /* Font Families — Mapped from `@enterstellar-ai/web-tokens` typography */
+  /* Font Families — Mapped from `@enterstellar/web-tokens` typography */
   --font-sans: var(--font-family-primary);
   --font-mono: var(--font-family-mono);
   --font-secondary: var(--font-family-secondary);
@@ -50,7 +50,7 @@
   --radius-3xl: 0px;
   --radius-full: 0px;
 
-  /* Light Mode (Base) — Mapped from `@enterstellar-ai/web-tokens` swatches */
+  /* Light Mode (Base) — Mapped from `@enterstellar/web-tokens` swatches */
   --color-fd-background: var(--swatch--bg-white);
   --color-fd-card: var(--swatch--bg-whte-smoke);
 
@@ -63,7 +63,7 @@
   --color-landing-foreground: var(--swatch--black);
   --color-landing-foreground-200: var(--swatch--text-black-60);
 
-  /* Section Layout Colors (Mapped from `@enterstellar-ai/web-tokens` swatches) */
+  /* Section Layout Colors (Mapped from `@enterstellar/web-tokens` swatches) */
   --color-headless: var(--swatch--bg-emerald);
   --color-getting-started: var(--swatch--bg-emerald);
   --color-concepts: var(--swatch--bg-emerald);
@@ -72,7 +72,7 @@
   --color-api: var(--swatch--bg-danger);
 }
 
-/* Dark Mode Tokens — Mapped from `@enterstellar-ai/web-tokens` swatches */
+/* Dark Mode Tokens — Mapped from `@enterstellar/web-tokens` swatches */
 .dark {
   --color-fd-background: var(--swatch--black);
   --color-fd-card: var(--swatch--bg-black-grey);
@@ -86,7 +86,7 @@
   --color-brand-foreground: var(--swatch--text-white);
   --color-brand-200: var(--swatch--bg-emerald-dark);
 
-  /* Section Layout Colors (Mapped from `@enterstellar-ai/web-tokens` swatches) */
+  /* Section Layout Colors (Mapped from `@enterstellar/web-tokens` swatches) */
   --color-headless: var(--swatch--bg-emerald);
   --color-getting-started: var(--swatch--bg-emerald);
   --color-concepts: var(--swatch--bg-emerald);

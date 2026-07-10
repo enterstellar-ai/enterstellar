@@ -15,7 +15,7 @@
  * **Data Context Layer (DataAdapter simulation):**
  * For domain scenes, the route loads a pre-authored Markdown dataset from
  * `src/enterstellar/data-contexts/{theme}.md` and injects it into the system prompt.
- * This simulates the `@enterstellar-ai/adapters DataAdapter.query()` pipeline — the
+ * This simulates the `@enterstellar/adapters DataAdapter.query()` pipeline — the
  * LLM receives a pre-queried dataset as ground truth instead of
  * hallucinating domain-specific values (names, amounts, statuses).
  *
@@ -32,7 +32,7 @@ import { generateText, streamText } from 'ai';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { generateManifest } from '@enterstellar-ai/registry';
+import { generateManifest } from '@enterstellar/registry';
 import { groq, google, PRIMARY_MODEL, FALLBACK_MODEL } from '@/lib/ai-client';
 import { buildSystemPrompt } from '@/enterstellar/system-prompt';
 import { playgroundContracts } from '@/enterstellar/registry';
@@ -196,7 +196,7 @@ const DATA_CONTEXT_THEMES: ReadonlySet<string> = new Set([
  * Loads the data context file for a scene's domain theme.
  *
  * **Production simulation:** This function mirrors how a real
- * `@enterstellar-ai/adapters DataAdapter.query()` call would work in production:
+ * `@enterstellar/adapters DataAdapter.query()` call would work in production:
  *
  * 1. The API route identifies the domain from the scene definition.
  * 2. The adapter resolves the data source (here: a `.md` file on disk;
@@ -389,7 +389,7 @@ export async function POST(req: Request): Promise<Response> {
   if (!checkRateLimit(ip)) {
     return errorResponse(429, {
       code: 'ENS-5102',
-      module: '@enterstellar-ai/playground/playground',
+      module: '@enterstellar/playground/playground',
       recoverable: true,
       message: 'Rate limit exceeded. Please wait a moment before sending another request.',
     });
@@ -403,7 +403,7 @@ export async function POST(req: Request): Promise<Response> {
     const message = err instanceof Error ? err.message : 'Invalid request body';
     return errorResponse(400, {
       code: 'ENS-5103',
-      module: '@enterstellar-ai/playground/playground',
+      module: '@enterstellar/playground/playground',
       recoverable: false,
       message: `Invalid request body: ${message}`,
     });
@@ -413,7 +413,7 @@ export async function POST(req: Request): Promise<Response> {
   if (body.intent.trim() === '') {
     return errorResponse(400, {
       code: 'ENS-5104',
-      module: '@enterstellar-ai/playground/playground',
+      module: '@enterstellar/playground/playground',
       recoverable: false,
       message: 'Request body must include: intent (non-empty string), scene, and mode.',
     });
@@ -509,7 +509,7 @@ function handleStreamingMode(systemPrompt: string, userIntent: string): Response
 
       return errorResponse(503, {
         code: 'ENS-5101',
-        module: '@enterstellar-ai/playground/playground',
+        module: '@enterstellar/playground/playground',
         recoverable: true,
         message: 'AI service is temporarily unavailable. Please try again in a few moments.',
       });
@@ -606,7 +606,7 @@ async function handleHallucinatingMode(
 
       return errorResponse(503, {
         code: 'ENS-5101',
-        module: '@enterstellar-ai/playground/playground',
+        module: '@enterstellar/playground/playground',
         recoverable: true,
         message: 'AI service is temporarily unavailable. Please try again in a few moments.',
       });

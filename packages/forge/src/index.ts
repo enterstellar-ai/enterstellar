@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge
+ * @module @enterstellar/forge
  * @description Enterstellar Component Forge — runtime component generation when the
  * registry has no match. LocalForge (templates, free) and CloudForge
  * (LLM-powered, metered) contract generation.
@@ -13,7 +13,7 @@
  * ## Quick Start
  *
  * ```ts
- * import { createComponentForge } from '@enterstellar-ai/forge';
+ * import { createComponentForge } from '@enterstellar/forge';
  *
  * const forge = createComponentForge({
  *   routing: 'auto',
@@ -49,15 +49,15 @@ export { createComponentForge } from './create-forge.js';
 // Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    ComponentForge,
-    ForgeConfig,
-    ForgeConstraints,
-    ForgePatternName,
-    ForgeStats,
-    ForgeIntentStat,
-    ForgeTemplate,
-    ForgeTemplateSlot,
-    CloudForgeCallback,
+  ComponentForge,
+  ForgeConfig,
+  ForgeConstraints,
+  ForgePatternName,
+  ForgeStats,
+  ForgeIntentStat,
+  ForgeTemplate,
+  ForgeTemplateSlot,
+  CloudForgeCallback,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -89,11 +89,11 @@ export { generateForgedName, slugifyIntent, xxHash8 } from './naming.js';
 // Error Factories (for testing and consumer error handling)
 // ---------------------------------------------------------------------------
 export {
-    forgeGenerationFailedError,
-    templateNotFoundError,
-    cloudForgeNetworkError,
-    forgeCompilationFailedError,
-    templateValidationError,
+  forgeGenerationFailedError,
+  templateNotFoundError,
+  cloudForgeNetworkError,
+  forgeCompilationFailedError,
+  templateValidationError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------

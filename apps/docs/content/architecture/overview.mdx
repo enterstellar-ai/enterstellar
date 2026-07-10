@@ -46,11 +46,11 @@ graph TB
     end
 
     subgraph RenderLayer["Render Layer — Platform-Agnostic Contract → Target"]
-        Web["@enterstellar-ai/react\nReact / Next.js"]
-        Native["@enterstellar-ai/render-native\nReact Native / Expo"]
-        Desktop["@enterstellar-ai/render-desktop\nTauri / Electron"]
-        Spatial["@enterstellar-ai/render-spatial\nvisionOS / WebXR"]
-        Voice["@enterstellar-ai/render-voice\nSSML / audio UI"]
+        Web["@enterstellar/react\nReact / Next.js"]
+        Native["@enterstellar/render-native\nReact Native / Expo"]
+        Desktop["@enterstellar/render-desktop\nTauri / Electron"]
+        Spatial["@enterstellar/render-spatial\nvisionOS / WebXR"]
+        Voice["@enterstellar/render-voice\nSSML / audio UI"]
     end
 
     User --> AGUI & A2UI & MCP & Custom
@@ -72,13 +72,13 @@ graph TB
 
 | Step | Name | Package | One Line |
 |:---:|:---|:---|:---|
-| **①** | **Normalizer** | `@enterstellar-ai/normalizer` | Converts AG-UI, A2UI, MCP, or raw JSON into a unified `ComponentIntent`. |
-| **②** | **Semantic Index** | `@enterstellar-ai/semantic-index` | Embeds the intent and retrieves top-K most relevant components (~200 tokens). |
-| **③** | **Component Resolver** | `@enterstellar-ai/registry` | Picks the best match. Below the confidence threshold → triggers the Forge. |
-| **③b** | **Component Forge** | `@enterstellar-ai/forge` | Generates a `ComponentContract` on-the-fly for novel intents. Logs every invocation for the Cold Path. |
-| **④** | **UI Compiler** | `@enterstellar-ai/compiler` | Validates props against the Zod schema. Enforces design tokens. Auto-corrects or falls back. |
-| **⑤** | **Determinism Engine** | `@enterstellar-ai/cache` | Checks zone policy (0.0–1.0). Serves from render cache on hit. |
-| **⑥** | **Lifecycle Manager** | `@enterstellar-ai/lifecycle` | Wraps the component in `loading`, `error`, `empty`, and `streaming` states. |
+| **①** | **Normalizer** | `@enterstellar/normalizer` | Converts AG-UI, A2UI, MCP, or raw JSON into a unified `ComponentIntent`. |
+| **②** | **Semantic Index** | `@enterstellar/semantic-index` | Embeds the intent and retrieves top-K most relevant components (~200 tokens). |
+| **③** | **Component Resolver** | `@enterstellar/registry` | Picks the best match. Below the confidence threshold → triggers the Forge. |
+| **③b** | **Component Forge** | `@enterstellar/forge` | Generates a `ComponentContract` on-the-fly for novel intents. Logs every invocation for the Cold Path. |
+| **④** | **UI Compiler** | `@enterstellar/compiler` | Validates props against the Zod schema. Enforces design tokens. Auto-corrects or falls back. |
+| **⑤** | **Determinism Engine** | `@enterstellar/cache` | Checks zone policy (0.0–1.0). Serves from render cache on hit. |
+| **⑥** | **Lifecycle Manager** | `@enterstellar/lifecycle` | Wraps the component in `loading`, `error`, `empty`, and `streaming` states. |
 
 **L3 (locked):** Every `ComponentIntent` — whether from the registry or the Forge — passes through the UI Compiler. There is no fast path that bypasses validation.
 
@@ -148,11 +148,11 @@ Every design decision in Enterstellar reinforces one or more of five strategic m
 
 | Moat | What It Is | Where It Lives |
 |:---|:---|:---|
-| **M1: Compiler** | The type checker of GenUI. Schema + token + accessibility validation before any pixel renders. | `@enterstellar-ai/compiler` |
-| **M2: ForgeSignal Corpus** | Mandatory zero-PII telemetry that feeds the Intent Router and Forge Model. More users → smarter routing. | `@enterstellar-ai/telemetry` |
-| **M3: ComponentContract Standard** | The schema every component must conform to. If this becomes the industry standard, Enterstellar becomes the platform. | `@enterstellar-ai/registry`, `@enterstellar-ai/contract-protocol` |
-| **M4: Intent Router** | Learns from ForgeSignal which intents map to which components. Gets better with every compilation. | `@enterstellar-ai/semantic-index`, `@enterstellar-ai/global-index` |
-| **M5: Forge Model** | Fine-tuned on ForgeSignal to generate better contracts. Self-corrects from production data. | `@enterstellar-ai/forge` |
+| **M1: Compiler** | The type checker of GenUI. Schema + token + accessibility validation before any pixel renders. | `@enterstellar/compiler` |
+| **M2: ForgeSignal Corpus** | Mandatory zero-PII telemetry that feeds the Intent Router and Forge Model. More users → smarter routing. | `@enterstellar/telemetry` |
+| **M3: ComponentContract Standard** | The schema every component must conform to. If this becomes the industry standard, Enterstellar becomes the platform. | `@enterstellar/registry`, `@enterstellar/contract-protocol` |
+| **M4: Intent Router** | Learns from ForgeSignal which intents map to which components. Gets better with every compilation. | `@enterstellar/semantic-index`, `@enterstellar/global-index` |
+| **M5: Forge Model** | Fine-tuned on ForgeSignal to generate better contracts. Self-corrects from production data. | `@enterstellar/forge` |
 
 ---
 
@@ -188,12 +188,12 @@ The engine is platform-agnostic. Only renderers are platform-specific (L15 — e
 ```mermaid
 graph TB
     Contract["Component Contract\n(platform-agnostic semantic spec)"]
-    Contract --> Web["@enterstellar-ai/react — React / Next.js (v1.0)"]
-    Contract --> Native["@enterstellar-ai/render-native — React Native / Expo (v1.5)"]
-    Contract --> Desktop["@enterstellar-ai/render-desktop — Tauri / Electron (v2.0)"]
-    Contract --> Spatial["@enterstellar-ai/render-spatial — visionOS / WebXR (v3.0)"]
-    Contract --> Voice["@enterstellar-ai/render-voice — SSML + audio UI (v3.0)"]
-    Contract --> CLI["@enterstellar-ai/render-cli — TUI / terminal (v3.0)"]
+    Contract --> Web["@enterstellar/react — React / Next.js (v1.0)"]
+    Contract --> Native["@enterstellar/render-native — React Native / Expo (v1.5)"]
+    Contract --> Desktop["@enterstellar/render-desktop — Tauri / Electron (v2.0)"]
+    Contract --> Spatial["@enterstellar/render-spatial — visionOS / WebXR (v3.0)"]
+    Contract --> Voice["@enterstellar/render-voice — SSML + audio UI (v3.0)"]
+    Contract --> CLI["@enterstellar/render-cli — TUI / terminal (v3.0)"]
 ```
 
 `PatientVitals` on React renders as a card with charts. On Voice it renders as a spoken summary. The contract doesn't change. The renderer interprets it.

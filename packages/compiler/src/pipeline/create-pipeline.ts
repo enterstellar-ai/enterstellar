@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/pipeline/create-pipeline
+ * @module @enterstellar/compiler/pipeline/create-pipeline
  * @description Builds and executes the compilation middleware chain.
  *
  * The pipeline is an ordered sequence of `NamedStep` functions. Each step
@@ -56,38 +56,38 @@ import type { NamedStep } from './types.js';
  * ```
  */
 export async function executePipeline(
-    steps: readonly NamedStep[],
-    context: CompilationContext,
+  steps: readonly NamedStep[],
+  context: CompilationContext,
 ): Promise<CompilationContext> {
-    /**
-     * Recursively builds the `next()` chain starting from step at `index`.
-     * Each invocation creates a closure that calls the current step with
-     * a `next` function pointing to the subsequent step. At the end of
-     * the chain, `next()` is a no-op that returns the context as-is.
-     */
-    async function executeStep(index: number): Promise<CompilationContext> {
-        // Base case: no more steps — return the context as-is
-        if (index >= steps.length) {
-            return context;
-        }
-
-        const currentStep = steps[index];
-
-        // Safety: if undefined (shouldn't happen given bounds check), passthrough
-        if (currentStep === undefined) {
-            return context;
-        }
-
-        // Build the `next` function that invokes the downstream chain
-        const next = async (): Promise<CompilationContext> => {
-            return executeStep(index + 1);
-        };
-
-        // Execute the current step with context and next
-        return currentStep.execute(context, next);
+  /**
+   * Recursively builds the `next()` chain starting from step at `index`.
+   * Each invocation creates a closure that calls the current step with
+   * a `next` function pointing to the subsequent step. At the end of
+   * the chain, `next()` is a no-op that returns the context as-is.
+   */
+  async function executeStep(index: number): Promise<CompilationContext> {
+    // Base case: no more steps — return the context as-is
+    if (index >= steps.length) {
+      return context;
     }
 
-    return executeStep(0);
+    const currentStep = steps[index];
+
+    // Safety: if undefined (shouldn't happen given bounds check), passthrough
+    if (currentStep === undefined) {
+      return context;
+    }
+
+    // Build the `next` function that invokes the downstream chain
+    const next = async (): Promise<CompilationContext> => {
+      return executeStep(index + 1);
+    };
+
+    // Execute the current step with context and next
+    return currentStep.execute(context, next);
+  }
+
+  return executeStep(0);
 }
 
 // ---------------------------------------------------------------------------
@@ -110,9 +110,9 @@ export async function executePipeline(
  * @see Design Choice C18 — insertion order determines execution order.
  */
 export function buildPipeline(
-    builtInSteps: readonly NamedStep[],
-    customSteps: readonly NamedStep[],
-    traceStep: NamedStep,
+  builtInSteps: readonly NamedStep[],
+  customSteps: readonly NamedStep[],
+  traceStep: NamedStep,
 ): readonly NamedStep[] {
-    return [...builtInSteps, ...customSteps, traceStep];
+  return [...builtInSteps, ...customSteps, traceStep];
 }

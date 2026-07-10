@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/state/persistence/memory
+ * @module @enterstellar/state/persistence/memory
  * @description In-memory persistence adapter (ephemeral, no persistence).
  *
  * This is the default adapter when no persistence strategy is configured.
@@ -14,7 +14,7 @@
  * @see Design Choice S5 — `'memory'` is the default persistence strategy.
  */
 
-import type { SerializedState } from '@enterstellar-ai/types';
+import type { SerializedState } from '@enterstellar/types';
 import type { PersistenceAdapter } from '../types.js';
 
 // ---------------------------------------------------------------------------
@@ -38,19 +38,19 @@ import type { PersistenceAdapter } from '../types.js';
  * ```
  */
 export function createMemoryAdapter(): PersistenceAdapter {
-    return {
-        load(): Promise<SerializedState | undefined> {
-            return Promise.resolve(undefined);
-        },
+  return {
+    load(): Promise<SerializedState | undefined> {
+      return Promise.resolve(undefined);
+    },
 
-        save(_state: SerializedState): Promise<void> {
-            // No-op: memory adapter does not persist state.
-            return Promise.resolve();
-        },
+    save(_state: SerializedState): Promise<void> {
+      // No-op: memory adapter does not persist state.
+      return Promise.resolve();
+    },
 
-        clear(): Promise<void> {
-            // No-op: nothing to clear.
-            return Promise.resolve();
-        },
-    };
+    clear(): Promise<void> {
+      // No-op: nothing to clear.
+      return Promise.resolve();
+    },
+  };
 }

@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
    *
    * When Vercel builds with Root Directory set to `apps/playground`, the
    * file tracer defaults to the app directory and can miss workspace packages
-   * in `packages/<name>/dist/`, causing "Module not found" for `@enterstellar-ai/*`
+   * in `packages/<name>/dist/`, causing "Module not found" for `@enterstellar/*`
    * imports in serverless functions.
    *
    * Setting `outputFileTracingRoot` to the repo root ensures all workspace

@@ -1,4 +1,4 @@
-# @enterstellar-ai/compiler
+# @enterstellar/compiler
 
 > UI Compiler — schema validation, design token enforcement, accessibility auditing, and **3-tier deterministic self-correction**.
 
@@ -7,8 +7,8 @@ This is the **M1 moat** — the only UI type-checker for AI-generated interfaces
 ## Quick Start
 
 ```ts
-import { createCompiler } from '@enterstellar-ai/compiler';
-import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+import { createCompiler } from '@enterstellar/compiler';
+import { createRegistry, defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 // 1. Set up registry with components
@@ -193,7 +193,7 @@ After any correction tier, corrected props are re-validated through the **full p
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags. Overrides `composite: false` for tsup DTS. |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. Single entry: `src/index.ts`.                                      |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `@enterstellar-ai/registry`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `@enterstellar/registry`, `zod ^4.3.6`
 
 ## See Also
 

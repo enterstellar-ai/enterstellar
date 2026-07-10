@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/types
+ * @module @enterstellar/migration/types
  * @description Core type definitions for the Enterstellar migration pipeline.
  *
  * This file contains all data shapes for the 3-phase migration pipeline:
@@ -69,10 +69,10 @@ export type ManifestFieldSource = 'ast-determined' | 'heuristic-fallback' | 'enr
  * @see Correction 2 — `sourceLocation` provenance tracing
  */
 export type SourceLocation = {
-    /** Relative file path from the project root. */
-    readonly file: string;
-    /** 1-indexed line number of the AST node. */
-    readonly line: number;
+  /** Relative file path from the project root. */
+  readonly file: string;
+  /** 1-indexed line number of the AST node. */
+  readonly line: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -93,16 +93,16 @@ export type SourceLocation = {
  * @see Correction 2 — Binary Source Model
  */
 export type EnrichableField<T> = {
-    /** The field's current value (may be AST-extracted, heuristic, or LLM-enriched). */
-    readonly value: T;
-    /** Provenance tag indicating how this value was obtained. */
-    readonly source: ManifestFieldSource;
-    /**
-     * Source location in the original file. Present only for
-     * `'ast-determined'` fields — heuristic and enrichment values
-     * have no source location because they didn't come from the source file.
-     */
-    readonly sourceLocation?: SourceLocation;
+  /** The field's current value (may be AST-extracted, heuristic, or LLM-enriched). */
+  readonly value: T;
+  /** Provenance tag indicating how this value was obtained. */
+  readonly source: ManifestFieldSource;
+  /**
+   * Source location in the original file. Present only for
+   * `'ast-determined'` fields — heuristic and enrichment values
+   * have no source location because they didn't come from the source file.
+   */
+  readonly sourceLocation?: SourceLocation;
 };
 
 // ---------------------------------------------------------------------------
@@ -126,10 +126,10 @@ export type EnrichableField<T> = {
  * @see Correction 1 — Generics: The Primary Source of REVIEW Annotations
  */
 export type GenericParam = {
-    /** The type parameter name (e.g., `'T'`, `'TData'`). */
-    readonly name: string;
-    /** The constraint expression, if any (e.g., `'Record<string, unknown>'`). */
-    readonly constraint?: string;
+  /** The type parameter name (e.g., `'T'`, `'TData'`). */
+  readonly name: string;
+  /** The constraint expression, if any (e.g., `'Record<string, unknown>'`). */
+  readonly constraint?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -150,106 +150,106 @@ export type GenericParam = {
  * @see Correction 1 — Phase 3 Assembly: Mapping Manifest → ComponentContract
  */
 export type StructuralManifest = {
-    // ─── Structural: always AST-determined (bare values) ───────────────
+  // ─── Structural: always AST-determined (bare values) ───────────────
 
-    /** PascalCase component name from the export declaration. */
-    readonly name: string;
+  /** PascalCase component name from the export declaration. */
+  readonly name: string;
 
-    /**
-     * Zod schema generated from the TypeScript props interface/type.
-     *
-     * Always extracted from AST — if no props interface exists, this
-     * is `z.object({})` (valid for zero-props components like `<Spacer />`).
-     */
-    readonly props: z.ZodType;
+  /**
+   * Zod schema generated from the TypeScript props interface/type.
+   *
+   * Always extracted from AST — if no props interface exists, this
+   * is `z.object({})` (valid for zero-props components like `<Spacer />`).
+   */
+  readonly props: z.ZodType;
 
-    /**
-     * Default prop values extracted from destructured defaults or `defaultProps`.
-     *
-     * Used by Phase 3 to generate the `examples[0].props` entry.
-     * Empty record if no defaults found.
-     */
-    readonly defaultProps: Readonly<Record<string, unknown>>;
+  /**
+   * Default prop values extracted from destructured defaults or `defaultProps`.
+   *
+   * Used by Phase 3 to generate the `examples[0].props` entry.
+   * Empty record if no defaults found.
+   */
+  readonly defaultProps: Readonly<Record<string, unknown>>;
 
-    /**
-     * Generic type parameters, if the component is generic.
-     *
-     * Captured for Correction 1's REVIEW-level placeholder generation.
-     * Empty array if the component has no generics.
-     */
-    readonly generics: readonly GenericParam[];
+  /**
+   * Generic type parameters, if the component is generic.
+   *
+   * Captured for Correction 1's REVIEW-level placeholder generation.
+   * Empty array if the component has no generics.
+   */
+  readonly generics: readonly GenericParam[];
 
-    /**
-     * Existing Zod schemas found in the source file.
-     *
-     * **v1 behavior:** Captured for provenance and developer visibility ONLY.
-     * Phase 3 always generates the contract's `props` schema from the
-     * TypeScript interface, NOT from existing Zod schemas. This avoids
-     * the merge ambiguity when existing schemas are partial.
-     *
-     * Phase 3 adds a provenance comment when this array is non-empty:
-     * `// Note: existing Zod schemas detected — consider migrating constraints.`
-     *
-     * **Type rationale:** `string[]` (variable names), not `z.ZodType[]`.
-     * `ts-morph` performs static AST analysis — it can detect that a variable
-     * like `const UserSchema = z.object({...})` exists, but cannot extract
-     * the runtime `z.ZodType` instance. Runtime modifiers (`.refine()`,
-     * `.transform()`, `.pipe()`) have no static type representation.
-     */
-    readonly existingZodSchemas: readonly string[];
+  /**
+   * Existing Zod schemas found in the source file.
+   *
+   * **v1 behavior:** Captured for provenance and developer visibility ONLY.
+   * Phase 3 always generates the contract's `props` schema from the
+   * TypeScript interface, NOT from existing Zod schemas. This avoids
+   * the merge ambiguity when existing schemas are partial.
+   *
+   * Phase 3 adds a provenance comment when this array is non-empty:
+   * `// Note: existing Zod schemas detected — consider migrating constraints.`
+   *
+   * **Type rationale:** `string[]` (variable names), not `z.ZodType[]`.
+   * `ts-morph` performs static AST analysis — it can detect that a variable
+   * like `const UserSchema = z.object({...})` exists, but cannot extract
+   * the runtime `z.ZodType` instance. Runtime modifiers (`.refine()`,
+   * `.transform()`, `.pipe()`) have no static type representation.
+   */
+  readonly existingZodSchemas: readonly string[];
 
-    /**
-     * Detected event handler types from JSX (e.g., `['click', 'submit', 'change']`).
-     *
-     * This is a STRUCTURAL field — it's either in the AST or not.
-     * Does NOT map to a `ComponentContract` field. Serves as input context
-     * for the Phase 2 LLM enrichment prompt: event handler presence helps
-     * the LLM write better `description`, `tags`, and `intent` values.
-     *
-     * Empty array if no event handlers found.
-     */
-    readonly eventHandlers: readonly string[];
+  /**
+   * Detected event handler types from JSX (e.g., `['click', 'submit', 'change']`).
+   *
+   * This is a STRUCTURAL field — it's either in the AST or not.
+   * Does NOT map to a `ComponentContract` field. Serves as input context
+   * for the Phase 2 LLM enrichment prompt: event handler presence helps
+   * the LLM write better `description`, `tags`, and `intent` values.
+   *
+   * Empty array if no event handlers found.
+   */
+  readonly eventHandlers: readonly string[];
 
-    // ─── Enrichable: may be AST, heuristic, or LLM-enriched ───────────
+  // ─── Enrichable: may be AST, heuristic, or LLM-enriched ───────────
 
-    /** Component description. AST source: JSDoc `@description` tag. */
-    readonly description: EnrichableField<string>;
+  /** Component description. AST source: JSDoc `@description` tag. */
+  readonly description: EnrichableField<string>;
 
-    /** Semantic tags for fuzzy matching. AST source: JSDoc `@tags` or none. */
-    readonly tags: EnrichableField<readonly string[]>;
+  /** Semantic tags for fuzzy matching. AST source: JSDoc `@tags` or none. */
+  readonly tags: EnrichableField<readonly string[]>;
 
-    /**
-     * Component category. AST source: directory path mapping.
-     *
-     * The value is a `ComponentCategory` string but stored as `string`
-     * here because heuristic/enrichment values may be arbitrary before
-     * Phase 3 validates them against the category enum.
-     */
-    readonly category: EnrichableField<string>;
+  /**
+   * Component category. AST source: directory path mapping.
+   *
+   * The value is a `ComponentCategory` string but stored as `string`
+   * here because heuristic/enrichment values may be arbitrary before
+   * Phase 3 validates them against the category enum.
+   */
+  readonly category: EnrichableField<string>;
 
-    /**
-     * Canonical intent query for the component.
-     *
-     * Maps to `ComponentContract.examples[0].intent` in Phase 3.
-     * AST source: none — intent is inherently semantic. Always starts
-     * as `heuristic-fallback` with value `'Render {name}'`. Phase 2
-     * enrichment produces a natural-language intent.
-     */
-    readonly intent: EnrichableField<string>;
+  /**
+   * Canonical intent query for the component.
+   *
+   * Maps to `ComponentContract.examples[0].intent` in Phase 3.
+   * AST source: none — intent is inherently semantic. Always starts
+   * as `heuristic-fallback` with value `'Render {name}'`. Phase 2
+   * enrichment produces a natural-language intent.
+   */
+  readonly intent: EnrichableField<string>;
 
-    /** ARIA attributes. AST source: JSX `role`/`aria-*` attributes. */
-    readonly ariaAttributes: EnrichableField<Readonly<Record<string, string>>>;
+  /** ARIA attributes. AST source: JSX `role`/`aria-*` attributes. */
+  readonly ariaAttributes: EnrichableField<Readonly<Record<string, string>>>;
 
-    /** Design token references. AST source: CSS variable usage (`var(--enterstellar-*)`). */
-    readonly designTokenRefs: EnrichableField<readonly string[]>;
+  /** Design token references. AST source: CSS variable usage (`var(--enterstellar-*)`). */
+  readonly designTokenRefs: EnrichableField<readonly string[]>;
 
-    /**
-     * Lifecycle states. AST source: conditional rendering patterns.
-     *
-     * Detected from patterns like `if (loading) return <Spinner />`.
-     * Empty array if no conditional rendering patterns found.
-     */
-    readonly lifecycleStates: EnrichableField<readonly string[]>;
+  /**
+   * Lifecycle states. AST source: conditional rendering patterns.
+   *
+   * Detected from patterns like `if (loading) return <Spinner />`.
+   * Empty array if no conditional rendering patterns found.
+   */
+  readonly lifecycleStates: EnrichableField<readonly string[]>;
 };
 
 // ---------------------------------------------------------------------------
@@ -265,13 +265,13 @@ export type StructuralManifest = {
  * @see Correction 2 — Field Classification: Structural vs. Enrichable
  */
 export type EnrichableFieldKey =
-    | 'description'
-    | 'tags'
-    | 'category'
-    | 'intent'
-    | 'ariaAttributes'
-    | 'designTokenRefs'
-    | 'lifecycleStates';
+  | 'description'
+  | 'tags'
+  | 'category'
+  | 'intent'
+  | 'ariaAttributes'
+  | 'designTokenRefs'
+  | 'lifecycleStates';
 
 /**
  * Type-safe enrichment patch — key determines value type at compile time.
@@ -289,12 +289,12 @@ export type EnrichableFieldKey =
  * @see Correction 2 — Phase 2 Enrichment: SemanticOverlay return type
  */
 export type EnrichedFieldPatch = {
-    [K in EnrichableFieldKey]: {
-        /** The enrichable field key being patched. */
-        readonly key: K;
-        /** The enriched value — type inferred from the field's `EnrichableField<T>`. */
-        readonly value: StructuralManifest[K] extends EnrichableField<infer T> ? T : never;
-    };
+  [K in EnrichableFieldKey]: {
+    /** The enrichable field key being patched. */
+    readonly key: K;
+    /** The enriched value — type inferred from the field's `EnrichableField<T>`. */
+    readonly value: StructuralManifest[K] extends EnrichableField<infer T> ? T : never;
+  };
 }[EnrichableFieldKey];
 
 /**
@@ -307,8 +307,8 @@ export type EnrichedFieldPatch = {
  * @see Correction 2 — Phase 2 Enrichment: The Gating Logic
  */
 export type SemanticOverlay = {
-    /** The enriched field patches. May be empty if all fields were AST-determined. */
-    readonly fields: readonly EnrichedFieldPatch[];
+  /** The enriched field patches. May be empty if all fields were AST-determined. */
+  readonly fields: readonly EnrichedFieldPatch[];
 };
 
 // ---------------------------------------------------------------------------
@@ -322,37 +322,37 @@ export type SemanticOverlay = {
  * auth failures) for CLI-level error reporting. The orchestrator
  * (`enrichManifest`) pushes diagnostics into the `EnrichResult` so
  * the CLI can produce per-error-code user-facing log messages without
- * coupling `@enterstellar-ai/migration` to CLI-specific logging.
+ * coupling `@enterstellar/migration` to CLI-specific logging.
  *
  * Follows the same pattern as Phase 1's `ExtractDiagnostic`.
  *
  * @see Audit E1 — EnrichResult return type for diagnostic visibility
  */
 export type EnrichDiagnostic = {
-    /** Severity level of the diagnostic. */
-    readonly level: 'info' | 'warning' | 'error';
-    /** Human-readable diagnostic message. */
-    readonly message: string;
-    /**
-     * The enrichable field this diagnostic relates to, if any.
-     *
-     * Present when the diagnostic is field-specific (e.g., a single field
-     * failed validation in the LLM response). Absent for provider-level
-     * errors (e.g., auth failure, quota exhaustion).
-     */
-    readonly field?: EnrichableFieldKey;
-    /**
-     * The enrichment error code, if this diagnostic was triggered by a
-     * provider error.
-     *
-     * Typed as `string` (not `EnrichmentErrorCode`) to avoid a circular
-     * import between `types.ts` and `enrichment/types.ts`. The orchestrator
-     * populates this with the actual `EnrichmentErrorCode` value — the CLI
-     * can narrow on it for per-code messaging.
-     *
-     * @example 'AUTH_FAILED' | 'QUOTA_EXHAUSTED' | 'RATE_LIMITED' | 'PROVIDER_ERROR' | 'PARSE_ERROR'
-     */
-    readonly errorCode?: string;
+  /** Severity level of the diagnostic. */
+  readonly level: 'info' | 'warning' | 'error';
+  /** Human-readable diagnostic message. */
+  readonly message: string;
+  /**
+   * The enrichable field this diagnostic relates to, if any.
+   *
+   * Present when the diagnostic is field-specific (e.g., a single field
+   * failed validation in the LLM response). Absent for provider-level
+   * errors (e.g., auth failure, quota exhaustion).
+   */
+  readonly field?: EnrichableFieldKey;
+  /**
+   * The enrichment error code, if this diagnostic was triggered by a
+   * provider error.
+   *
+   * Typed as `string` (not `EnrichmentErrorCode`) to avoid a circular
+   * import between `types.ts` and `enrichment/types.ts`. The orchestrator
+   * populates this with the actual `EnrichmentErrorCode` value — the CLI
+   * can narrow on it for per-code messaging.
+   *
+   * @example 'AUTH_FAILED' | 'QUOTA_EXHAUSTED' | 'RATE_LIMITED' | 'PROVIDER_ERROR' | 'PARSE_ERROR'
+   */
+  readonly errorCode?: string;
 };
 
 /**
@@ -376,24 +376,24 @@ export type EnrichDiagnostic = {
  * @see Correction 1 — `@enriched-fields` provenance header
  */
 export type EnrichResult = {
-    /** The (potentially enriched) structural manifest. */
-    readonly manifest: StructuralManifest;
-    /**
-     * Field keys that were successfully enriched by the LLM.
-     *
-     * Empty if enrichment failed or all fields were `ast-determined`.
-     * Phase 3 uses this to populate `MigrationProvenance.enrichedFields`.
-     */
-    readonly enrichedFields: readonly EnrichableFieldKey[];
-    /**
-     * Field keys that were skipped (`ast-determined` — never sent to LLM).
-     *
-     * The complement of `enrichedFields` relative to `ENRICHABLE_FIELD_KEYS`
-     * (minus any fields that were `heuristic-fallback` but failed enrichment).
-     */
-    readonly skippedFields: readonly EnrichableFieldKey[];
-    /** Diagnostics emitted during enrichment (provider warnings, errors). */
-    readonly diagnostics: readonly EnrichDiagnostic[];
+  /** The (potentially enriched) structural manifest. */
+  readonly manifest: StructuralManifest;
+  /**
+   * Field keys that were successfully enriched by the LLM.
+   *
+   * Empty if enrichment failed or all fields were `ast-determined`.
+   * Phase 3 uses this to populate `MigrationProvenance.enrichedFields`.
+   */
+  readonly enrichedFields: readonly EnrichableFieldKey[];
+  /**
+   * Field keys that were skipped (`ast-determined` — never sent to LLM).
+   *
+   * The complement of `enrichedFields` relative to `ENRICHABLE_FIELD_KEYS`
+   * (minus any fields that were `heuristic-fallback` but failed enrichment).
+   */
+  readonly skippedFields: readonly EnrichableFieldKey[];
+  /** Diagnostics emitted during enrichment (provider warnings, errors). */
+  readonly diagnostics: readonly EnrichDiagnostic[];
 };
 
 // ---------------------------------------------------------------------------
@@ -410,12 +410,12 @@ export type EnrichResult = {
  * @see Correction 4 — Server-Side Extraction
  */
 export type ExtractDiagnostic = {
-    /** Severity level of the diagnostic. */
-    readonly level: 'info' | 'warning' | 'error';
-    /** Human-readable diagnostic message. */
-    readonly message: string;
-    /** The manifest field this diagnostic relates to, if any. */
-    readonly field?: string;
+  /** Severity level of the diagnostic. */
+  readonly level: 'info' | 'warning' | 'error';
+  /** Human-readable diagnostic message. */
+  readonly message: string;
+  /** The manifest field this diagnostic relates to, if any. */
+  readonly field?: string;
 };
 
 /**
@@ -429,10 +429,10 @@ export type ExtractDiagnostic = {
  * @see Correction 4 — Server-Side Extraction (code-sharing architecture)
  */
 export type ExtractResult = {
-    /** The extracted structural manifest for the component. */
-    readonly manifest: StructuralManifest;
-    /** Diagnostics emitted during extraction (informational, not blocking). */
-    readonly diagnostics: readonly ExtractDiagnostic[];
+  /** The extracted structural manifest for the component. */
+  readonly manifest: StructuralManifest;
+  /** Diagnostics emitted during extraction (informational, not blocking). */
+  readonly diagnostics: readonly ExtractDiagnostic[];
 };
 
 // ---------------------------------------------------------------------------
@@ -461,21 +461,21 @@ export type ExtractResult = {
  * @see Correction 4 — Server-Side Extraction (migration-04-server-extract.md)
  */
 export type ServerExtractRequest = {
-    /**
-     * The component source code as a string.
-     * Must be non-empty — an empty string cannot produce a valid extraction.
-     */
-    readonly source: string;
-    /**
-     * Optional filename for diagnostics and heuristic category inference.
-     * When omitted, `extractManifest()` defaults to `'component.tsx'`.
-     *
-     * The filename is used for:
-     * - `inferCategory()` — directory path segments match `ComponentCategory`
-     * - `ExtractDiagnostic` messages — includes the filename for context
-     * - File extension detection — `.tsx` vs `.ts` parsing mode
-     */
-    readonly filename?: string;
+  /**
+   * The component source code as a string.
+   * Must be non-empty — an empty string cannot produce a valid extraction.
+   */
+  readonly source: string;
+  /**
+   * Optional filename for diagnostics and heuristic category inference.
+   * When omitted, `extractManifest()` defaults to `'component.tsx'`.
+   *
+   * The filename is used for:
+   * - `inferCategory()` — directory path segments match `ComponentCategory`
+   * - `ExtractDiagnostic` messages — includes the filename for context
+   * - File extension detection — `.tsx` vs `.ts` parsing mode
+   */
+  readonly filename?: string;
 };
 
 /**
@@ -487,7 +487,7 @@ export type ServerExtractRequest = {
  * the intent clear when used in HTTP handler type annotations:
  *
  * ```typescript
- * // In @enterstellar-ai/cloud endpoint handler:
+ * // In @enterstellar/cloud endpoint handler:
  * app.post('/api/v1/migrate/extract', async (c) => {
  *     const body: ServerExtractRequest = await c.req.json();
  *     const result: ServerExtractResponse = extractManifest(body.source, body.filename);
@@ -522,10 +522,10 @@ export type ServerExtractResponse = ExtractResult;
  * @see Design Choice T7 — Zod schemas for public serialized types
  */
 export const ServerExtractRequestSchema = z.object({
-    /** Non-empty component source code. */
-    source: z.string().min(1),
-    /** Optional filename for diagnostics. */
-    filename: z.string().optional(),
+  /** Non-empty component source code. */
+  source: z.string().min(1),
+  /** Optional filename for diagnostics. */
+  filename: z.string().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -543,9 +543,9 @@ export const ServerExtractRequestSchema = z.object({
  *
  * **Important:** Outcome determination does NOT happen inside
  * `assembleContract()`. It is the responsibility of the CLI orchestrator
- * (`@enterstellar-ai/cli`), which maps assembly annotations to a `MigrationOutcome`.
- * This keeps `@enterstellar-ai/migration` free of `@enterstellar-ai/compiler` and
- * `@enterstellar-ai/registry` dependencies.
+ * (`@enterstellar/cli`), which maps assembly annotations to a `MigrationOutcome`.
+ * This keeps `@enterstellar/migration` free of `@enterstellar/compiler` and
+ * `@enterstellar/registry` dependencies.
  *
  * **Why not `compiler.lint()`?** The original migration guide maps
  * `compiler.lint()` to outcome determination, but this is architecturally
@@ -558,7 +558,7 @@ export const ServerExtractRequestSchema = z.object({
  * annotations capture exactly which fields need human attention.
  *
  * @see Correction 1 — 4-Level Outcome Model
- * @see determine-outcome.ts — `@enterstellar-ai/cli/migrate/determine-outcome`
+ * @see determine-outcome.ts — `@enterstellar/cli/migrate/determine-outcome`
  */
 export type MigrationOutcome = 'clean' | 'warn' | 'review' | 'skip';
 
@@ -570,20 +570,20 @@ export type MigrationOutcome = 'clean' | 'warn' | 'review' | 'skip';
  * @see Correction 1 — Provenance Header: Machine-Readable Migration Metadata
  */
 export type MigrationProvenance = {
-    /** Relative path to the source component file. */
-    readonly source: string;
-    /** ISO 8601 timestamp of generation. */
-    readonly generatedAt: string;
-    /** Pipeline version string (e.g., `'1.0.0'`). */
-    readonly pipelineVersion: string;
-    /** Pipeline phases that ran (e.g., `['ast']` or `['ast', 'enrichment']`). */
-    readonly phases: readonly string[];
-    /** Enrichment provider name, if Phase 2 ran (e.g., `'openai'`, `'enterstellar-cloud'`). */
-    readonly enrichmentProvider?: string;
-    /** Fields that were LLM-enriched (e.g., `['description', 'tags', 'category']`). */
-    readonly enrichedFields?: readonly string[];
-    /** The 4-level outcome for this component. */
-    readonly outcome: MigrationOutcome;
+  /** Relative path to the source component file. */
+  readonly source: string;
+  /** ISO 8601 timestamp of generation. */
+  readonly generatedAt: string;
+  /** Pipeline version string (e.g., `'1.0.0'`). */
+  readonly pipelineVersion: string;
+  /** Pipeline phases that ran (e.g., `['ast']` or `['ast', 'enrichment']`). */
+  readonly phases: readonly string[];
+  /** Enrichment provider name, if Phase 2 ran (e.g., `'openai'`, `'enterstellar-cloud'`). */
+  readonly enrichmentProvider?: string;
+  /** Fields that were LLM-enriched (e.g., `['description', 'tags', 'category']`). */
+  readonly enrichedFields?: readonly string[];
+  /** The 4-level outcome for this component. */
+  readonly outcome: MigrationOutcome;
 };
 
 /**
@@ -597,10 +597,10 @@ export type MigrationProvenance = {
  * @see Audit M4 — AssemblyOptions defined in types.ts alongside MigrationProvenance
  */
 export type AssemblyOptions = {
-    /** Fields enriched by Phase 2 (for `@enriched-fields` header tag). */
-    readonly enrichedFields?: readonly string[];
-    /** Enrichment provider name (for `@enrichment-provider` header tag). */
-    readonly enrichmentProvider?: string;
+  /** Fields enriched by Phase 2 (for `@enriched-fields` header tag). */
+  readonly enrichedFields?: readonly string[];
+  /** Enrichment provider name (for `@enrichment-provider` header tag). */
+  readonly enrichmentProvider?: string;
 };
 
 /**
@@ -613,26 +613,26 @@ export type AssemblyOptions = {
  * @see Correction 1 — 4-Level Outcome Model
  */
 export type MigrationResult = {
-    /** PascalCase component name. */
-    readonly componentName: string;
-    /** Relative path to the source file. */
-    readonly sourcePath: string;
-    /** The 4-level outcome for this component. */
-    readonly outcome: MigrationOutcome;
-    /** Path to the generated `.contract.ts` file (absent for SKIP outcomes). */
-    readonly contractPath?: string;
-    /** Path to the generated `.test.ts` file (absent for SKIP outcomes). */
-    readonly testPath?: string;
-    /** `@enterstellar-review` annotations requiring developer attention. */
-    readonly reviewAnnotations: readonly string[];
-    /** `@enterstellar-warn` annotations for heuristic inferences. */
-    readonly warnAnnotations: readonly string[];
-    /** Extraction diagnostics from Phase 1. */
-    readonly diagnostics: readonly ExtractDiagnostic[];
-    /** Reason for SKIP outcome (absent for non-SKIP outcomes). */
-    readonly skipReason?: string;
-    /** Provenance metadata for the generated contract (absent for SKIP). */
-    readonly provenance?: MigrationProvenance;
+  /** PascalCase component name. */
+  readonly componentName: string;
+  /** Relative path to the source file. */
+  readonly sourcePath: string;
+  /** The 4-level outcome for this component. */
+  readonly outcome: MigrationOutcome;
+  /** Path to the generated `.contract.ts` file (absent for SKIP outcomes). */
+  readonly contractPath?: string;
+  /** Path to the generated `.test.ts` file (absent for SKIP outcomes). */
+  readonly testPath?: string;
+  /** `@enterstellar-review` annotations requiring developer attention. */
+  readonly reviewAnnotations: readonly string[];
+  /** `@enterstellar-warn` annotations for heuristic inferences. */
+  readonly warnAnnotations: readonly string[];
+  /** Extraction diagnostics from Phase 1. */
+  readonly diagnostics: readonly ExtractDiagnostic[];
+  /** Reason for SKIP outcome (absent for non-SKIP outcomes). */
+  readonly skipReason?: string;
+  /** Provenance metadata for the generated contract (absent for SKIP). */
+  readonly provenance?: MigrationProvenance;
 };
 
 /**
@@ -645,20 +645,20 @@ export type MigrationResult = {
  * @see Correction 1 — Batch Summary: Terminal Output Format
  */
 export type MigrateBatchSummary = {
-    /** Total number of files scanned. */
-    readonly totalFiles: number;
-    /** Number of CLEAN outcomes. */
-    readonly cleanCount: number;
-    /** Number of WARN outcomes. */
-    readonly warnCount: number;
-    /** Number of REVIEW outcomes. */
-    readonly reviewCount: number;
-    /** Number of SKIP outcomes. */
-    readonly skipCount: number;
-    /** Per-component results. */
-    readonly results: readonly MigrationResult[];
-    /** Total wall-clock duration in milliseconds. */
-    readonly durationMs: number;
+  /** Total number of files scanned. */
+  readonly totalFiles: number;
+  /** Number of CLEAN outcomes. */
+  readonly cleanCount: number;
+  /** Number of WARN outcomes. */
+  readonly warnCount: number;
+  /** Number of REVIEW outcomes. */
+  readonly reviewCount: number;
+  /** Number of SKIP outcomes. */
+  readonly skipCount: number;
+  /** Per-component results. */
+  readonly results: readonly MigrationResult[];
+  /** Total wall-clock duration in milliseconds. */
+  readonly durationMs: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -679,9 +679,9 @@ const MigrationOutcomeSchema = z.enum(['clean', 'warn', 'review', 'skip']);
  * Nested within `MigrationResultSchema` for diagnostic validation.
  */
 const ExtractDiagnosticSchema = z.object({
-    level: z.enum(['info', 'warning', 'error']),
-    message: z.string(),
-    field: z.string().optional(),
+  level: z.enum(['info', 'warning', 'error']),
+  message: z.string(),
+  field: z.string().optional(),
 });
 
 /**
@@ -690,13 +690,13 @@ const ExtractDiagnosticSchema = z.object({
  * Nested within `MigrationResultSchema` for provenance validation.
  */
 const MigrationProvenanceSchema = z.object({
-    source: z.string(),
-    generatedAt: z.string(),
-    pipelineVersion: z.string(),
-    phases: z.array(z.string()),
-    enrichmentProvider: z.string().optional(),
-    enrichedFields: z.array(z.string()).optional(),
-    outcome: MigrationOutcomeSchema,
+  source: z.string(),
+  generatedAt: z.string(),
+  pipelineVersion: z.string(),
+  phases: z.array(z.string()),
+  enrichmentProvider: z.string().optional(),
+  enrichedFields: z.array(z.string()).optional(),
+  outcome: MigrationOutcomeSchema,
 });
 
 /**
@@ -708,16 +708,16 @@ const MigrationProvenanceSchema = z.object({
  * @see Design Choice T7 — Zod schemas for runtime validation
  */
 export const MigrationResultSchema = z.object({
-    componentName: z.string(),
-    sourcePath: z.string(),
-    outcome: MigrationOutcomeSchema,
-    contractPath: z.string().optional(),
-    testPath: z.string().optional(),
-    reviewAnnotations: z.array(z.string()),
-    warnAnnotations: z.array(z.string()),
-    diagnostics: z.array(ExtractDiagnosticSchema),
-    skipReason: z.string().optional(),
-    provenance: MigrationProvenanceSchema.optional(),
+  componentName: z.string(),
+  sourcePath: z.string(),
+  outcome: MigrationOutcomeSchema,
+  contractPath: z.string().optional(),
+  testPath: z.string().optional(),
+  reviewAnnotations: z.array(z.string()),
+  warnAnnotations: z.array(z.string()),
+  diagnostics: z.array(ExtractDiagnosticSchema),
+  skipReason: z.string().optional(),
+  provenance: MigrationProvenanceSchema.optional(),
 });
 
 /**
@@ -729,13 +729,13 @@ export const MigrationResultSchema = z.object({
  * @see Design Choice T7 — Zod schemas for runtime validation
  */
 export const MigrateBatchSummarySchema = z.object({
-    totalFiles: z.number().int().nonnegative(),
-    cleanCount: z.number().int().nonnegative(),
-    warnCount: z.number().int().nonnegative(),
-    reviewCount: z.number().int().nonnegative(),
-    skipCount: z.number().int().nonnegative(),
-    results: z.array(MigrationResultSchema),
-    durationMs: z.number().nonnegative(),
+  totalFiles: z.number().int().nonnegative(),
+  cleanCount: z.number().int().nonnegative(),
+  warnCount: z.number().int().nonnegative(),
+  reviewCount: z.number().int().nonnegative(),
+  skipCount: z.number().int().nonnegative(),
+  results: z.array(MigrationResultSchema),
+  durationMs: z.number().nonnegative(),
 });
 
 // ---------------------------------------------------------------------------
@@ -761,16 +761,16 @@ export const MigrateBatchSummarySchema = z.object({
  * @internal Used by `SemanticOverlaySchema` — not exported directly.
  */
 const EnrichedFieldPatchSchema = z.discriminatedUnion('key', [
-    z.object({ key: z.literal('description'), value: z.string() }),
-    z.object({ key: z.literal('tags'), value: z.array(z.string()).readonly() }),
-    z.object({ key: z.literal('category'), value: z.string() }),
-    z.object({ key: z.literal('intent'), value: z.string() }),
-    z.object({
-        key: z.literal('ariaAttributes'),
-        value: z.record(z.string(), z.string()),
-    }),
-    z.object({ key: z.literal('designTokenRefs'), value: z.array(z.string()).readonly() }),
-    z.object({ key: z.literal('lifecycleStates'), value: z.array(z.string()).readonly() }),
+  z.object({ key: z.literal('description'), value: z.string() }),
+  z.object({ key: z.literal('tags'), value: z.array(z.string()).readonly() }),
+  z.object({ key: z.literal('category'), value: z.string() }),
+  z.object({ key: z.literal('intent'), value: z.string() }),
+  z.object({
+    key: z.literal('ariaAttributes'),
+    value: z.record(z.string(), z.string()),
+  }),
+  z.object({ key: z.literal('designTokenRefs'), value: z.array(z.string()).readonly() }),
+  z.object({ key: z.literal('lifecycleStates'), value: z.array(z.string()).readonly() }),
 ]);
 
 /**
@@ -788,5 +788,5 @@ const EnrichedFieldPatchSchema = z.discriminatedUnion('key', [
  * @see Correction 3 — BYOKeyEnrichmentProvider validation
  */
 export const SemanticOverlaySchema = z.object({
-    fields: z.array(EnrichedFieldPatchSchema).readonly(),
+  fields: z.array(EnrichedFieldPatchSchema).readonly(),
 });

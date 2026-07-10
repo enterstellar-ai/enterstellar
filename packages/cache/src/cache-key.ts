@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cache/cache-key
+ * @module @enterstellar/cache/cache-key
  * @description Cache key construction utility.
  *
  * Builds deterministic cache keys from an intent hash and resolved component
@@ -35,7 +35,7 @@ const CACHE_KEY_SEPARATOR = '::';
  * Builds a deterministic cache key from an intent hash and component name.
  *
  * The intent hash is typically a SHA-256 of the raw intent string (produced
- * by `@enterstellar-ai/telemetry`). The component name is the PascalCase name of the
+ * by `@enterstellar/telemetry`). The component name is the PascalCase name of the
  * resolved component from the registry.
  *
  * @param intentHash - Hash of the raw intent string (e.g., SHA-256 hex).
@@ -46,7 +46,7 @@ const CACHE_KEY_SEPARATOR = '::';
  *
  * @example
  * ```ts
- * import { buildCacheKey } from '@enterstellar-ai/cache';
+ * import { buildCacheKey } from '@enterstellar/cache';
  *
  * const key = buildCacheKey(
  *   'a1b2c3d4e5f6...', // SHA-256 of "show patient vitals"
@@ -55,11 +55,8 @@ const CACHE_KEY_SEPARATOR = '::';
  * // => "a1b2c3d4e5f6...::PatientVitals"
  * ```
  */
-export function buildCacheKey(
-    intentHash: string,
-    componentName: string,
-): string {
-    return `${intentHash}${CACHE_KEY_SEPARATOR}${componentName}`;
+export function buildCacheKey(intentHash: string, componentName: string): string {
+  return `${intentHash}${CACHE_KEY_SEPARATOR}${componentName}`;
 }
 
 /**
@@ -75,9 +72,9 @@ export function buildCacheKey(
  * @internal
  */
 export function extractComponentName(cacheKey: string): string | undefined {
-    const separatorIndex = cacheKey.indexOf(CACHE_KEY_SEPARATOR);
-    if (separatorIndex === -1) {
-        return undefined;
-    }
-    return cacheKey.substring(separatorIndex + CACHE_KEY_SEPARATOR.length);
+  const separatorIndex = cacheKey.indexOf(CACHE_KEY_SEPARATOR);
+  if (separatorIndex === -1) {
+    return undefined;
+  }
+  return cacheKey.substring(separatorIndex + CACHE_KEY_SEPARATOR.length);
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@enterstellar-ai/examples-basic",
+  "name": "@enterstellar/examples-basic",
   "description": "Basic example — minimal registry, compiler, and three demo ComponentContracts.",
   "version": "0.0.0",
   "author": "Enterstellar",

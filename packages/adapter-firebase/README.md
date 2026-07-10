@@ -1,8 +1,8 @@
-# @enterstellar-ai/adapter-firebase
+# @enterstellar/adapter-firebase
 
 > Firebase adapter — Auth + Data adapters for Firebase (Bible §4.15, P1 priority).
 
-This package provides **factory functions** that map Firebase Auth and Firestore SDK calls to Enterstellar adapter interfaces. Each factory builds an `AuthAdapterConfig` or `DataAdapterConfig` and delegates to `createAuthAdapter()` / `createDataAdapter()` from `@enterstellar-ai/adapters`, which handle all validation (ENS-7001) and AD5 error wrapping. This package is purely an SDK-to-Enterstellar translator — it contains zero business logic.
+This package provides **factory functions** that map Firebase Auth and Firestore SDK calls to Enterstellar adapter interfaces. Each factory builds an `AuthAdapterConfig` or `DataAdapterConfig` and delegates to `createAuthAdapter()` / `createDataAdapter()` from `@enterstellar/adapters`, which handle all validation (ENS-7001) and AD5 error wrapping. This package is purely an SDK-to-Enterstellar translator — it contains zero business logic.
 
 ## Quick Start
 
@@ -13,7 +13,7 @@ import { getFirestore } from 'firebase/firestore';
 import {
   createFirebaseAuthAdapter,
   createFirebaseDataAdapter,
-} from '@enterstellar-ai/adapter-firebase';
+} from '@enterstellar/adapter-firebase';
 
 const app = initializeApp({ projectId: 'my-project', apiKey: '...' });
 
@@ -128,7 +128,7 @@ For `mutate('create')`, the input `id` field is stripped from the payload — Fi
 
 ### AD5 Error Wrapping
 
-All error wrapping is delegated to `createAuthAdapter()` / `createDataAdapter()` from `@enterstellar-ai/adapters`. Raw Firebase SDK errors propagate upward and are caught by the factory wrapper:
+All error wrapping is delegated to `createAuthAdapter()` / `createDataAdapter()` from `@enterstellar/adapters`. Raw Firebase SDK errors propagate upward and are caught by the factory wrapper:
 
 | Enterstellar Method          | Error Code | Trigger                         |
 | :--------------------------- | :--------- | :------------------------------ |
@@ -142,13 +142,13 @@ Original errors are preserved in `cause` for debugging.
 
 ### Design Choices Applied
 
-| Decision | Rule                                                                                    |
-| :------- | :-------------------------------------------------------------------------------------- |
-| AD1      | Minimal but complete: `getSession`, `hasRole`, `onAuthChange`.                          |
-| AD4      | Firebase P1: auth + Firestore queries + Firestore realtime.                             |
-| AD5      | Error wrapping delegated to `@enterstellar-ai/adapters` — raw vendor errors never leak. |
-| R1       | Plain objects with closures — no class instances.                                       |
-| R4       | `Object.freeze()` on all returned adapters.                                             |
+| Decision | Rule                                                                                 |
+| :------- | :----------------------------------------------------------------------------------- |
+| AD1      | Minimal but complete: `getSession`, `hasRole`, `onAuthChange`.                       |
+| AD4      | Firebase P1: auth + Firestore queries + Firestore realtime.                          |
+| AD5      | Error wrapping delegated to `@enterstellar/adapters` — raw vendor errors never leak. |
+| R1       | Plain objects with closures — no class instances.                                    |
+| R4       | `Object.freeze()` on all returned adapters.                                          |
 
 ### Build Configuration
 
@@ -157,11 +157,11 @@ Original errors are preserved in `cause` for debugging.
 | `tsconfig.json`  | Extends `tsconfig.base.json`. Overrides `composite: false` for tsup DTS. |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. Single entry: `src/index.ts`.                    |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `firebase`
+**Peer dependencies:** `@enterstellar/types`, `firebase`
 
 ## See Also
 
 - [Implementation Bible §4.15](../../agent/03-enterstellar-implementation-bible.md) — adapter layer specification.
 - [Design Choices — Adapters](../../agent/04-enterstellar-design-choices.md) — locked decisions AD1–AD5.
-- [@enterstellar-ai/adapters README](../adapters/README.md) — core adapter factories and validation.
+- [@enterstellar/adapters README](../adapters/README.md) — core adapter factories and validation.
 - [Coding Rules](../../agent/05-enterstellar-coding-rules.md) — naming conventions, strictness requirements.

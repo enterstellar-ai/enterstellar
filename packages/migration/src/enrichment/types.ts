@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/enrichment/types
+ * @module @enterstellar/migration/enrichment/types
  * @description Provider interface and error types for Phase 2 LLM enrichment.
  *
  * Phase 2 of the migration pipeline sends `heuristic-fallback` fields to an
@@ -55,29 +55,26 @@ import type { StructuralManifest, SemanticOverlay } from '../types.js';
  * @see Correction 3 — why an interface vs. function type
  */
 export type EnrichmentProvider = {
-    /**
-     * Enrich heuristic-fallback fields using an LLM.
-     *
-     * @param manifest - The full `StructuralManifest` from Phase 1.
-     *   The provider uses structural fields (name, props, eventHandlers)
-     *   as prompt context, and enrichable fields to identify which
-     *   fields need enrichment (`source === 'heuristic-fallback'`).
-     * @param source - The original component source code (truncated
-     *   to a provider-appropriate token limit). Used as primary context
-     *   in the enrichment prompt. The manifest tells the LLM *what was
-     *   already extracted*; the source tells it *what the component does*.
-     * @returns A `SemanticOverlay` containing enriched values for
-     *   heuristic-fallback fields. Only fields that were actually
-     *   enriched are included — the overlay is a sparse patch.
-     * @throws {EnrichmentError} On auth failure, quota exhaustion,
-     *   rate limiting, or provider unavailability. The error includes
-     *   a machine-readable `code` for the orchestrator to decide
-     *   whether to retry, fall back, or abort.
-     */
-    enrich(
-        manifest: StructuralManifest,
-        source: string,
-    ): Promise<SemanticOverlay>;
+  /**
+   * Enrich heuristic-fallback fields using an LLM.
+   *
+   * @param manifest - The full `StructuralManifest` from Phase 1.
+   *   The provider uses structural fields (name, props, eventHandlers)
+   *   as prompt context, and enrichable fields to identify which
+   *   fields need enrichment (`source === 'heuristic-fallback'`).
+   * @param source - The original component source code (truncated
+   *   to a provider-appropriate token limit). Used as primary context
+   *   in the enrichment prompt. The manifest tells the LLM *what was
+   *   already extracted*; the source tells it *what the component does*.
+   * @returns A `SemanticOverlay` containing enriched values for
+   *   heuristic-fallback fields. Only fields that were actually
+   *   enriched are included — the overlay is a sparse patch.
+   * @throws {EnrichmentError} On auth failure, quota exhaustion,
+   *   rate limiting, or provider unavailability. The error includes
+   *   a machine-readable `code` for the orchestrator to decide
+   *   whether to retry, fall back, or abort.
+   */
+  enrich(manifest: StructuralManifest, source: string): Promise<SemanticOverlay>;
 };
 
 // ---------------------------------------------------------------------------
@@ -100,11 +97,11 @@ export type EnrichmentProvider = {
  * @see Correction 3 — Error Type
  */
 export type EnrichmentErrorCode =
-    | 'AUTH_FAILED'
-    | 'QUOTA_EXHAUSTED'
-    | 'RATE_LIMITED'
-    | 'PROVIDER_ERROR'
-    | 'PARSE_ERROR';
+  | 'AUTH_FAILED'
+  | 'QUOTA_EXHAUSTED'
+  | 'RATE_LIMITED'
+  | 'PROVIDER_ERROR'
+  | 'PARSE_ERROR';
 
 // ---------------------------------------------------------------------------
 // Enrichment Error Class (Correction 3)
@@ -130,31 +127,31 @@ export type EnrichmentErrorCode =
  * @see Correction 3 — Bible Note: Error class separation
  */
 export class EnrichmentError extends Error {
-    /** Machine-readable error code for programmatic recovery decisions. */
-    readonly code: EnrichmentErrorCode;
+  /** Machine-readable error code for programmatic recovery decisions. */
+  readonly code: EnrichmentErrorCode;
 
-    /**
-     * Milliseconds to wait before retry.
-     *
-     * Only meaningful for `RATE_LIMITED` errors — the provider sets
-     * this from the API response's `Retry-After` header. For all
-     * other error codes, this field is absent.
-     */
-    readonly retryAfterMs?: number;
+  /**
+   * Milliseconds to wait before retry.
+   *
+   * Only meaningful for `RATE_LIMITED` errors — the provider sets
+   * this from the API response's `Retry-After` header. For all
+   * other error codes, this field is absent.
+   */
+  readonly retryAfterMs?: number;
 
-    /**
-     * Creates a new `EnrichmentError`.
-     *
-     * @param code - The machine-readable error code.
-     * @param message - Human-readable error description.
-     * @param retryAfterMs - Optional retry delay (only for `RATE_LIMITED`).
-     */
-    constructor(code: EnrichmentErrorCode, message: string, retryAfterMs?: number) {
-        super(message);
-        this.name = 'EnrichmentError';
-        this.code = code;
-        if (retryAfterMs !== undefined) {
-            this.retryAfterMs = retryAfterMs;
-        }
+  /**
+   * Creates a new `EnrichmentError`.
+   *
+   * @param code - The machine-readable error code.
+   * @param message - Human-readable error description.
+   * @param retryAfterMs - Optional retry delay (only for `RATE_LIMITED`).
+   */
+  constructor(code: EnrichmentErrorCode, message: string, retryAfterMs?: number) {
+    super(message);
+    this.name = 'EnrichmentError';
+    this.code = code;
+    if (retryAfterMs !== undefined) {
+      this.retryAfterMs = retryAfterMs;
     }
+  }
 }

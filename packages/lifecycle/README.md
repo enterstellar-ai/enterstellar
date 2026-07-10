@@ -1,13 +1,13 @@
-# @enterstellar-ai/lifecycle
+# @enterstellar/lifecycle
 
 > Framework-agnostic lifecycle state machine: `idle → loading → streaming → ready`, with `error` and `empty` terminal states.
 
-This is the **zone lifecycle engine** (L15) — a pure TypeScript finite state machine that manages the lifecycle of content within Enterstellar zones. Every state transition emits a structured event for observability (L4). The FSM enforces exhaustive transition validation (LC2), configurable timeout (LC3), retry limits (RE17), and streaming assembly (LC4). No framework dependencies — `@enterstellar-ai/react` wraps this in hooks.
+This is the **zone lifecycle engine** (L15) — a pure TypeScript finite state machine that manages the lifecycle of content within Enterstellar zones. Every state transition emits a structured event for observability (L4). The FSM enforces exhaustive transition validation (LC2), configurable timeout (LC3), retry limits (RE17), and streaming assembly (LC4). No framework dependencies — `@enterstellar/react` wraps this in hooks.
 
 ## Quick Start
 
 ```ts
-import { createLifecycleManager, createStreamingAssembler } from '@enterstellar-ai/lifecycle';
+import { createLifecycleManager, createStreamingAssembler } from '@enterstellar/lifecycle';
 import { z } from 'zod';
 
 // 1. Create a lifecycle manager (default: 30s timeout, 3 retries)
@@ -144,7 +144,7 @@ manager.dispose();
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags.                           |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. `composite: false`, `incremental: false` for DTS. |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `zod ^4.3.6`
 
 ## See Also
 

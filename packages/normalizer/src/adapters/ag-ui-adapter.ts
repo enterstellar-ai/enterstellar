@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/normalizer/adapters/ag-ui-adapter
+ * @module @enterstellar/normalizer/adapters/ag-ui-adapter
  * @description AG-UI protocol adapter for the Enterstellar normalizer.
  *
  * Converts AG-UI Server-Sent Events into `ComponentIntent` objects.
@@ -23,7 +23,7 @@
  *
  * @example
  * ```ts
- * import { createAGUIAdapter } from '@enterstellar-ai/normalizer';
+ * import { createAGUIAdapter } from '@enterstellar/normalizer';
  *
  * const adapter = createAGUIAdapter();
  *
@@ -44,13 +44,13 @@
  * @see Appendix E P2 — correlationId
  */
 
-import type { ComponentIntent } from '@enterstellar-ai/types';
+import type { ComponentIntent } from '@enterstellar/types';
 import type { ProtocolNormalizer, AGUIAdapterConfig } from '../types.js';
 import {
-    AGUI_PROTOCOL,
-    AGUI_UI_EVENT_TYPES,
-    AGUI_LIFECYCLE_EVENT_TYPES,
-    DEFAULT_AGUI_CONFIDENCE,
+  AGUI_PROTOCOL,
+  AGUI_UI_EVENT_TYPES,
+  AGUI_LIFECYCLE_EVENT_TYPES,
+  DEFAULT_AGUI_CONFIDENCE,
 } from '../constants.js';
 
 // ---------------------------------------------------------------------------
@@ -65,12 +65,12 @@ import {
  * @returns `true` if the event is a typed object.
  */
 function isTypedObject(event: unknown): event is Record<string, unknown> & { type: string } {
-    return (
-        typeof event === 'object' &&
-        event !== null &&
-        'type' in event &&
-        typeof (event as Record<string, unknown>)['type'] === 'string'
-    );
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    typeof (event as Record<string, unknown>)['type'] === 'string'
+  );
 }
 
 /**
@@ -80,10 +80,10 @@ function isTypedObject(event: unknown): event is Record<string, unknown> & { typ
  * @returns `true` if the type is a recognized AG-UI event.
  */
 function isKnownAGUIEventType(type: string): boolean {
-    return (
-        (AGUI_UI_EVENT_TYPES as readonly string[]).includes(type) ||
-        (AGUI_LIFECYCLE_EVENT_TYPES as readonly string[]).includes(type)
-    );
+  return (
+    (AGUI_UI_EVENT_TYPES as readonly string[]).includes(type) ||
+    (AGUI_LIFECYCLE_EVENT_TYPES as readonly string[]).includes(type)
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -113,79 +113,75 @@ function isKnownAGUIEventType(type: string): boolean {
  * @see Design Choice N4 — AG-UI event mapping
  */
 export function createAGUIAdapter(config?: AGUIAdapterConfig): ProtocolNormalizer {
-    const confidence = config?.defaultConfidence ?? DEFAULT_AGUI_CONFIDENCE;
+  const confidence = config?.defaultConfidence ?? DEFAULT_AGUI_CONFIDENCE;
 
-    return {
-        protocol: AGUI_PROTOCOL,
+  return {
+    protocol: AGUI_PROTOCOL,
 
-        /**
-         * Structural check: is this an AG-UI event?
-         *
-         * Checks for a typed object with a `type` field matching a known
-         * AG-UI event type. Lightweight — no parsing, no async.
-         */
-        canHandle(event: unknown): boolean {
-            if (!isTypedObject(event)) {
-                return false;
-            }
-            return isKnownAGUIEventType(event['type']);
-        },
+    /**
+     * Structural check: is this an AG-UI event?
+     *
+     * Checks for a typed object with a `type` field matching a known
+     * AG-UI event type. Lightweight — no parsing, no async.
+     */
+    canHandle(event: unknown): boolean {
+      if (!isTypedObject(event)) {
+        return false;
+      }
+      return isKnownAGUIEventType(event['type']);
+    },
 
-        /**
-         * Normalizes an AG-UI event into a `ComponentIntent`.
-         *
-         * - `tool_call_start` → `ComponentIntent` with component = `toolName`, props = `args`.
-         * - `text_message_start` → `null` (text messages handled by chat layer).
-         * - Lifecycle events (`run_started`, `run_finished`, `run_error`) → `null`.
-         * - Unknown events → `null`.
-         */
-        normalize(event: unknown): ComponentIntent | null {
-            if (!isTypedObject(event)) {
-                return null;
-            }
+    /**
+     * Normalizes an AG-UI event into a `ComponentIntent`.
+     *
+     * - `tool_call_start` → `ComponentIntent` with component = `toolName`, props = `args`.
+     * - `text_message_start` → `null` (text messages handled by chat layer).
+     * - Lifecycle events (`run_started`, `run_finished`, `run_error`) → `null`.
+     * - Unknown events → `null`.
+     */
+    normalize(event: unknown): ComponentIntent | null {
+      if (!isTypedObject(event)) {
+        return null;
+      }
 
-            const eventType = event['type'];
+      const eventType = event['type'];
 
-            // -----------------------------------------------------------------
-            // tool_call_start → ComponentIntent (N4)
-            // -----------------------------------------------------------------
-            if (eventType === 'tool_call_start') {
-                const toolName = typeof event['toolName'] === 'string'
-                    ? event['toolName']
-                    : '';
+      // -----------------------------------------------------------------
+      // tool_call_start → ComponentIntent (N4)
+      // -----------------------------------------------------------------
+      if (eventType === 'tool_call_start') {
+        const toolName = typeof event['toolName'] === 'string' ? event['toolName'] : '';
 
-                const toolCallId = typeof event['toolCallId'] === 'string'
-                    ? event['toolCallId']
-                    : undefined;
+        const toolCallId =
+          typeof event['toolCallId'] === 'string' ? event['toolCallId'] : undefined;
 
-                const runId = typeof event['runId'] === 'string'
-                    ? event['runId']
-                    : undefined;
+        const runId = typeof event['runId'] === 'string' ? event['runId'] : undefined;
 
-                // Args default to empty object if missing or non-object
-                const rawArgs = typeof event['args'] === 'object' && event['args'] !== null
-                    ? event['args'] as Record<string, unknown>
-                    : {};
+        // Args default to empty object if missing or non-object
+        const rawArgs =
+          typeof event['args'] === 'object' && event['args'] !== null
+            ? (event['args'] as Record<string, unknown>)
+            : {};
 
-                return {
-                    component: toolName,
-                    props: rawArgs,
-                    confidence,
-                    _source: {
-                        protocol: AGUI_PROTOCOL,
-                        ...(toolCallId !== undefined ? { rawEventId: toolCallId } : {}),
-                        ...(runId !== undefined ? { correlationId: runId } : {}),
-                    },
-                };
-            }
+        return {
+          component: toolName,
+          props: rawArgs,
+          confidence,
+          _source: {
+            protocol: AGUI_PROTOCOL,
+            ...(toolCallId !== undefined ? { rawEventId: toolCallId } : {}),
+            ...(runId !== undefined ? { correlationId: runId } : {}),
+          },
+        };
+      }
 
-            // -----------------------------------------------------------------
-            // text_message_start → null (N4: handled by chat layer, not GenUI)
-            // -----------------------------------------------------------------
-            // Lifecycle events (run_started, run_finished, run_error) → null
-            // Unknown events → null
-            // -----------------------------------------------------------------
-            return null;
-        },
-    };
+      // -----------------------------------------------------------------
+      // text_message_start → null (N4: handled by chat layer, not GenUI)
+      // -----------------------------------------------------------------
+      // Lifecycle events (run_started, run_finished, run_error) → null
+      // Unknown events → null
+      // -----------------------------------------------------------------
+      return null;
+    },
+  };
 }

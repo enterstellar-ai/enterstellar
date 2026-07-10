@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/transport/cloud-transport
+ * @module @enterstellar/telemetry/transport/cloud-transport
  * @description HTTP transport for uploading ForgeSignal batches to the cloud.
  *
  * Uses the `fetch()` API (available in browsers, Cloudflare Workers,
@@ -18,7 +18,7 @@
  * @see Principle L15 — zero framework imports.
  */
 
-import type { ForgeSignal } from '@enterstellar-ai/types';
+import type { ForgeSignal } from '@enterstellar/types';
 
 import type { SignalTransport, TransportResult } from './signal-transport.js';
 
@@ -33,9 +33,7 @@ const REQUEST_TIMEOUT_MS = 10_000;
  * Exponential backoff schedule for retries (in milliseconds).
  * 1s → 2s → 4s → 8s → 16s → 60s cap (TL7).
  */
-const BACKOFF_SCHEDULE_MS: readonly number[] = [
-    1_000, 2_000, 4_000, 8_000, 16_000, 60_000,
-];
+const BACKOFF_SCHEDULE_MS: readonly number[] = [1_000, 2_000, 4_000, 8_000, 16_000, 60_000];
 
 // ---------------------------------------------------------------------------
 // CloudTransportConfig
@@ -45,14 +43,14 @@ const BACKOFF_SCHEDULE_MS: readonly number[] = [
  * Configuration for the cloud transport.
  */
 export type CloudTransportConfig = {
-    /** Full URL of the signal ingestion endpoint (e.g., `'https://api.enterstellar.dev/v1/signals'`). */
-    readonly endpoint: string;
+  /** Full URL of the signal ingestion endpoint (e.g., `'https://api.enterstellar.dev/v1/signals'`). */
+  readonly endpoint: string;
 
-    /**
-     * Request timeout in milliseconds.
-     * @default 10_000
-     */
-    readonly timeoutMs?: number | undefined;
+  /**
+   * Request timeout in milliseconds.
+   * @default 10_000
+   */
+  readonly timeoutMs?: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -66,9 +64,9 @@ export type CloudTransportConfig = {
  * @returns Delay in milliseconds.
  */
 function getBackoffMs(attempt: number): number {
-    const index = Math.min(attempt, BACKOFF_SCHEDULE_MS.length - 1);
-    // Safe access: index is clamped to valid range.
-    return BACKOFF_SCHEDULE_MS[index] as number;
+  const index = Math.min(attempt, BACKOFF_SCHEDULE_MS.length - 1);
+  // Safe access: index is clamped to valid range.
+  return BACKOFF_SCHEDULE_MS[index] as number;
 }
 
 /**
@@ -79,16 +77,16 @@ function getBackoffMs(attempt: number): number {
  * @returns Delay in milliseconds, or `undefined` if unparseable.
  */
 function parseRetryAfterMs(headerValue: string | null): number | undefined {
-    if (headerValue === null) {
-        return undefined;
-    }
-
-    const seconds = Number(headerValue);
-    if (Number.isFinite(seconds) && seconds > 0) {
-        return seconds * 1_000;
-    }
-
+  if (headerValue === null) {
     return undefined;
+  }
+
+  const seconds = Number(headerValue);
+  if (Number.isFinite(seconds) && seconds > 0) {
+    return seconds * 1_000;
+  }
+
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,95 +112,94 @@ function parseRetryAfterMs(headerValue: string | null): number | undefined {
  * @see Design Choice TL7
  */
 export function createCloudTransport(config: CloudTransportConfig): SignalTransport {
-    const { endpoint, timeoutMs = REQUEST_TIMEOUT_MS } = config;
+  const { endpoint, timeoutMs = REQUEST_TIMEOUT_MS } = config;
 
-    /** Tracks the current retry attempt for backoff computation. */
-    let currentRetryAttempt = 0;
+  /** Tracks the current retry attempt for backoff computation. */
+  let currentRetryAttempt = 0;
 
-    return {
-        async send(signals: readonly ForgeSignal[]): Promise<TransportResult> {
-            // Empty batch — nothing to send.
-            if (signals.length === 0) {
-                return { success: true };
-            }
+  return {
+    async send(signals: readonly ForgeSignal[]): Promise<TransportResult> {
+      // Empty batch — nothing to send.
+      if (signals.length === 0) {
+        return { success: true };
+      }
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                controller.abort();
-            }, timeoutMs);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, timeoutMs);
 
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(signals),
-                    signal: controller.signal,
-                });
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(signals),
+          signal: controller.signal,
+        });
 
-                clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-                // 2xx — success. Reset retry counter.
-                if (response.ok) {
-                    currentRetryAttempt = 0;
-                    return {
-                        success: true,
-                        statusCode: response.status,
-                    };
-                }
+        // 2xx — success. Reset retry counter.
+        if (response.ok) {
+          currentRetryAttempt = 0;
+          return {
+            success: true,
+            statusCode: response.status,
+          };
+        }
 
-                // 429 — rate limited. Use Retry-After header or exponential backoff (TL7).
-                if (response.status === 429) {
-                    const retryAfterMs =
-                        parseRetryAfterMs(response.headers.get('Retry-After')) ??
-                        getBackoffMs(currentRetryAttempt);
+        // 429 — rate limited. Use Retry-After header or exponential backoff (TL7).
+        if (response.status === 429) {
+          const retryAfterMs =
+            parseRetryAfterMs(response.headers.get('Retry-After')) ??
+            getBackoffMs(currentRetryAttempt);
 
-                    currentRetryAttempt++;
+          currentRetryAttempt++;
 
-                    return {
-                        success: false,
-                        statusCode: response.status,
-                        retryAfterMs,
-                    };
-                }
+          return {
+            success: false,
+            statusCode: response.status,
+            retryAfterMs,
+          };
+        }
 
-                // 5xx — server error. Exponential backoff.
-                if (response.status >= 500) {
-                    const retryAfterMs = getBackoffMs(currentRetryAttempt);
-                    currentRetryAttempt++;
+        // 5xx — server error. Exponential backoff.
+        if (response.status >= 500) {
+          const retryAfterMs = getBackoffMs(currentRetryAttempt);
+          currentRetryAttempt++;
 
-                    return {
-                        success: false,
-                        statusCode: response.status,
-                        retryAfterMs,
-                    };
-                }
+          return {
+            success: false,
+            statusCode: response.status,
+            retryAfterMs,
+          };
+        }
 
-                // 4xx (non-429) — client error. Permanent failure, no retry.
-                currentRetryAttempt = 0;
-                return {
-                    success: false,
-                    statusCode: response.status,
-                };
-            } catch (error: unknown) {
-                clearTimeout(timeoutId);
+        // 4xx (non-429) — client error. Permanent failure, no retry.
+        currentRetryAttempt = 0;
+        return {
+          success: false,
+          statusCode: response.status,
+        };
+      } catch (error: unknown) {
+        clearTimeout(timeoutId);
 
-                // Network error or timeout — exponential backoff.
-                const retryAfterMs = getBackoffMs(currentRetryAttempt);
-                currentRetryAttempt++;
+        // Network error or timeout — exponential backoff.
+        const retryAfterMs = getBackoffMs(currentRetryAttempt);
+        currentRetryAttempt++;
 
-                // Distinguish timeout from network error for observability.
-                const isTimeout =
-                    error instanceof DOMException && error.name === 'AbortError';
-                const statusCode = isTimeout ? 408 : undefined;
+        // Distinguish timeout from network error for observability.
+        const isTimeout = error instanceof DOMException && error.name === 'AbortError';
+        const statusCode = isTimeout ? 408 : undefined;
 
-                return {
-                    success: false,
-                    statusCode,
-                    retryAfterMs,
-                };
-            }
-        },
-    };
+        return {
+          success: false,
+          statusCode,
+          retryAfterMs,
+        };
+      }
+    },
+  };
 }

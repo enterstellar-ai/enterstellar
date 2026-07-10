@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/discovery/registry-crawler
+ * @module @enterstellar/global-index/discovery/registry-crawler
  * @description Internal HTTP methods for federated registry discovery.
  *
  * Provides three operations against the Global Index service:
@@ -23,14 +23,8 @@ import { z } from 'zod';
 import { createRegistrationError } from '../errors.js';
 import { execute } from '../transport.js';
 import type { TransportConfig } from '../transport.js';
-import {
-    FederatedRegistrySchema,
-    RegistryRegistrationSchema,
-} from '../types.js';
-import type {
-    FederatedRegistry,
-    RegistryRegistration,
-} from '../types.js';
+import { FederatedRegistrySchema, RegistryRegistrationSchema } from '../types.js';
+import type { FederatedRegistry, RegistryRegistration } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Response Schemas (arrays)
@@ -43,7 +37,7 @@ import type {
  * @internal
  */
 const ListRegistriesResponseSchema = z.object({
-    registries: z.array(FederatedRegistrySchema),
+  registries: z.array(FederatedRegistrySchema),
 });
 
 /**
@@ -53,7 +47,7 @@ const ListRegistriesResponseSchema = z.object({
  * @internal
  */
 const SingleRegistryResponseSchema = z.object({
-    registry: FederatedRegistrySchema,
+  registry: FederatedRegistrySchema,
 });
 
 // ---------------------------------------------------------------------------
@@ -79,31 +73,35 @@ const SingleRegistryResponseSchema = z.object({
  * @internal
  */
 export async function registerRegistry(
-    config: TransportConfig,
-    registration: RegistryRegistration,
+  config: TransportConfig,
+  registration: RegistryRegistration,
 ): Promise<FederatedRegistry> {
-    // -----------------------------------------------------------------------
-    // Local input validation (fail-fast)
-    // -----------------------------------------------------------------------
-    const inputResult = RegistryRegistrationSchema.safeParse(registration);
+  // -----------------------------------------------------------------------
+  // Local input validation (fail-fast)
+  // -----------------------------------------------------------------------
+  const inputResult = RegistryRegistrationSchema.safeParse(registration);
 
-    if (!inputResult.success) {
-        throw createRegistrationError(
-            `Invalid registration input: ${inputResult.error.message}`,
-            inputResult.error,
-        );
-    }
+  if (!inputResult.success) {
+    throw createRegistrationError(
+      `Invalid registration input: ${inputResult.error.message}`,
+      inputResult.error,
+    );
+  }
 
-    // -----------------------------------------------------------------------
-    // HTTP request
-    // -----------------------------------------------------------------------
-    const response = await execute(config, {
-        method: 'POST',
-        path: '/v1/registries',
-        body: inputResult.data,
-    }, SingleRegistryResponseSchema);
+  // -----------------------------------------------------------------------
+  // HTTP request
+  // -----------------------------------------------------------------------
+  const response = await execute(
+    config,
+    {
+      method: 'POST',
+      path: '/v1/registries',
+      body: inputResult.data,
+    },
+    SingleRegistryResponseSchema,
+  );
 
-    return response.data.registry;
+  return response.data.registry;
 }
 
 // ---------------------------------------------------------------------------
@@ -125,14 +123,18 @@ export async function registerRegistry(
  * @internal
  */
 export async function listRegistries(
-    config: TransportConfig,
+  config: TransportConfig,
 ): Promise<readonly FederatedRegistry[]> {
-    const response = await execute(config, {
-        method: 'GET',
-        path: '/v1/registries',
-    }, ListRegistriesResponseSchema);
+  const response = await execute(
+    config,
+    {
+      method: 'GET',
+      path: '/v1/registries',
+    },
+    ListRegistriesResponseSchema,
+  );
 
-    return response.data.registries;
+  return response.data.registries;
 }
 
 // ---------------------------------------------------------------------------
@@ -160,25 +162,27 @@ export async function listRegistries(
  * @internal
  */
 export async function refreshRegistry(
-    config: TransportConfig,
-    registryId: string,
+  config: TransportConfig,
+  registryId: string,
 ): Promise<FederatedRegistry> {
-    // -----------------------------------------------------------------------
-    // Guard: empty registry ID
-    // -----------------------------------------------------------------------
-    if (registryId.trim() === '') {
-        throw createRegistrationError(
-            'Registry ID must not be empty.',
-        );
-    }
+  // -----------------------------------------------------------------------
+  // Guard: empty registry ID
+  // -----------------------------------------------------------------------
+  if (registryId.trim() === '') {
+    throw createRegistrationError('Registry ID must not be empty.');
+  }
 
-    // -----------------------------------------------------------------------
-    // HTTP request
-    // -----------------------------------------------------------------------
-    const response = await execute(config, {
-        method: 'POST',
-        path: `/v1/registries/${encodeURIComponent(registryId)}/refresh`,
-    }, SingleRegistryResponseSchema);
+  // -----------------------------------------------------------------------
+  // HTTP request
+  // -----------------------------------------------------------------------
+  const response = await execute(
+    config,
+    {
+      method: 'POST',
+      path: `/v1/registries/${encodeURIComponent(registryId)}/refresh`,
+    },
+    SingleRegistryResponseSchema,
+  );
 
-    return response.data.registry;
+  return response.data.registry;
 }

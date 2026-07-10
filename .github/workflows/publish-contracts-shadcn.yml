@@ -1,7 +1,7 @@
-# @enterstellar-ai/contracts-shadcn — Publish on Merge
+# @enterstellar/contracts-shadcn — Publish on Merge
 #
 # Triggered when a contracts-sync PR is merged. Builds and publishes
-# the @enterstellar-ai/contracts-shadcn package to the configured npm registry.
+# the @enterstellar/contracts-shadcn package to the configured npm registry.
 #
 # This workflow is the second half of the sync pipeline:
 #   1. sync-contracts-shadcn.yml → generates contracts, opens PR
@@ -10,7 +10,7 @@
 # @see sync-contracts-shadcn.yml — upstream sync pipeline
 # @see Correction 7 Decision 3 — CI Sync Pipeline architecture
 
-name: 'Publish: @enterstellar-ai/contracts-shadcn'
+name: 'Publish: @enterstellar/contracts-shadcn'
 
 on:
   pull_request:
@@ -43,16 +43,16 @@ jobs:
       - name: Install dependencies (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
-      - name: Build @enterstellar-ai/contracts-shadcn
-        run: pnpm turbo run build --filter=@enterstellar-ai/contracts-shadcn...
+      - name: Build @enterstellar/contracts-shadcn
+        run: pnpm turbo run build --filter=@enterstellar/contracts-shadcn...
 
       - name: Run tests
-        run: pnpm --filter @enterstellar-ai/contracts-shadcn test
+        run: pnpm --filter @enterstellar/contracts-shadcn test
 
       - name: Typecheck
-        run: pnpm --filter @enterstellar-ai/contracts-shadcn typecheck
+        run: pnpm --filter @enterstellar/contracts-shadcn typecheck
 
       - name: Publish to npm
-        run: pnpm --filter @enterstellar-ai/contracts-shadcn publish --no-git-checks --access public
+        run: pnpm --filter @enterstellar/contracts-shadcn publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,4 +1,4 @@
-# @enterstellar-ai/forge
+# @enterstellar/forge
 
 > Runtime component generation — when the registry has no match, the Forge creates an ephemeral `ComponentContract` on the fly, either from local templates (free) or via a cloud LLM (IPU metered).
 
@@ -7,9 +7,9 @@ The Forge is Enterstellar's self-growing registry brain (Moat M5). It bridges th
 ## Quick Start
 
 ```ts
-import { createComponentForge } from '@enterstellar-ai/forge';
-import { createCompiler } from '@enterstellar-ai/compiler';
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createComponentForge } from '@enterstellar/forge';
+import { createCompiler } from '@enterstellar/compiler';
+import { createRegistry } from '@enterstellar/registry';
 
 // 1. Create compiler and registry
 const registry = createRegistry({ components: [...] });
@@ -87,9 +87,9 @@ const result = await forge.forge({ component: 'PatientTimeline', props: {}, conf
 | `ForgePatternName`   | Union of 7 built-in patterns: `'card' \| 'list' \| 'table' \| 'chart' \| 'form' \| 'detail' \| 'badge'`.            |
 | `CloudForgeCallback` | `(intent, systemPrompt) => Promise<ComponentContract \| null>`. Consumer-provided LLM callback.                     |
 | `ForgeStats`         | Statistics: `totalForged`, `successCount`, `failureCount`, `localCount`, `cloudCount`, `topIntents`.                |
-| `ForgeResult`        | From `@enterstellar-ai/types`. Result of a forge invocation.                                                        |
-| `ForgeTraceRecord`   | From `@enterstellar-ai/types`. Single trace entry for Cold Path clustering.                                         |
-| `ColdPathConfig`     | From `@enterstellar-ai/types`. `enabled`, `clusterThreshold`, `autoPromote`.                                        |
+| `ForgeResult`        | From `@enterstellar/types`. Result of a forge invocation.                                                           |
+| `ForgeTraceRecord`   | From `@enterstellar/types`. Single trace entry for Cold Path clustering.                                            |
+| `ColdPathConfig`     | From `@enterstellar/types`. `enabled`, `clusterThreshold`, `autoPromote`.                                           |
 
 ### Naming Utilities
 
@@ -114,7 +114,7 @@ const result = await forge.forge({ component: 'PatientTimeline', props: {}, conf
 | **F1**   | Templates are JSON schemas with slots + token mappings (not React components).         |
 | **F2**   | 7 pre-approved patterns: card, list, table, chart, form, detail, badge.                |
 | **F3**   | Custom templates via `forge.registerTemplate()`, validated by `ForgeTemplateSchema`.   |
-| **F4**   | All 7 built-in templates shipped inside `@enterstellar-ai/forge`.                      |
+| **F4**   | All 7 built-in templates shipped inside `@enterstellar/forge`.                         |
 | **F5**   | CloudForge uses general-purpose model with specialized system prompt (no fine-tuning). |
 | **F6**   | Cloud returns data contract only — no render function.                                 |
 | **F7**   | 3-layer guardrails: system prompt → Zod validation → token allowlist.                  |
@@ -158,7 +158,7 @@ const result = await forge.forge({ component: 'PatientTimeline', props: {}, conf
 | `tsup.config.ts`   | Builds ESM + CJS + DTS. `composite: false`, `incremental: false`. |
 | `vitest.config.ts` | Test runner with 90% coverage thresholds.                         |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `@enterstellar-ai/compiler`, `@enterstellar-ai/registry`, `zod`
+**Peer dependencies:** `@enterstellar/types`, `@enterstellar/compiler`, `@enterstellar/registry`, `zod`
 
 ## See Also
 

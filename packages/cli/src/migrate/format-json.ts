@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/migrate/format-json
+ * @module @enterstellar/cli/migrate/format-json
  * @description JSON output formatter for the `enterstellar migrate --format json` mode.
  *
  * Serializes a `MigrateBatchSummary` to stdout-ready JSON. Used by CI
@@ -20,7 +20,7 @@
  * @see Implementation Plan §3 Component 3 — Output Formatters
  */
 
-import type { MigrateBatchSummary } from '@enterstellar-ai/migration';
+import type { MigrateBatchSummary } from '@enterstellar/migration';
 
 // ---------------------------------------------------------------------------
 // JSON Formatter
@@ -48,8 +48,6 @@ import type { MigrateBatchSummary } from '@enterstellar-ai/migration';
  *
  * @see MigrateBatchSummarySchema — Zod schema for runtime validation
  */
-export function formatBatchSummaryJson(
-    summary: MigrateBatchSummary,
-): string {
-    return JSON.stringify(summary, null, 2);
+export function formatBatchSummaryJson(summary: MigrateBatchSummary): string {
+  return JSON.stringify(summary, null, 2);
 }

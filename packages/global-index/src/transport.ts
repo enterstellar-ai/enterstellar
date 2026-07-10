@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/transport
+ * @module @enterstellar/global-index/transport
  * @description Internal HTTP transport for the Global Index client.
  *
  * Provides a thin, type-safe wrapper around `fetch` for communicating
@@ -14,7 +14,7 @@
  * 5. **Zod validation** — response data validated against caller-provided schema.
  *
  * This module is NOT exported from the public API. It is an internal
- * implementation detail of `@enterstellar-ai/global-index`.
+ * implementation detail of `@enterstellar/global-index`.
  *
  * @see Design Choice CL3 — graceful degradation (never hard-stop).
  * @internal
@@ -44,17 +44,17 @@ const DEFAULT_TIMEOUT_MS = 10_000;
  * @internal
  */
 export type TransportConfig = {
-    /** Base URL of the Global Index service (e.g., `'https://index.enterstellar.dev'`). */
-    readonly endpoint: string;
+  /** Base URL of the Global Index service (e.g., `'https://index.enterstellar.dev'`). */
+  readonly endpoint: string;
 
-    /**
-     * API key for authenticating requests.
-     * Sent as `Authorization: Bearer {apiKey}` header.
-     */
-    readonly apiKey: string;
+  /**
+   * API key for authenticating requests.
+   * Sent as `Authorization: Bearer {apiKey}` header.
+   */
+  readonly apiKey: string;
 
-    /** Request timeout in milliseconds. */
-    readonly timeoutMs: number;
+  /** Request timeout in milliseconds. */
+  readonly timeoutMs: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -67,17 +67,17 @@ export type TransportConfig = {
  * @internal
  */
 export type TransportRequest = {
-    /** HTTP method. */
-    readonly method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  /** HTTP method. */
+  readonly method: 'GET' | 'POST' | 'PUT' | 'DELETE';
 
-    /** URL path relative to the transport endpoint (e.g., `'/v1/search'`). */
-    readonly path: string;
+  /** URL path relative to the transport endpoint (e.g., `'/v1/search'`). */
+  readonly path: string;
 
-    /** Optional JSON request body. Serialized automatically. */
-    readonly body?: Readonly<Record<string, unknown>> | undefined;
+  /** Optional JSON request body. Serialized automatically. */
+  readonly body?: Readonly<Record<string, unknown>> | undefined;
 
-    /** Optional query parameters appended to the URL. */
-    readonly query?: Readonly<Record<string, string>> | undefined;
+  /** Optional query parameters appended to the URL. */
+  readonly query?: Readonly<Record<string, string>> | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -91,11 +91,11 @@ export type TransportRequest = {
  * @internal
  */
 export type TransportResponse<T> = {
-    /** Parsed and validated response data. */
-    readonly data: T;
+  /** Parsed and validated response data. */
+  readonly data: T;
 
-    /** HTTP status code from the response. */
-    readonly status: number;
+  /** HTTP status code from the response. */
+  readonly status: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -114,24 +114,24 @@ export type TransportResponse<T> = {
  * @internal
  */
 export function buildUrl(
-    endpoint: string,
-    path: string,
-    query?: Readonly<Record<string, string>>,
+  endpoint: string,
+  path: string,
+  query?: Readonly<Record<string, string>>,
 ): string {
-    // Strip trailing slash from endpoint, ensure leading slash on path
-    const base = endpoint.replace(/\/+$/, '');
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    const url = new URL(`${base}${normalizedPath}`);
+  // Strip trailing slash from endpoint, ensure leading slash on path
+  const base = endpoint.replace(/\/+$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const url = new URL(`${base}${normalizedPath}`);
 
-    if (query) {
-        for (const [key, value] of Object.entries(query)) {
-            if (value !== '') {
-                url.searchParams.set(key, value);
-            }
-        }
+  if (query) {
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== '') {
+        url.searchParams.set(key, value);
+      }
     }
+  }
 
-    return url.toString();
+  return url.toString();
 }
 
 // ---------------------------------------------------------------------------
@@ -150,23 +150,23 @@ export function buildUrl(
  * @internal
  */
 async function extractErrorDetail(response: Response): Promise<string> {
-    try {
-        const body: unknown = await response.json();
+  try {
+    const body: unknown = await response.json();
 
-        if (typeof body === 'object' && body !== null) {
-            const record = body as Readonly<Record<string, unknown>>;
-            if (typeof record['message'] === 'string') {
-                return record['message'];
-            }
-            if (typeof record['error'] === 'string') {
-                return record['error'];
-            }
-        }
-    } catch {
-        // Response body is not JSON — fall through to status text
+    if (typeof body === 'object' && body !== null) {
+      const record = body as Readonly<Record<string, unknown>>;
+      if (typeof record['message'] === 'string') {
+        return record['message'];
+      }
+      if (typeof record['error'] === 'string') {
+        return record['error'];
+      }
     }
+  } catch {
+    // Response body is not JSON — fall through to status text
+  }
 
-    return `HTTP ${String(response.status)} ${response.statusText}`;
+  return `HTTP ${String(response.status)} ${response.statusText}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -198,113 +198,110 @@ async function extractErrorDetail(response: Response): Promise<string> {
  * @internal
  */
 export async function execute<T>(
-    config: TransportConfig,
-    request: TransportRequest,
-    schema: z.ZodType<T>,
+  config: TransportConfig,
+  request: TransportRequest,
+  schema: z.ZodType<T>,
 ): Promise<TransportResponse<T>> {
-    const url = buildUrl(config.endpoint, request.path, request.query);
-    const timeoutMs = config.timeoutMs > 0 ? config.timeoutMs : DEFAULT_TIMEOUT_MS;
+  const url = buildUrl(config.endpoint, request.path, request.query);
+  const timeoutMs = config.timeoutMs > 0 ? config.timeoutMs : DEFAULT_TIMEOUT_MS;
 
-    // -----------------------------------------------------------------------
-    // AbortController for timeout enforcement
-    // -----------------------------------------------------------------------
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        controller.abort();
-    }, timeoutMs);
+  // -----------------------------------------------------------------------
+  // AbortController for timeout enforcement
+  // -----------------------------------------------------------------------
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    // -------------------------------------------------------------------
+    // Build fetch options
+    // -------------------------------------------------------------------
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${config.apiKey}`,
+      Accept: 'application/json',
+    };
+
+    if (request.body !== undefined) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const fetchOptions: RequestInit = {
+      method: request.method,
+      headers,
+      signal: controller.signal,
+    };
+
+    if (request.body !== undefined) {
+      fetchOptions.body = JSON.stringify(request.body);
+    }
+
+    // -------------------------------------------------------------------
+    // Execute fetch
+    // -------------------------------------------------------------------
+    let response: Response;
 
     try {
-        // -------------------------------------------------------------------
-        // Build fetch options
-        // -------------------------------------------------------------------
-        const headers: Record<string, string> = {
-            'Authorization': `Bearer ${config.apiKey}`,
-            'Accept': 'application/json',
-        };
+      response = await fetch(url, fetchOptions);
+    } catch (error: unknown) {
+      // AbortError = timeout; TypeError = network failure
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw createSearchError(
+          `Request timed out after ${String(timeoutMs)}ms: ${request.method} ${request.path}`,
+          error,
+        );
+      }
 
-        if (request.body !== undefined) {
-            headers['Content-Type'] = 'application/json';
-        }
-
-        const fetchOptions: RequestInit = {
-            method: request.method,
-            headers,
-            signal: controller.signal,
-        };
-
-        if (request.body !== undefined) {
-            fetchOptions.body = JSON.stringify(request.body);
-        }
-
-        // -------------------------------------------------------------------
-        // Execute fetch
-        // -------------------------------------------------------------------
-        let response: Response;
-
-        try {
-            response = await fetch(url, fetchOptions);
-        } catch (error: unknown) {
-            // AbortError = timeout; TypeError = network failure
-            if (error instanceof DOMException && error.name === 'AbortError') {
-                throw createSearchError(
-                    `Request timed out after ${String(timeoutMs)}ms: ${request.method} ${request.path}`,
-                    error,
-                );
-            }
-
-            throw createSearchError(
-                `Network error: ${request.method} ${request.path}`,
-                error,
-            );
-        }
-
-        // -------------------------------------------------------------------
-        // HTTP error detection (non-2xx)
-        // -------------------------------------------------------------------
-        if (!response.ok) {
-            const detail = await extractErrorDetail(response);
-            throw createSearchError(
-                `${request.method} ${request.path} returned ${String(response.status)}: ${detail}`,
-            );
-        }
-
-        // -------------------------------------------------------------------
-        // Parse JSON response
-        // -------------------------------------------------------------------
-        let rawBody: unknown;
-
-        try {
-            rawBody = await response.json();
-        } catch (error: unknown) {
-            throw createValidationError(
-                `Failed to parse JSON response: ${request.method} ${request.path}`,
-                error,
-            );
-        }
-
-        // -------------------------------------------------------------------
-        // Zod schema validation
-        // -------------------------------------------------------------------
-        const parseResult = schema.safeParse(rawBody);
-
-        if (!parseResult.success) {
-            throw createValidationError(
-                `Response schema mismatch: ${request.method} ${request.path} — ${parseResult.error.message}`,
-                parseResult.error,
-            );
-        }
-
-        // -------------------------------------------------------------------
-        // Return validated response
-        // -------------------------------------------------------------------
-        return Object.freeze({
-            data: parseResult.data,
-            status: response.status,
-        });
-    } finally {
-        // Always clear the timeout timer to prevent resource leaks
-        clearTimeout(timeoutId);
+      throw createSearchError(`Network error: ${request.method} ${request.path}`, error);
     }
+
+    // -------------------------------------------------------------------
+    // HTTP error detection (non-2xx)
+    // -------------------------------------------------------------------
+    if (!response.ok) {
+      const detail = await extractErrorDetail(response);
+      throw createSearchError(
+        `${request.method} ${request.path} returned ${String(response.status)}: ${detail}`,
+      );
+    }
+
+    // -------------------------------------------------------------------
+    // Parse JSON response
+    // -------------------------------------------------------------------
+    let rawBody: unknown;
+
+    try {
+      rawBody = await response.json();
+    } catch (error: unknown) {
+      throw createValidationError(
+        `Failed to parse JSON response: ${request.method} ${request.path}`,
+        error,
+      );
+    }
+
+    // -------------------------------------------------------------------
+    // Zod schema validation
+    // -------------------------------------------------------------------
+    const parseResult = schema.safeParse(rawBody);
+
+    if (!parseResult.success) {
+      throw createValidationError(
+        `Response schema mismatch: ${request.method} ${request.path} — ${parseResult.error.message}`,
+        parseResult.error,
+      );
+    }
+
+    // -------------------------------------------------------------------
+    // Return validated response
+    // -------------------------------------------------------------------
+    return Object.freeze({
+      data: parseResult.data,
+      status: response.status,
+    });
+  } finally {
+    // Always clear the timeout timer to prevent resource leaks
+    clearTimeout(timeoutId);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -329,85 +326,82 @@ export async function execute<T>(
  * @internal
  */
 export async function executeOptional<T>(
-    config: TransportConfig,
-    request: TransportRequest,
-    schema: z.ZodType<T>,
+  config: TransportConfig,
+  request: TransportRequest,
+  schema: z.ZodType<T>,
 ): Promise<TransportResponse<T> | null> {
-    const url = buildUrl(config.endpoint, request.path, request.query);
-    const timeoutMs = config.timeoutMs > 0 ? config.timeoutMs : DEFAULT_TIMEOUT_MS;
+  const url = buildUrl(config.endpoint, request.path, request.query);
+  const timeoutMs = config.timeoutMs > 0 ? config.timeoutMs : DEFAULT_TIMEOUT_MS;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        controller.abort();
-    }, timeoutMs);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${config.apiKey}`,
+      Accept: 'application/json',
+    };
+
+    const fetchOptions: RequestInit = {
+      method: request.method,
+      headers,
+      signal: controller.signal,
+    };
+
+    let response: Response;
 
     try {
-        const headers: Record<string, string> = {
-            'Authorization': `Bearer ${config.apiKey}`,
-            'Accept': 'application/json',
-        };
+      response = await fetch(url, fetchOptions);
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw createSearchError(
+          `Request timed out after ${String(timeoutMs)}ms: ${request.method} ${request.path}`,
+          error,
+        );
+      }
 
-        const fetchOptions: RequestInit = {
-            method: request.method,
-            headers,
-            signal: controller.signal,
-        };
-
-        let response: Response;
-
-        try {
-            response = await fetch(url, fetchOptions);
-        } catch (error: unknown) {
-            if (error instanceof DOMException && error.name === 'AbortError') {
-                throw createSearchError(
-                    `Request timed out after ${String(timeoutMs)}ms: ${request.method} ${request.path}`,
-                    error,
-                );
-            }
-
-            throw createSearchError(
-                `Network error: ${request.method} ${request.path}`,
-                error,
-            );
-        }
-
-        // 404 = not found — expected case, return null
-        if (response.status === 404) {
-            return null;
-        }
-
-        if (!response.ok) {
-            const detail = await extractErrorDetail(response);
-            throw createSearchError(
-                `${request.method} ${request.path} returned ${String(response.status)}: ${detail}`,
-            );
-        }
-
-        let rawBody: unknown;
-
-        try {
-            rawBody = await response.json();
-        } catch (error: unknown) {
-            throw createValidationError(
-                `Failed to parse JSON response: ${request.method} ${request.path}`,
-                error,
-            );
-        }
-
-        const parseResult = schema.safeParse(rawBody);
-
-        if (!parseResult.success) {
-            throw createValidationError(
-                `Response schema mismatch: ${request.method} ${request.path} — ${parseResult.error.message}`,
-                parseResult.error,
-            );
-        }
-
-        return Object.freeze({
-            data: parseResult.data,
-            status: response.status,
-        });
-    } finally {
-        clearTimeout(timeoutId);
+      throw createSearchError(`Network error: ${request.method} ${request.path}`, error);
     }
+
+    // 404 = not found — expected case, return null
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      const detail = await extractErrorDetail(response);
+      throw createSearchError(
+        `${request.method} ${request.path} returned ${String(response.status)}: ${detail}`,
+      );
+    }
+
+    let rawBody: unknown;
+
+    try {
+      rawBody = await response.json();
+    } catch (error: unknown) {
+      throw createValidationError(
+        `Failed to parse JSON response: ${request.method} ${request.path}`,
+        error,
+      );
+    }
+
+    const parseResult = schema.safeParse(rawBody);
+
+    if (!parseResult.success) {
+      throw createValidationError(
+        `Response schema mismatch: ${request.method} ${request.path} — ${parseResult.error.message}`,
+        parseResult.error,
+      );
+    }
+
+    return Object.freeze({
+      data: parseResult.data,
+      status: response.status,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

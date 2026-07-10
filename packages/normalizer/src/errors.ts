@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/normalizer/errors
+ * @module @enterstellar/normalizer/errors
  * @description Error factory functions for the normalizer module.
  *
  * Every error is an `EnterstellarError` with:
@@ -16,7 +16,7 @@
  * @see Design Choice C14 — error code ranges
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Error Factories
@@ -40,16 +40,17 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * ```
  */
 export function createUnknownProtocolError(event: unknown): EnterstellarError {
-    const eventType = typeof event === 'object' && event !== null && 'type' in event
-        ? String((event as Record<string, unknown>)['type'])
-        : typeof event;
+  const eventType =
+    typeof event === 'object' && event !== null && 'type' in event
+      ? String((event as Record<string, unknown>)['type'])
+      : typeof event;
 
-    return new EnterstellarError(
-        'ENS-6001',
-        'normalizer',
-        `No protocol adapter can handle this event. Event type: "${eventType}".`,
-        false, // non-recoverable — developer misconfiguration
-    );
+  return new EnterstellarError(
+    'ENS-6001',
+    'normalizer',
+    `No protocol adapter can handle this event. Event type: "${eventType}".`,
+    false, // non-recoverable — developer misconfiguration
+  );
 }
 
 /**
@@ -70,16 +71,16 @@ export function createUnknownProtocolError(event: unknown): EnterstellarError {
  * ```
  */
 export function createNormalizationFailedError(
-    protocol: string,
-    cause?: unknown,
+  protocol: string,
+  cause?: unknown,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-6002',
-        'normalizer',
-        `Normalization failed for protocol "${protocol}".`,
-        true, // recoverable — next event may succeed
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-6002',
+    'normalizer',
+    `Normalization failed for protocol "${protocol}".`,
+    true, // recoverable — next event may succeed
+    cause,
+  );
 }
 
 /**
@@ -101,10 +102,10 @@ export function createNormalizationFailedError(
  * ```
  */
 export function createInvalidIntentError(zodErrors: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-6003',
-        'normalizer',
-        `Assembled intent failed ComponentIntentSchema validation: ${zodErrors}`,
-        true, // recoverable — malformed agent output
-    );
+  return new EnterstellarError(
+    'ENS-6003',
+    'normalizer',
+    `Assembled intent failed ComponentIntentSchema validation: ${zodErrors}`,
+    true, // recoverable — malformed agent output
+  );
 }

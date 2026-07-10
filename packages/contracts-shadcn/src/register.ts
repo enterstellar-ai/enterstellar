@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/contracts-shadcn/register
+ * @module @enterstellar/contracts-shadcn/register
  * @description Registration API for pairing shadcn/ui components with
  * Enterstellar ComponentContracts.
  *
@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { registerShadcnContracts } from '@enterstellar-ai/contracts-shadcn';
+ * import { registerShadcnContracts } from '@enterstellar/contracts-shadcn';
  * import { Button } from '@/components/ui/button';
  * import { Card } from '@/components/ui/card';
  *
@@ -34,10 +34,10 @@
 
 import type { ComponentType } from 'react'; // type-only — erased at compile time (Audit N1)
 
-import type { ComponentContract } from '@enterstellar-ai/types';
-import * as Registry from '@enterstellar-ai/registry';             // Audit E2: explicit import
-import type { ComponentContractInput } from '@enterstellar-ai/registry';   // Audit E1: from @enterstellar-ai/registry, NOT @enterstellar-ai/types
-import { defineComponent } from '@enterstellar-ai/react';
+import type { ComponentContract } from '@enterstellar/types';
+import * as Registry from '@enterstellar/registry'; // Audit E2: explicit import
+import type { ComponentContractInput } from '@enterstellar/registry'; // Audit E1: from @enterstellar/registry, NOT @enterstellar/types
+import { defineComponent } from '@enterstellar/react';
 
 import { SHADCN_CONTRACTS } from './contracts/index.js';
 import type { ShadcnContractName } from './contracts/index.js';
@@ -65,7 +65,7 @@ import { findClosestMatch } from './utils/levenshtein.js';
  * @see defineComponent — TProps constraint
  */
 export type ShadcnComponentMap = Partial<
-    Record<ShadcnContractName, ComponentType<Record<string, unknown>>>
+  Record<ShadcnContractName, ComponentType<Record<string, unknown>>>
 >;
 
 // ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ export type ShadcnComponentMap = Partial<
  *
  * @example
  * ```ts
- * import { registerShadcnContracts } from '@enterstellar-ai/contracts-shadcn';
+ * import { registerShadcnContracts } from '@enterstellar/contracts-shadcn';
  * import { Button } from '@/components/ui/button';
  * import { Card } from '@/components/ui/card';
  * import { Dialog } from '@/components/ui/dialog';
@@ -116,74 +116,72 @@ export type ShadcnComponentMap = Partial<
  * @see defineComponent — internal pairing mechanism
  */
 export function registerShadcnContracts(
-    components: ShadcnComponentMap,
+  components: ShadcnComponentMap,
 ): readonly ComponentContract[] {
-    const contracts: ComponentContract[] = [];
-    const knownNames = Object.keys(SHADCN_CONTRACTS);
+  const contracts: ComponentContract[] = [];
+  const knownNames = Object.keys(SHADCN_CONTRACTS);
 
-    // -------------------------------------------------------------------------
-    // Phase 1: Validate unknown keys (throw with fuzzy suggestion)
-    // -------------------------------------------------------------------------
-    // Check every key the developer provided against the known contract names.
-    // This runs first so the developer gets immediate feedback on typos before
-    // any contracts are registered.
-    for (const key of Object.keys(components)) {
-        if (!(key in SHADCN_CONTRACTS)) {
-            const suggestion = findClosestMatch(key, knownNames);
-            const hint = suggestion !== undefined
-                ? ` Did you mean '${suggestion}'?`
-                : '';
-            throw new Error(
-                `'${key}' is not a known shadcn contract.${hint}`,
-            );
-        }
+  // -------------------------------------------------------------------------
+  // Phase 1: Validate unknown keys (throw with fuzzy suggestion)
+  // -------------------------------------------------------------------------
+  // Check every key the developer provided against the known contract names.
+  // This runs first so the developer gets immediate feedback on typos before
+  // any contracts are registered.
+  for (const key of Object.keys(components)) {
+    if (!(key in SHADCN_CONTRACTS)) {
+      const suggestion = findClosestMatch(key, knownNames);
+      const hint = suggestion !== undefined ? ` Did you mean '${suggestion}'?` : '';
+      throw new Error(`'${key}' is not a known shadcn contract.${hint}`);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Phase 2: Register each known contract
+  // -------------------------------------------------------------------------
+  for (const [name, contractInput] of Object.entries(SHADCN_CONTRACTS)) {
+    const typedInput: ComponentContractInput = contractInput;
+
+    // Check if the developer provided this key at all.
+    const isProvided = name in components;
+    const component = (
+      components as Record<string, ComponentType<Record<string, unknown>> | undefined>
+    )[name];
+
+    // --- Case: explicitly passed undefined/null ---
+    // The developer listed the key but didn't provide a component.
+    // This is likely a mistake — they intended to provide it but forgot
+    // to install/import it.
+    if (isProvided && component == null) {
+      throw new Error(
+        `Component '${name}' was not provided (received ${String(component)}). ` +
+          `Run 'npx shadcn@latest add ${name.toLowerCase()}' to add it.`,
+      );
     }
 
-    // -------------------------------------------------------------------------
-    // Phase 2: Register each known contract
-    // -------------------------------------------------------------------------
-    for (const [name, contractInput] of Object.entries(SHADCN_CONTRACTS)) {
-        const typedInput: ComponentContractInput = contractInput;
-
-        // Check if the developer provided this key at all.
-        const isProvided = name in components;
-        const component = (components as Record<string, ComponentType<Record<string, unknown>> | undefined>)[name];
-
-        // --- Case: explicitly passed undefined/null ---
-        // The developer listed the key but didn't provide a component.
-        // This is likely a mistake — they intended to provide it but forgot
-        // to install/import it.
-        if (isProvided && component == null) {
-            throw new Error(
-                `Component '${name}' was not provided (received ${String(component)}). ` +
-                `Run 'npx shadcn@latest add ${name.toLowerCase()}' to add it.`,
-            );
-        }
-
-        // --- Case: not provided at all ---
-        // The developer didn't list this key in the map. This is intentional —
-        // they don't have this component installed. Register the contract
-        // without a renderer so GenericCard can fall back.
-        if (component === undefined) {
-            console.warn(
-                `Shadcn${name}: contract registered without renderer. ` +
-                `<Zone> will use GenericCard fallback. ` +
-                `Pass ${name} to registerShadcnContracts() to enable full rendering.`,
-            );
-            contracts.push(Registry.defineComponent(typedInput));
-            continue;
-        }
-
-        // --- Case: provided with a valid component ---
-        // Pair the contract with the developer's local component implementation
-        // via defineComponent(). This validates the contract, freezes it,
-        // and registers the renderer in the module-level RendererRegistry.
-        const { contract } = defineComponent({
-            contract: typedInput,
-            render: component,
-        });
-        contracts.push(contract);
+    // --- Case: not provided at all ---
+    // The developer didn't list this key in the map. This is intentional —
+    // they don't have this component installed. Register the contract
+    // without a renderer so GenericCard can fall back.
+    if (component === undefined) {
+      console.warn(
+        `Shadcn${name}: contract registered without renderer. ` +
+          `<Zone> will use GenericCard fallback. ` +
+          `Pass ${name} to registerShadcnContracts() to enable full rendering.`,
+      );
+      contracts.push(Registry.defineComponent(typedInput));
+      continue;
     }
 
-    return contracts;
+    // --- Case: provided with a valid component ---
+    // Pair the contract with the developer's local component implementation
+    // via defineComponent(). This validates the contract, freezes it,
+    // and registers the renderer in the module-level RendererRegistry.
+    const { contract } = defineComponent({
+      contract: typedInput,
+      render: component,
+    });
+    contracts.push(contract);
+  }
+
+  return contracts;
 }

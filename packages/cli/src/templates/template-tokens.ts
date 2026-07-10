@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-tokens
+ * @module @enterstellar/cli/templates/template-tokens
  * @description Generates `src/enterstellar/tokens.ts` — an example design token set.
  *
  * Produces a complete design token set covering all five categories
@@ -26,7 +26,7 @@
  * Generates the `src/enterstellar/tokens.ts` file content for a scaffolded project.
  *
  * The generated file exports a `designTokens` object conforming to
- * `DesignTokenSet` from `@enterstellar-ai/types`. It includes comprehensive tokens
+ * `DesignTokenSet` from `@enterstellar/types`. It includes comprehensive tokens
  * for a modern, accessible design system with both light and dark variants.
  *
  * @returns A TypeScript source string for `src/enterstellar/tokens.ts`.
@@ -38,7 +38,7 @@
  * ```
  */
 export function generateTokens(): string {
-    return `/**
+  return `/**
  * Enterstellar Design Token Set
  *
  * These tokens form the visual "firmware" of your Enterstellar application.
@@ -51,7 +51,7 @@ export function generateTokens(): string {
  * @see https://enterstellar.dev/docs/design-tokens
  */
 
-import type { DesignTokenSet } from '@enterstellar-ai/types';
+import type { DesignTokenSet } from '@enterstellar/types';
 
 /**
  * The application's shared design token set.

@@ -1,8 +1,8 @@
-# @enterstellar-ai/types
+# @enterstellar/types
 
 > Shared type definitions, Zod schemas, branded identifiers, type guards, and the `EnterstellarError` class for the Enterstellar ecosystem.
 
-This is the foundation package — every other `@enterstellar-ai/*` package depends on it. It defines the vocabulary of the Enterstellar pipeline: contracts, intents, compilation results, traces, zone configs, telemetry signals, state, and connection protocols. All types are framework-agnostic (L15) and split by domain (T6).
+This is the foundation package — every other `@enterstellar/*` package depends on it. It defines the vocabulary of the Enterstellar pipeline: contracts, intents, compilation results, traces, zone configs, telemetry signals, state, and connection protocols. All types are framework-agnostic (L15) and split by domain (T6).
 
 ## Quick Start
 
@@ -14,7 +14,7 @@ import {
   ComponentContractSchema,
   isComponentIntent,
   ENTERSTELLAR_TYPES_VERSION,
-} from '@enterstellar-ai/types';
+} from '@enterstellar/types';
 
 // Branded identifiers — type-safe, never confused
 const id = createComponentId('PatientVitals');
@@ -102,7 +102,7 @@ class EnterstellarError extends Error {
 
 ## Configuration
 
-This package has no runtime configuration. All behavior is determined by the types, schemas, and constructors themselves. Consumer packages (e.g., `@enterstellar-ai/registry`, `@enterstellar-ai/compiler`) use these types as their API contracts.
+This package has no runtime configuration. All behavior is determined by the types, schemas, and constructors themselves. Consumer packages (e.g., `@enterstellar/registry`, `@enterstellar/compiler`) use these types as their API contracts.
 
 **Build configuration:**
 

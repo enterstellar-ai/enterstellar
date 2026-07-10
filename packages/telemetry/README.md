@@ -1,17 +1,17 @@
-# @enterstellar-ai/telemetry
+# @enterstellar/telemetry
 
 > ForgeSignal collection, queuing, and upload. Zero-PII telemetry for the Forge.
 
 ## Purpose
 
-`@enterstellar-ai/telemetry` provides `createTelemetryCollector()` — the data pipeline powering the 3 network-effect moats (M2, M4, M5). Every Enterstellar compilation emits a `ForgeSignal` — a zero-PII telemetry payload containing hashed intents, component names, and latency metrics. Signals are queued locally, batched, and uploaded to `api.enterstellar.dev/v1/signals`.
+`@enterstellar/telemetry` provides `createTelemetryCollector()` — the data pipeline powering the 3 network-effect moats (M2, M4, M5). Every Enterstellar compilation emits a `ForgeSignal` — a zero-PII telemetry payload containing hashed intents, component names, and latency metrics. Signals are queued locally, batched, and uploaded to `api.enterstellar.dev/v1/signals`.
 
 **Key properties:**
 
-- **TL1:** Called automatically by `@enterstellar-ai/compiler` and `@enterstellar-ai/react`. No manual calls needed.
+- **TL1:** Called automatically by `@enterstellar/compiler` and `@enterstellar/react`. No manual calls needed.
 - **TL2:** `record()` accepts partial input — auto-fills `timestamp`, `sdkVersion`, `platform`, `registrySize`.
 - **TL3:** Raw intent is SHA-256 hashed inside `record()` — PII never leaves the device.
-- **TL4:** IndexedDB queue uses separate `enterstellar-telemetry` DB — isolated from `@enterstellar-ai/state`'s `enterstellar-store`.
+- **TL4:** IndexedDB queue uses separate `enterstellar-telemetry` DB — isolated from `@enterstellar/state`'s `enterstellar-store`.
 - **TL5:** Max 3 in-flight flushes, then backpressure (signals silently dropped).
 - **TL6:** `POST /v1/signals` with JSON array body.
 - **TL7:** Exponential backoff on failures: 1s → 2s → 4s → 8s → 16s → 60s cap.
@@ -27,14 +27,14 @@
 ## Quick Start
 
 ```ts
-import { createTelemetryCollector } from '@enterstellar-ai/telemetry';
+import { createTelemetryCollector } from '@enterstellar/telemetry';
 
 const telemetry = await createTelemetryCollector({
   platform: 'web',
   registrySize: 42,
 });
 
-// Called automatically by @enterstellar-ai/compiler and @enterstellar-ai/react (TL1).
+// Called automatically by @enterstellar/compiler and @enterstellar/react (TL1).
 // Manual calls are NOT needed in normal usage.
 telemetry.record({
   rawIntent: 'show patient vitals',

@@ -1,4 +1,4 @@
-# @enterstellar-ai/cache
+# @enterstellar/cache
 
 > LRU render cache for compiled intents — makes GenUI feel instant.
 
@@ -7,7 +7,7 @@ This package implements the **Render Cache** (Bible §4.6) — a global LRU cach
 ## Quick Start
 
 ```ts
-import { createRenderCache, buildCacheKey, withRegistryInvalidation } from '@enterstellar-ai/cache';
+import { createRenderCache, buildCacheKey, withRegistryInvalidation } from '@enterstellar/cache';
 
 // 1. Create cache
 const cache = createRenderCache({ maxEntries: 500, ttl: 1800 });
@@ -116,7 +116,7 @@ Invalid config throws `EnterstellarError` with code `ENS-3001` (not recoverable)
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags.                    |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. Overrides `composite: false` for tsup DTS. |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `zod ^4.3.6`
 
 ## See Also
 

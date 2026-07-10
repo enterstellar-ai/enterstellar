@@ -1,7 +1,7 @@
 /**
  * @module playground/enterstellar/agent-connection
  * @description LiveAgentConnection — app-level implementation of `EnterstellarAgentConnection`
- * from `@enterstellar-ai/types` for the Enterstellar Playground Playground.
+ * from `@enterstellar/types` for the Enterstellar Playground Playground.
  *
  * This is the bridge between the Next.js API route (server-side LLM) and
  * Enterstellar's zone-based event architecture (client-side rendering). It follows
@@ -17,14 +17,14 @@
  * - Dual concurrent: Hallucinating mode receives pre-completed JSON
  *   (`{ healthy, hallucinated }`), dispatches healthy intents to standard
  *   zones AND hallucinated intents to `hallucinated-*` zones through the
- *   real `@enterstellar-ai/compiler`. This is THE MOAT — the compiler validates both
+ *   real `@enterstellar/compiler`. This is THE MOAT — the compiler validates both
  *   sets, proving the difference between protected (pass) and unprotected
  *   (fail → GenericCard fallback) rendering.
  *
  * **Design rule (RE3):** The connection is created and owned by the consumer
  * (the playground layout), NOT by Enterstellar internals.
  *
- * @see @enterstellar-ai/types — EnterstellarAgentConnection interface
+ * @see @enterstellar/types — EnterstellarAgentConnection interface
  * @see apps/playground/src/enterstellar/mock-agent.ts — reference implementation
  * @see implementation_plan.md §3.3.2 — LiveAgentConnection specification
  */
@@ -34,7 +34,7 @@ import type {
   AgentEventType,
   UserSignal,
   ComponentIntent,
-} from '@enterstellar-ai/types';
+} from '@enterstellar/types';
 
 import type { PlaygroundScene, ZoneIntent } from './scenes/types';
 import { getHallucinatedZones } from './scenes/types';
@@ -94,7 +94,7 @@ const API_ENDPOINT = '/playground/api/playground';
 /**
  * Live agent connection for the Enterstellar Playground Playground.
  *
- * Implements `EnterstellarAgentConnection` from `@enterstellar-ai/types` with an in-memory
+ * Implements `EnterstellarAgentConnection` from `@enterstellar/types` with an in-memory
  * event emitter backed by a `Map<AgentEventType, Set<EventCallback>>`.
  *
  * **Usage:**
@@ -303,7 +303,7 @@ export class LiveAgentConnection implements EnterstellarAgentConnection {
    * 2. Dispatch hallucinated intents to `hallucinated-*` zone names → compiler
    *    validates → FAIL (ENS-3004/ENS-2001) → GenericCard fallback
    *
-   * Both sets go through the **real `@enterstellar-ai/compiler`**. The hallucinated
+   * Both sets go through the **real `@enterstellar/compiler`**. The hallucinated
    * side proves the compiler's value by catching invented component names,
    * wrong prop types, and missing accessibility attributes.
    *
@@ -440,7 +440,7 @@ export class LiveAgentConnection implements EnterstellarAgentConnection {
    * either from the scene's explicit `hallucinatedZones` or auto-mirrored
    * from standard zones with a `hallucinated-` prefix.
    *
-   * The hallucinated intents go through the **real** `@enterstellar-ai/compiler`
+   * The hallucinated intents go through the **real** `@enterstellar/compiler`
    * inside each `<Zone>`. When the compiler encounters an invented
    * component name (ENS-3004) or invalid props (ENS-2001), it produces
    * a `GenericCard` fallback — proving THE MOAT.

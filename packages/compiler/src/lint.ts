@@ -1,10 +1,10 @@
 /**
- * @module @enterstellar-ai/compiler/lint
+ * @module @enterstellar/compiler/lint
  * @description Lint mode — validates a `ComponentIntent` without producing
  * a full `CompilationResult`.
  *
  * Returns validation errors and non-fatal warnings in a `LintResult`.
- * No provenance, no trace emission, no self-correction. Used by `@enterstellar-ai/test`
+ * No provenance, no trace emission, no self-correction. Used by `@enterstellar/test`
  * for assertions and CI pipelines for pre-merge validation.
  *
  * Runs the same validation logic as `compile()` (resolve → parse → token → a11y)
@@ -15,7 +15,7 @@
  * @see Design Choice C19 — lint mode.
  */
 
-import type { ComponentIntent } from '@enterstellar-ai/types';
+import type { ComponentIntent } from '@enterstellar/types';
 
 import type { CompilationContext, CompilationStep, CompilerConfig, LintResult } from './types.js';
 import type { NamedStep } from './pipeline/types.js';
@@ -44,7 +44,7 @@ import { unknownComponentError } from './errors.js';
  * @param customSteps - Custom middleware steps for additional validation.
  * @returns A `LintResult` containing validation errors and non-fatal warnings.
  *
- * @see Design Choice C19 — lint mode for `@enterstellar-ai/test` and CI.
+ * @see Design Choice C19 — lint mode for `@enterstellar/test` and CI.
  *
  * @example
  * ```ts
@@ -55,68 +55,66 @@ import { unknownComponentError } from './errors.js';
  * ```
  */
 export async function lint(
-    intent: ComponentIntent,
-    config: CompilerConfig,
-    customSteps: readonly CompilationStep[],
+  intent: ComponentIntent,
+  config: CompilerConfig,
+  customSteps: readonly CompilationStep[],
 ): Promise<LintResult> {
-    const { registry } = config;
+  const { registry } = config;
 
-    // --- 1. Resolve component ---
-    const contract = registry.get(intent.component);
+  // --- 1. Resolve component ---
+  const contract = registry.get(intent.component);
 
-    if (contract === undefined) {
-        return { errors: [unknownComponentError(intent.component)], warnings: [] };
-    }
+  if (contract === undefined) {
+    return { errors: [unknownComponentError(intent.component)], warnings: [] };
+  }
 
-    // --- 2. Validate nesting depth (P4) ---
-    const nestingResult = validateNestingDepth(
-        intent.props,
-        config.maxNestingDepth,
-    );
+  // --- 2. Validate nesting depth (P4) ---
+  const nestingResult = validateNestingDepth(intent.props, config.maxNestingDepth);
 
-    if (!nestingResult.valid && nestingResult.error !== undefined) {
-        return { errors: [nestingResult.error], warnings: [] };
-    }
+  if (!nestingResult.valid && nestingResult.error !== undefined) {
+    return { errors: [nestingResult.error], warnings: [] };
+  }
 
-    // --- 3. Build lint-only pipeline (no trace step) ---
-    const context: CompilationContext = {
-        intent,
-        contract,
-        registry,
-        config,
-        designTokens: registry.getDesignTokens(),
-        agent: 'lint',
+  // --- 3. Build lint-only pipeline (no trace step) ---
+  const context: CompilationContext = {
+    intent,
+    contract,
+    registry,
+    config,
+    designTokens: registry.getDesignTokens(),
+    agent: 'lint',
 
-        props: { ...intent.props },
-        errors: [],
-        warnings: [],
-        strippedProps: [],
-        tokenCoercions: 0,
-        accessibilityInjections: [],
-    };
+    props: { ...intent.props },
+    errors: [],
+    warnings: [],
+    strippedProps: [],
+    tokenCoercions: 0,
+    accessibilityInjections: [],
+  };
 
-    const builtInSteps: readonly NamedStep[] = [
-        { name: 'resolve', execute: resolveStep },
-        { name: 'parse', execute: parseStep },
-        { name: 'token', execute: tokenStep },
-        { name: 'accessibility', execute: accessibilityStep },
-    ];
+  const builtInSteps: readonly NamedStep[] = [
+    { name: 'resolve', execute: resolveStep },
+    { name: 'parse', execute: parseStep },
+    { name: 'token', execute: tokenStep },
+    { name: 'accessibility', execute: accessibilityStep },
+  ];
 
-    const namedCustomSteps: readonly NamedStep[] = customSteps.map(
-        (step) => ({ name: 'custom' as const, execute: step }),
-    );
+  const namedCustomSteps: readonly NamedStep[] = customSteps.map((step) => ({
+    name: 'custom' as const,
+    execute: step,
+  }));
 
-    // No trace step — lint mode skips result construction and trace emission.
-    // Use a passthrough terminal step that just returns the context.
-    const terminalStep: NamedStep = {
-        name: 'trace',
-        execute: (ctx: CompilationContext, _next): Promise<CompilationContext> => Promise.resolve(ctx),
-    };
+  // No trace step — lint mode skips result construction and trace emission.
+  // Use a passthrough terminal step that just returns the context.
+  const terminalStep: NamedStep = {
+    name: 'trace',
+    execute: (ctx: CompilationContext, _next): Promise<CompilationContext> => Promise.resolve(ctx),
+  };
 
-    const pipeline = [...builtInSteps, ...namedCustomSteps, terminalStep];
+  const pipeline = [...builtInSteps, ...namedCustomSteps, terminalStep];
 
-    // --- 4. Execute pipeline ---
-    const finalContext = await executePipeline(pipeline, context);
+  // --- 4. Execute pipeline ---
+  const finalContext = await executePipeline(pipeline, context);
 
-    return { errors: finalContext.errors, warnings: finalContext.warnings };
+  return { errors: finalContext.errors, warnings: finalContext.warnings };
 }

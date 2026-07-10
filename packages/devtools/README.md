@@ -1,10 +1,10 @@
-# @enterstellar-ai/devtools
+# @enterstellar/devtools
 
 > Embedded DevTools panel for inspecting, debugging, and profiling Enterstellar GenUI pipelines.
 
 ## Purpose
 
-`@enterstellar-ai/devtools` provides a browser-embedded DevTools panel that attaches to any React app using `<Provider>`. It renders a floating ⚡ toggle button and a slide-out panel with tabbed navigation for real-time inspection of Enterstellar's intent → compilation → rendering pipeline.
+`@enterstellar/devtools` provides a browser-embedded DevTools panel that attaches to any React app using `<Provider>`. It renders a floating ⚡ toggle button and a slide-out panel with tabbed navigation for real-time inspection of Enterstellar's intent → compilation → rendering pipeline.
 
 **Key properties:**
 
@@ -22,8 +22,8 @@
 ## Quick Start
 
 ```tsx
-import { EnterstellarDevTools } from '@enterstellar-ai/devtools';
-import { Provider } from '@enterstellar-ai/react';
+import { EnterstellarDevTools } from '@enterstellar/devtools';
+import { Provider } from '@enterstellar/react';
 
 function App() {
   return (
@@ -58,10 +58,10 @@ With custom configuration:
 
 Root DevTools component. Renders toggle button + slide-out panel.
 
-| Prop     | Type                   | Required | Description                                                                                                                                                                                                                                      |
-| :------- | :--------------------- | :------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config` | `DevToolsConfig`       |    —     | Optional configuration overrides.                                                                                                                                                                                                                |
-| `cache`  | `DevToolsCacheAdapter` |    —     | Cache adapter for the Cache Dashboard tab. When provided, shows live statistics. When omitted, shows empty state. Accepts any object satisfying the `DevToolsCacheAdapter` protocol, including `RenderCache` from `@enterstellar-ai/cache` (L5). |
+| Prop     | Type                   | Required | Description                                                                                                                                                                                                                                   |
+| :------- | :--------------------- | :------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config` | `DevToolsConfig`       |    —     | Optional configuration overrides.                                                                                                                                                                                                             |
+| `cache`  | `DevToolsCacheAdapter` |    —     | Cache adapter for the Cache Dashboard tab. When provided, shows live statistics. When omitted, shows empty state. Accepts any object satisfying the `DevToolsCacheAdapter` protocol, including `RenderCache` from `@enterstellar/cache` (L5). |
 
 #### `exportTraces(traces, zoneConfigs)`
 
@@ -99,7 +99,7 @@ type DevToolsTab =
 
 #### `DevToolsCacheAdapter`
 
-Protocol-based cache interface (L5 — no hard `@enterstellar-ai/cache` dependency).
+Protocol-based cache interface (L5 — no hard `@enterstellar/cache` dependency).
 
 | Method            | Signature                                  | Description                         |
 | :---------------- | :----------------------------------------- | :---------------------------------- |
@@ -157,7 +157,7 @@ Live cache performance statistics and management.
 - **Hit rate progress bar:** Visual indicator with percentage.
 - **Clear Cache button:** Calls `cache.invalidateAll()`. Disabled when entries is 0.
 - **Empty state:** Shown when no `cache` prop is provided — instructs user to pass a `RenderCache`.
-- **Protocol-based:** Uses `DevToolsCacheAdapter` — no hard dependency on `@enterstellar-ai/cache` (L5).
+- **Protocol-based:** Uses `DevToolsCacheAdapter` — no hard dependency on `@enterstellar/cache` (L5).
 - **Deferred:** Cache entry listing (requires `RenderCache.list()`), warmup trigger.
 
 ### Performance Profiler (P1)

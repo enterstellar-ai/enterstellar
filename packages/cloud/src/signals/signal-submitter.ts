@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/signals/signal-submitter
+ * @module @enterstellar/cloud/signals/signal-submitter
  * @description Submits `ForgeSignal` objects to Enterstellar Cloud.
  *
  * Proxies signal submission to `POST /v1/signals`. This is the **only
@@ -17,17 +17,17 @@
  * **Consent model:** ForgeSignals are **mandatory** (L12). Unlike
  * `AgentTrace` (opt-in, consent-gated), signals are the core telemetry
  * data that feeds the Intent Router. The consent model is enforced at
- * the `@enterstellar-ai/telemetry` layer, not here.
+ * the `@enterstellar/telemetry` layer, not here.
  *
  * @see Design Choice SD1 — anonymous mode: only `submitSignal()` available.
- * @see Design Choice SD4 — `@enterstellar-ai/telemetry` uses SDK with `pk_anon`.
+ * @see Design Choice SD4 — `@enterstellar/telemetry` uses SDK with `pk_anon`.
  * @see Design Choice SD7 — universal `CloudResult<T>` return wrapper.
  * @see Principle L12 — ForgeSignal is mandatory; AgentTrace is opt-in.
  * @see Principle L15 — zero framework imports.
  * @see Bible §9.1 — `POST /v1/signals` (0 IPU).
  */
 
-import type { ForgeSignal } from '@enterstellar-ai/types';
+import type { ForgeSignal } from '@enterstellar/types';
 
 import type { IPUTracker } from '../metering/ipu-tracker.js';
 import type { CloudHttpTransport } from '../transport/cloud-http.js';
@@ -45,7 +45,7 @@ import { IPU_COSTS } from '../metering/ipu-costs.js';
  * @internal — used only for typing the transport response.
  */
 type SignalSubmitResponse = {
-    readonly accepted: boolean;
+  readonly accepted: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -58,20 +58,18 @@ type SignalSubmitResponse = {
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface SignalSubmitter {
-    /**
-     * Submit a `ForgeSignal` to the Cloud corpus.
-     *
-     * Works in both full mode and anonymous mode. This is the only
-     * SDK operation available with `pk_anon_*` keys (SD1).
-     *
-     * @param signal - The `ForgeSignal` from `@enterstellar-ai/telemetry`.
-     * @returns Acceptance confirmation wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    submitSignal(
-        signal: ForgeSignal,
-    ): Promise<CloudResult<{ readonly accepted: boolean }>>;
+  /**
+   * Submit a `ForgeSignal` to the Cloud corpus.
+   *
+   * Works in both full mode and anonymous mode. This is the only
+   * SDK operation available with `pk_anon_*` keys (SD1).
+   *
+   * @param signal - The `ForgeSignal` from `@enterstellar/telemetry`.
+   * @returns Acceptance confirmation wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  submitSignal(signal: ForgeSignal): Promise<CloudResult<{ readonly accepted: boolean }>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,20 +89,20 @@ export interface SignalSubmitter {
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,58 +130,51 @@ function buildIPU(
  * ```
  *
  * @see Design Choice SD1 — anonymous mode: only signals.
- * @see Design Choice SD4 — `@enterstellar-ai/telemetry` uses `pk_anon`.
+ * @see Design Choice SD4 — `@enterstellar/telemetry` uses `pk_anon`.
  * @internal
  */
 export function createSignalSubmitter(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
-    sessionType: string,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
+  sessionType: string,
 ): SignalSubmitter {
-    return {
-        async submitSignal(
-            signal: ForgeSignal,
-        ): Promise<CloudResult<{ readonly accepted: boolean }>> {
-            // ---------------------------------------------------------------
-            // No pre-flight quota check — signals are free (0 IPU).
-            // ---------------------------------------------------------------
+  return {
+    async submitSignal(signal: ForgeSignal): Promise<CloudResult<{ readonly accepted: boolean }>> {
+      // ---------------------------------------------------------------
+      // No pre-flight quota check — signals are free (0 IPU).
+      // ---------------------------------------------------------------
 
-            // ---------------------------------------------------------------
-            // Execute the cloud API call.
-            // ipuCost: 0 → no X-Idempotency-Key sent (AM10/F8).
-            // ---------------------------------------------------------------
-            const response = await transport.request<SignalSubmitResponse>({
-                method: 'POST',
-                path: '/v1/signals',
-                body: { ...signal, sessionType },
-                ipuCost: IPU_COSTS.SIGNAL_SUBMIT,
-            });
+      // ---------------------------------------------------------------
+      // Execute the cloud API call.
+      // ipuCost: 0 → no X-Idempotency-Key sent (AM10/F8).
+      // ---------------------------------------------------------------
+      const response = await transport.request<SignalSubmitResponse>({
+        method: 'POST',
+        path: '/v1/signals',
+        body: { ...signal, sessionType },
+        ipuCost: IPU_COSTS.SIGNAL_SUBMIT,
+      });
 
-            // ---------------------------------------------------------------
-            // Reconcile IPU tracker if server provides headers.
-            // For 0-IPU endpoints the server may omit these (AG8),
-            // but if present, we accept them for future-proofing.
-            // ---------------------------------------------------------------
-            if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-                tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-            }
+      // ---------------------------------------------------------------
+      // Reconcile IPU tracker if server provides headers.
+      // For 0-IPU endpoints the server may omit these (AG8),
+      // but if present, we accept them for future-proofing.
+      // ---------------------------------------------------------------
+      if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+        tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+      }
 
-            // No local cost recording — signals are free.
+      // No local cost recording — signals are free.
 
-            // ---------------------------------------------------------------
-            // Build CloudResult<{ accepted: boolean }> (SD7).
-            // ---------------------------------------------------------------
-            const ipu = buildIPU(
-                response.ipuUsed,
-                response.ipuRemaining,
-                response.ipuCost,
-                isAnonymous,
-            );
+      // ---------------------------------------------------------------
+      // Build CloudResult<{ accepted: boolean }> (SD7).
+      // ---------------------------------------------------------------
+      const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
 
-            const accepted = response.data?.accepted ?? true;
+      const accepted = response.data?.accepted ?? true;
 
-            return { data: { accepted }, ipu };
-        },
-    };
+      return { data: { accepted }, ipu };
+    },
+  };
 }

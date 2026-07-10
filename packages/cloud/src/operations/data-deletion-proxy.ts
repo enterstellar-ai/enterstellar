@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/operations/data-deletion-proxy
+ * @module @enterstellar/cloud/operations/data-deletion-proxy
  * @description Proxies GDPR right-to-delete requests to Enterstellar Cloud.
  *
  * Sends a data deletion request to `DELETE /v1/project/:id/data`.
@@ -46,23 +46,21 @@ import { IPU_COSTS } from '../metering/ipu-costs.js';
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface DataDeletionProxy {
-    /**
-     * Initiate GDPR right-to-delete for a project's data.
-     *
-     * **⚠ IRREVERSIBLE.** Immediately soft-deletes all project data
-     * in D1 and queues a background hard-purge across all storage
-     * systems (D1, R2, Vectorize, ClickHouse).
-     *
-     * Returns `202 Accepted` — fire-and-forget from the SDK's perspective.
-     *
-     * @param projectId - The project ID to delete data for.
-     * @returns Acceptance confirmation wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    deleteProjectData(
-        projectId: string,
-    ): Promise<CloudResult<{ readonly accepted: boolean }>>;
+  /**
+   * Initiate GDPR right-to-delete for a project's data.
+   *
+   * **⚠ IRREVERSIBLE.** Immediately soft-deletes all project data
+   * in D1 and queues a background hard-purge across all storage
+   * systems (D1, R2, Vectorize, ClickHouse).
+   *
+   * Returns `202 Accepted` — fire-and-forget from the SDK's perspective.
+   *
+   * @param projectId - The project ID to delete data for.
+   * @returns Acceptance confirmation wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  deleteProjectData(projectId: string): Promise<CloudResult<{ readonly accepted: boolean }>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,20 +80,20 @@ export interface DataDeletionProxy {
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -125,58 +123,53 @@ function buildIPU(
  * @internal
  */
 export function createDataDeletionProxy(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
 ): DataDeletionProxy {
-    return {
-        async deleteProjectData(
-            projectId: string,
-        ): Promise<CloudResult<{ readonly accepted: boolean }>> {
-            // ---------------------------------------------------------------
-            // No pre-flight quota check — deletion is free (0 IPU).
-            // ---------------------------------------------------------------
+  return {
+    async deleteProjectData(
+      projectId: string,
+    ): Promise<CloudResult<{ readonly accepted: boolean }>> {
+      // ---------------------------------------------------------------
+      // No pre-flight quota check — deletion is free (0 IPU).
+      // ---------------------------------------------------------------
 
-            // ---------------------------------------------------------------
-            // Build dynamic path with projectId.
-            // Defensive encodeURIComponent — IDs are ULID-prefixed
-            // (alphanumeric + underscore), but we encode just in case.
-            // ---------------------------------------------------------------
-            const path = `/v1/project/${encodeURIComponent(projectId)}/data`;
+      // ---------------------------------------------------------------
+      // Build dynamic path with projectId.
+      // Defensive encodeURIComponent — IDs are ULID-prefixed
+      // (alphanumeric + underscore), but we encode just in case.
+      // ---------------------------------------------------------------
+      const path = `/v1/project/${encodeURIComponent(projectId)}/data`;
 
-            // ---------------------------------------------------------------
-            // Execute the cloud API call.
-            // DELETE method — no body.
-            // ipuCost: 0 → no X-Idempotency-Key (F8).
-            // Server returns 202 Accepted (fire-and-forget, F16).
-            // ---------------------------------------------------------------
-            const response = await transport.request<{ accepted: boolean }>({
-                method: 'DELETE',
-                path,
-                ipuCost: IPU_COSTS.DELETE_PROJECT_DATA,
-            });
+      // ---------------------------------------------------------------
+      // Execute the cloud API call.
+      // DELETE method — no body.
+      // ipuCost: 0 → no X-Idempotency-Key (F8).
+      // Server returns 202 Accepted (fire-and-forget, F16).
+      // ---------------------------------------------------------------
+      const response = await transport.request<{ accepted: boolean }>({
+        method: 'DELETE',
+        path,
+        ipuCost: IPU_COSTS.DELETE_PROJECT_DATA,
+      });
 
-            // ---------------------------------------------------------------
-            // Reconcile IPU tracker if server provides headers.
-            // ---------------------------------------------------------------
-            if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-                tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-            }
+      // ---------------------------------------------------------------
+      // Reconcile IPU tracker if server provides headers.
+      // ---------------------------------------------------------------
+      if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+        tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+      }
 
-            // ---------------------------------------------------------------
-            // Build CloudResult<{ accepted: boolean }> (SD7).
-            // Default to accepted: true on 2xx — server returned 202.
-            // ---------------------------------------------------------------
-            const ipu = buildIPU(
-                response.ipuUsed,
-                response.ipuRemaining,
-                response.ipuCost,
-                isAnonymous,
-            );
+      // ---------------------------------------------------------------
+      // Build CloudResult<{ accepted: boolean }> (SD7).
+      // Default to accepted: true on 2xx — server returned 202.
+      // ---------------------------------------------------------------
+      const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
 
-            const accepted = response.data?.accepted ?? true;
+      const accepted = response.data?.accepted ?? true;
 
-            return { data: { accepted }, ipu };
-        },
-    };
+      return { data: { accepted }, ipu };
+    },
+  };
 }

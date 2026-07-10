@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/panels/performance-profiler
+ * @module @enterstellar/devtools/panels/performance-profiler
  * @description P1 Tab — Latency aggregation and per-trace performance bars.
  *
  * The Performance Profiler computes P50/P95/P99/mean/min/max from all
@@ -31,17 +31,17 @@
 
 import { useState, useMemo, useCallback } from 'react';
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 
 import type { TraceFilter, LatencyStats } from '../types.js';
 import { useDevtoolsTraces } from '../use-devtools-traces.js';
 import { computeLatencyStats } from '../utils/percentiles.js';
 import { FilterBar } from '../components/filter-bar.js';
 import {
-    performanceProfilerStyles as styles,
-    sharedPanelStyles,
-    panelStyles,
-    statusColors,
+  performanceProfilerStyles as styles,
+  sharedPanelStyles,
+  panelStyles,
+  statusColors,
 } from '../styles.js';
 
 // ---------------------------------------------------------------------------
@@ -54,27 +54,27 @@ import {
  * @internal
  */
 type PerformanceProfilerProps = {
-    /**
-     * Maximum traces retained in the DevTools buffer.
-     * Passed through from `<EnterstellarDevTools />` config.
-     *
-     * @default 500
-     */
-    readonly maxTraces: number;
+  /**
+   * Maximum traces retained in the DevTools buffer.
+   * Passed through from `<EnterstellarDevTools />` config.
+   *
+   * @default 500
+   */
+  readonly maxTraces: number;
 
-    /**
-     * Callback fired when a trace bar is clicked.
-     * The parent uses this to navigate to the Component Inspector.
-     *
-     * @param trace - The selected trace, or `null` to deselect.
-     */
-    readonly onSelectTrace: (trace: ZoneTrace | null) => void;
+  /**
+   * Callback fired when a trace bar is clicked.
+   * The parent uses this to navigate to the Component Inspector.
+   *
+   * @param trace - The selected trace, or `null` to deselect.
+   */
+  readonly onSelectTrace: (trace: ZoneTrace | null) => void;
 
-    /**
-     * Currently selected trace ID, if any.
-     * Used to highlight the selected bar row.
-     */
-    readonly selectedTraceId: string | null;
+  /**
+   * Currently selected trace ID, if any.
+   * Used to highlight the selected bar row.
+   */
+  readonly selectedTraceId: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -91,19 +91,19 @@ type PerformanceProfilerProps = {
  * @internal
  */
 function StatCard(props: {
-    readonly label: string;
-    readonly value: number | null;
+  readonly label: string;
+  readonly value: number | null;
 }): React.JSX.Element {
-    const { label, value } = props;
+  const { label, value } = props;
 
-    return (
-        <div style={styles['statCard']}>
-            <span style={styles['statLabel']}>{label}</span>
-            <span style={styles['statValue']}>
-                {value !== null ? `${String(Math.round(value))}ms` : '–'}
-            </span>
-        </div>
-    );
+  return (
+    <div style={styles['statCard']}>
+      <span style={styles['statLabel']}>{label}</span>
+      <span style={styles['statValue']}>
+        {value !== null ? `${String(Math.round(value))}ms` : '–'}
+      </span>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ function StatCard(props: {
  * @internal
  */
 function getBarColor(status: 'pass' | 'fail' | 'corrected'): string {
-    return statusColors[status];
+  return statusColors[status];
 }
 
 /**
@@ -134,63 +134,62 @@ function getBarColor(status: 'pass' | 'fail' | 'corrected'): string {
  * @internal
  */
 function BarRow(props: {
-    readonly trace: ZoneTrace;
-    readonly maxLatency: number;
-    readonly isSelected: boolean;
-    readonly onSelect: (traceId: string) => void;
+  readonly trace: ZoneTrace;
+  readonly maxLatency: number;
+  readonly isSelected: boolean;
+  readonly onSelect: (traceId: string) => void;
 }): React.JSX.Element {
-    const { trace, maxLatency, isSelected, onSelect } = props;
-    const latency = trace.metrics.totalMs;
+  const { trace, maxLatency, isSelected, onSelect } = props;
+  const latency = trace.metrics.totalMs;
 
-    // Guard: prevent division by zero when all latencies are 0
-    const widthPercent = maxLatency > 0
-        ? Math.max(1, (latency / maxLatency) * 100)
-        : 100;
+  // Guard: prevent division by zero when all latencies are 0
+  const widthPercent = maxLatency > 0 ? Math.max(1, (latency / maxLatency) * 100) : 100;
 
-    const handleClick = useCallback(() => {
+  const handleClick = useCallback(() => {
+    onSelect(trace.id);
+  }, [onSelect, trace.id]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
         onSelect(trace.id);
-    }, [onSelect, trace.id]);
+      }
+    },
+    [onSelect, trace.id],
+  );
 
-    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onSelect(trace.id);
-        }
-    }, [onSelect, trace.id]);
-
-    return (
-        <div
-            style={{
-                ...styles['barRow'],
-                ...(isSelected ? styles['barRowHover'] : undefined),
-            }}
-            onClick={handleClick}
-            onKeyDown={handleKeyDown}
-            role="row"
-            tabIndex={0}
-            aria-label={`${trace.intent.component}: ${String(latency)}ms, ${trace.compilation.status}`}
-            aria-selected={isSelected}
-        >
-            <span style={styles['barLabel']} title={trace.intent.component}>
-                {trace.intent.component}
-            </span>
-            <div
-                style={{
-                    ...styles['barFill'],
-                    width: `${String(widthPercent)}%`,
-                    background: getBarColor(trace.compilation.status),
-                }}
-                role="meter"
-                aria-valuenow={latency}
-                aria-valuemin={0}
-                aria-valuemax={maxLatency}
-                aria-label={`${String(latency)}ms`}
-            />
-            <span style={styles['barValue']}>
-                {Math.round(latency)}ms
-            </span>
-        </div>
-    );
+  return (
+    <div
+      style={{
+        ...styles['barRow'],
+        ...(isSelected ? styles['barRowHover'] : undefined),
+      }}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role="row"
+      tabIndex={0}
+      aria-label={`${trace.intent.component}: ${String(latency)}ms, ${trace.compilation.status}`}
+      aria-selected={isSelected}
+    >
+      <span style={styles['barLabel']} title={trace.intent.component}>
+        {trace.intent.component}
+      </span>
+      <div
+        style={{
+          ...styles['barFill'],
+          width: `${String(widthPercent)}%`,
+          background: getBarColor(trace.compilation.status),
+        }}
+        role="meter"
+        aria-valuenow={latency}
+        aria-valuemin={0}
+        aria-valuemax={maxLatency}
+        aria-label={`${String(latency)}ms`}
+      />
+      <span style={styles['barValue']}>{Math.round(latency)}ms</span>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -215,138 +214,125 @@ function BarRow(props: {
  * @internal
  */
 export function PerformanceProfiler(props: PerformanceProfilerProps): React.JSX.Element {
-    const { maxTraces, onSelectTrace, selectedTraceId } = props;
+  const { maxTraces, onSelectTrace, selectedTraceId } = props;
 
-    // -----------------------------------------------------------------------
-    // Filter State
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Filter State
+  // -----------------------------------------------------------------------
 
-    const [filter, setFilter] = useState<TraceFilter>({});
+  const [filter, setFilter] = useState<TraceFilter>({});
 
-    // -----------------------------------------------------------------------
-    // Data Subscription
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Data Subscription
+  // -----------------------------------------------------------------------
 
-    const {
-        filteredTraces,
-        availableZones,
-        availableComponents,
-    } = useDevtoolsTraces(filter, maxTraces);
+  const { filteredTraces, availableZones, availableComponents } = useDevtoolsTraces(
+    filter,
+    maxTraces,
+  );
 
-    // -----------------------------------------------------------------------
-    // Derived: Latency Stats (memoized per C7)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Derived: Latency Stats (memoized per C7)
+  // -----------------------------------------------------------------------
 
-    /** Aggregated percentile stats across all filtered traces. */
-    const latencyStats: LatencyStats | null = useMemo(
-        () => computeLatencyStats(filteredTraces.map((t) => t.metrics.totalMs)),
-        [filteredTraces],
-    );
+  /** Aggregated percentile stats across all filtered traces. */
+  const latencyStats: LatencyStats | null = useMemo(
+    () => computeLatencyStats(filteredTraces.map((t) => t.metrics.totalMs)),
+    [filteredTraces],
+  );
 
-    /** Filtered traces sorted by totalMs descending (slowest first). */
-    const sortedTraces: readonly ZoneTrace[] = useMemo(
-        () => [...filteredTraces].sort((a, b) => b.metrics.totalMs - a.metrics.totalMs),
-        [filteredTraces],
-    );
+  /** Filtered traces sorted by totalMs descending (slowest first). */
+  const sortedTraces: readonly ZoneTrace[] = useMemo(
+    () => [...filteredTraces].sort((a, b) => b.metrics.totalMs - a.metrics.totalMs),
+    [filteredTraces],
+  );
 
-    /** Maximum latency for bar width normalization. */
-    const maxLatency: number = useMemo(
-        () => sortedTraces.length > 0
-            ? (sortedTraces[0]?.metrics.totalMs ?? 0)
-            : 0,
-        [sortedTraces],
-    );
+  /** Maximum latency for bar width normalization. */
+  const maxLatency: number = useMemo(
+    () => (sortedTraces.length > 0 ? (sortedTraces[0]?.metrics.totalMs ?? 0) : 0),
+    [sortedTraces],
+  );
 
-    // -----------------------------------------------------------------------
-    // Handlers
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Handlers
+  // -----------------------------------------------------------------------
 
-    /**
-     * Handles bar row click — toggles selection.
-     * Same toggle pattern as TraceTimeline.
-     */
-    const handleSelect = useCallback(
-        (traceId: string) => {
-            if (traceId === selectedTraceId) {
-                onSelectTrace(null);
-                return;
-            }
+  /**
+   * Handles bar row click — toggles selection.
+   * Same toggle pattern as TraceTimeline.
+   */
+  const handleSelect = useCallback(
+    (traceId: string) => {
+      if (traceId === selectedTraceId) {
+        onSelectTrace(null);
+        return;
+      }
 
-            const trace = filteredTraces.find((t) => t.id === traceId);
-            if (trace !== undefined) {
-                onSelectTrace(trace);
-            }
-        },
-        [selectedTraceId, onSelectTrace, filteredTraces],
-    );
+      const trace = filteredTraces.find((t) => t.id === traceId);
+      if (trace !== undefined) {
+        onSelectTrace(trace);
+      }
+    },
+    [selectedTraceId, onSelectTrace, filteredTraces],
+  );
 
-    // -----------------------------------------------------------------------
-    // Render
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------------
 
-    return (
-        <div
-            style={sharedPanelStyles['panelRoot']}
-            data-enterstellar-devtools-panel="performance-profiler"
-        >
-            {/* Header */}
-            <div style={sharedPanelStyles['header']}>
-                <span style={sharedPanelStyles['headerMeta']}>
-                    {filteredTraces.length} traces
-                </span>
-            </div>
+  return (
+    <div
+      style={sharedPanelStyles['panelRoot']}
+      data-enterstellar-devtools-panel="performance-profiler"
+    >
+      {/* Header */}
+      <div style={sharedPanelStyles['header']}>
+        <span style={sharedPanelStyles['headerMeta']}>{filteredTraces.length} traces</span>
+      </div>
 
-            {/* Filter Bar */}
-            <FilterBar
-                filter={filter}
-                onFilterChange={setFilter}
-                availableZones={availableZones}
-                availableComponents={availableComponents}
-            />
+      {/* Filter Bar */}
+      <FilterBar
+        filter={filter}
+        onFilterChange={setFilter}
+        availableZones={availableZones}
+        availableComponents={availableComponents}
+      />
 
-            {/* Stat Cards */}
-            {latencyStats !== null && (
-                <div style={styles['statsGrid']} role="group" aria-label="Latency statistics">
-                    <StatCard label="P50" value={latencyStats.p50} />
-                    <StatCard label="P95" value={latencyStats.p95} />
-                    <StatCard label="P99" value={latencyStats.p99} />
-                    <StatCard label="Mean" value={latencyStats.mean} />
-                    <StatCard label="Min" value={latencyStats.min} />
-                    <StatCard label="Max" value={latencyStats.max} />
-                </div>
-            )}
-
-            {/* Sort Indicator */}
-            {sortedTraces.length > 0 && (
-                <div style={styles['sortControls']}>
-                    ↓ Sorted by slowest
-                </div>
-            )}
-
-            {/* Latency Bar Chart */}
-            <div
-                style={panelStyles['content']}
-                role="table"
-                aria-label="Latency distribution"
-            >
-                {sortedTraces.length === 0 ? (
-                    <div style={sharedPanelStyles['emptyState']}>
-                        {filteredTraces.length === 0
-                            ? 'No traces yet. Trigger an intent in an Zone to start.'
-                            : 'No traces match the current filters.'}
-                    </div>
-                ) : (
-                    sortedTraces.map((trace) => (
-                        <BarRow
-                            key={trace.id}
-                            trace={trace}
-                            maxLatency={maxLatency}
-                            isSelected={trace.id === selectedTraceId}
-                            onSelect={handleSelect}
-                        />
-                    ))
-                )}
-            </div>
+      {/* Stat Cards */}
+      {latencyStats !== null && (
+        <div style={styles['statsGrid']} role="group" aria-label="Latency statistics">
+          <StatCard label="P50" value={latencyStats.p50} />
+          <StatCard label="P95" value={latencyStats.p95} />
+          <StatCard label="P99" value={latencyStats.p99} />
+          <StatCard label="Mean" value={latencyStats.mean} />
+          <StatCard label="Min" value={latencyStats.min} />
+          <StatCard label="Max" value={latencyStats.max} />
         </div>
-    );
+      )}
+
+      {/* Sort Indicator */}
+      {sortedTraces.length > 0 && <div style={styles['sortControls']}>↓ Sorted by slowest</div>}
+
+      {/* Latency Bar Chart */}
+      <div style={panelStyles['content']} role="table" aria-label="Latency distribution">
+        {sortedTraces.length === 0 ? (
+          <div style={sharedPanelStyles['emptyState']}>
+            {filteredTraces.length === 0
+              ? 'No traces yet. Trigger an intent in an Zone to start.'
+              : 'No traces match the current filters.'}
+          </div>
+        ) : (
+          sortedTraces.map((trace) => (
+            <BarRow
+              key={trace.id}
+              trace={trace}
+              maxLatency={maxLatency}
+              isSelected={trace.id === selectedTraceId}
+              onSelect={handleSelect}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
 }

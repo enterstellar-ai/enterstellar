@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/enrichment/enrich-manifest
+ * @module @enterstellar/migration/enrichment/enrich-manifest
  * @description Phase 2 orchestrator — enriches heuristic-fallback fields via LLM.
  *
  * Implements Correction 2's deterministic gating logic:
@@ -11,7 +11,7 @@
  * preserve diagnostic visibility and `@enriched-fields` provenance data.
  *
  * **Bible placement deviation:** The Implementation Bible places orchestration
- * in `migrate.ts` (CLI). We place it here for code-sharing with `@enterstellar-ai/cloud`
+ * in `migrate.ts` (CLI). We place it here for code-sharing with `@enterstellar/cloud`
  * (same pattern as `extractManifest()`). The CLI's `migrate.ts` calls
  * `enrichManifest()` instead of implementing the loop inline.
  *
@@ -27,13 +27,13 @@
  */
 
 import type {
-    StructuralManifest,
-    EnrichableFieldKey,
-    EnrichedFieldPatch,
-    SemanticOverlay,
-    EnrichResult,
-    EnrichDiagnostic,
-    EnrichableField,
+  StructuralManifest,
+  EnrichableFieldKey,
+  EnrichedFieldPatch,
+  SemanticOverlay,
+  EnrichResult,
+  EnrichDiagnostic,
+  EnrichableField,
 } from '../types.js';
 import type { EnrichmentProvider } from './types.js';
 import { EnrichmentError } from './types.js';
@@ -57,13 +57,13 @@ import { EnrichmentError } from './types.js';
  * @see Correction 2 — Field Classification: Structural vs. Enrichable
  */
 export const ENRICHABLE_FIELD_KEYS = [
-    'description',
-    'tags',
-    'category',
-    'intent',
-    'ariaAttributes',
-    'designTokenRefs',
-    'lifecycleStates',
+  'description',
+  'tags',
+  'category',
+  'intent',
+  'ariaAttributes',
+  'designTokenRefs',
+  'lifecycleStates',
 ] as const satisfies readonly EnrichableFieldKey[];
 
 /**
@@ -77,9 +77,9 @@ export const ENRICHABLE_FIELD_KEYS = [
  * The `void` call satisfies `noUnusedLocals`.
  */
 function assertFieldKeysExhaustive(
-    _missing: Exclude<EnrichableFieldKey, (typeof ENRICHABLE_FIELD_KEYS)[number]>,
+  _missing: Exclude<EnrichableFieldKey, (typeof ENRICHABLE_FIELD_KEYS)[number]>,
 ): void {
-    // Intentionally empty — compile-time only.
+  // Intentionally empty — compile-time only.
 }
 void assertFieldKeysExhaustive;
 
@@ -130,81 +130,80 @@ void assertFieldKeysExhaustive;
  * @see Audit E1 — EnrichResult return type for diagnostic visibility
  */
 export async function enrichManifest(
-    manifest: StructuralManifest,
-    source: string,
-    provider: EnrichmentProvider,
+  manifest: StructuralManifest,
+  source: string,
+  provider: EnrichmentProvider,
 ): Promise<EnrichResult> {
-    const diagnostics: EnrichDiagnostic[] = [];
+  const diagnostics: EnrichDiagnostic[] = [];
 
-    // --- Step 1: Partition fields by source ---
-    const skippedFields: EnrichableFieldKey[] = [];
-    const fieldsToEnrich: EnrichableFieldKey[] = [];
+  // --- Step 1: Partition fields by source ---
+  const skippedFields: EnrichableFieldKey[] = [];
+  const fieldsToEnrich: EnrichableFieldKey[] = [];
 
-    for (const key of ENRICHABLE_FIELD_KEYS) {
-        const field = manifest[key] as EnrichableField<unknown>;
-        if (field.source === 'ast-determined') {
-            skippedFields.push(key);
-        } else {
-            fieldsToEnrich.push(key);
-        }
+  for (const key of ENRICHABLE_FIELD_KEYS) {
+    const field = manifest[key] as EnrichableField<unknown>;
+    if (field.source === 'ast-determined') {
+      skippedFields.push(key);
+    } else {
+      fieldsToEnrich.push(key);
     }
+  }
 
-    // --- Step 2: Early return if nothing to enrich ---
-    if (fieldsToEnrich.length === 0) {
-        diagnostics.push({
-            level: 'info',
-            message: 'All enrichable fields are AST-determined — no LLM call needed.',
-        });
+  // --- Step 2: Early return if nothing to enrich ---
+  if (fieldsToEnrich.length === 0) {
+    diagnostics.push({
+      level: 'info',
+      message: 'All enrichable fields are AST-determined — no LLM call needed.',
+    });
 
-        return {
-            manifest,
-            enrichedFields: [],
-            skippedFields,
-            diagnostics,
-        };
-    }
-
-    // --- Step 3: Call provider ---
-    let overlay: SemanticOverlay;
-    try {
-        overlay = await provider.enrich(manifest, source);
-    } catch (err: unknown) {
-        // --- Step 4/5: Error handling → diagnostics (never re-throw) ---
-        if (err instanceof EnrichmentError) {
-            diagnostics.push({
-                level: 'error',
-                message: `Enrichment failed: [${err.code}] ${err.message}`,
-                errorCode: err.code,
-            });
-        } else {
-            // Unknown error — generic warning
-            const message = err instanceof Error
-                ? err.message
-                : 'An unknown error occurred during enrichment.';
-            diagnostics.push({
-                level: 'warning',
-                message: `Enrichment failed with unexpected error: ${message}`,
-            });
-        }
-
-        return {
-            manifest,
-            enrichedFields: [],
-            skippedFields,
-            diagnostics,
-        };
-    }
-
-    // --- Step 6: Merge overlay ---
-    const mergeResult = mergeOverlay(manifest, overlay);
-
-    // --- Step 7: Return enrichment result ---
     return {
-        manifest: mergeResult.manifest,
-        enrichedFields: mergeResult.enrichedFields,
-        skippedFields,
-        diagnostics,
+      manifest,
+      enrichedFields: [],
+      skippedFields,
+      diagnostics,
     };
+  }
+
+  // --- Step 3: Call provider ---
+  let overlay: SemanticOverlay;
+  try {
+    overlay = await provider.enrich(manifest, source);
+  } catch (err: unknown) {
+    // --- Step 4/5: Error handling → diagnostics (never re-throw) ---
+    if (err instanceof EnrichmentError) {
+      diagnostics.push({
+        level: 'error',
+        message: `Enrichment failed: [${err.code}] ${err.message}`,
+        errorCode: err.code,
+      });
+    } else {
+      // Unknown error — generic warning
+      const message =
+        err instanceof Error ? err.message : 'An unknown error occurred during enrichment.';
+      diagnostics.push({
+        level: 'warning',
+        message: `Enrichment failed with unexpected error: ${message}`,
+      });
+    }
+
+    return {
+      manifest,
+      enrichedFields: [],
+      skippedFields,
+      diagnostics,
+    };
+  }
+
+  // --- Step 6: Merge overlay ---
+  const mergeResult = mergeOverlay(manifest, overlay);
+
+  // --- Step 7: Return enrichment result ---
+  return {
+    manifest: mergeResult.manifest,
+    enrichedFields: mergeResult.enrichedFields,
+    skippedFields,
+    diagnostics,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -232,30 +231,33 @@ export async function enrichManifest(
  * @see Correction 2 — Phase 2 never touches ast-determined fields
  */
 export function mergeOverlay(
-    manifest: StructuralManifest,
-    overlay: SemanticOverlay,
-): { readonly manifest: StructuralManifest; readonly enrichedFields: readonly EnrichableFieldKey[] } {
-    // Start with the original manifest — we'll spread over enriched fields.
-    let enriched: StructuralManifest = manifest;
-    const enrichedFields: EnrichableFieldKey[] = [];
+  manifest: StructuralManifest,
+  overlay: SemanticOverlay,
+): {
+  readonly manifest: StructuralManifest;
+  readonly enrichedFields: readonly EnrichableFieldKey[];
+} {
+  // Start with the original manifest — we'll spread over enriched fields.
+  let enriched: StructuralManifest = manifest;
+  const enrichedFields: EnrichableFieldKey[] = [];
 
-    for (const patch of overlay.fields) {
-        const key = patch.key;
+  for (const patch of overlay.fields) {
+    const key = patch.key;
 
-        // Safety check: only apply patches for heuristic-fallback fields.
-        // This defends against LLM hallucinations where the overlay contains
-        // patches for ast-determined fields that should never be overwritten.
-        const currentField = manifest[key] as EnrichableField<unknown>;
-        if (currentField.source !== 'heuristic-fallback') {
-            continue;
-        }
-
-        // Apply the patch — promote source to 'enrichment'.
-        enriched = applyPatch(enriched, patch);
-        enrichedFields.push(key);
+    // Safety check: only apply patches for heuristic-fallback fields.
+    // This defends against LLM hallucinations where the overlay contains
+    // patches for ast-determined fields that should never be overwritten.
+    const currentField = manifest[key] as EnrichableField<unknown>;
+    if (currentField.source !== 'heuristic-fallback') {
+      continue;
     }
 
-    return { manifest: enriched, enrichedFields };
+    // Apply the patch — promote source to 'enrichment'.
+    enriched = applyPatch(enriched, patch);
+    enrichedFields.push(key);
+  }
+
+  return { manifest: enriched, enrichedFields };
 }
 
 // ---------------------------------------------------------------------------
@@ -276,19 +278,16 @@ export function mergeOverlay(
  * @param patch - The field patch to apply.
  * @returns A new `StructuralManifest` with the patched field.
  */
-function applyPatch(
-    manifest: StructuralManifest,
-    patch: EnrichedFieldPatch,
-): StructuralManifest {
-    // The discriminated union on `key` ensures type-safe assignment.
-    // Each branch produces an `EnrichableField<T>` with the correct T.
-    const enrichedField: EnrichableField<unknown> = {
-        value: patch.value,
-        source: 'enrichment',
-    };
+function applyPatch(manifest: StructuralManifest, patch: EnrichedFieldPatch): StructuralManifest {
+  // The discriminated union on `key` ensures type-safe assignment.
+  // Each branch produces an `EnrichableField<T>` with the correct T.
+  const enrichedField: EnrichableField<unknown> = {
+    value: patch.value,
+    source: 'enrichment',
+  };
 
-    return {
-        ...manifest,
-        [patch.key]: enrichedField,
-    };
+  return {
+    ...manifest,
+    [patch.key]: enrichedField,
+  };
 }

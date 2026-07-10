@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/pipeline/trace-step
+ * @module @enterstellar/compiler/pipeline/trace-step
  * @description Pipeline Step 5: Trace Emission and CompilationResult Construction.
  *
  * Always executes last in the pipeline. Assembles the final `CompilationResult`
@@ -16,7 +16,7 @@
  * @see Design Choice T14 — compiler version in provenance.
  */
 
-import type { CompilationResult, CompilationProvenance } from '@enterstellar-ai/types';
+import type { CompilationResult, CompilationProvenance } from '@enterstellar/types';
 
 import type { CompilationContext, CompilationStep } from '../types.js';
 import { generateDiff } from '../diff.js';
@@ -37,16 +37,16 @@ import { COMPILER_VERSION } from '../version.js';
  * @returns The compilation status.
  */
 function determineStatus(
-    context: CompilationContext,
-    selfCorrectionAttempts: number,
+  context: CompilationContext,
+  selfCorrectionAttempts: number,
 ): 'pass' | 'fail' | 'corrected' {
-    if (context.errors.length > 0) {
-        return 'fail';
-    }
-    if (selfCorrectionAttempts > 0) {
-        return 'corrected';
-    }
-    return 'pass';
+  if (context.errors.length > 0) {
+    return 'fail';
+  }
+  if (selfCorrectionAttempts > 0) {
+    return 'corrected';
+  }
+  return 'pass';
 }
 
 // ---------------------------------------------------------------------------
@@ -69,67 +69,63 @@ function determineStatus(
  * @see Design Choice C12 — `agent` in provenance from `context.agent`.
  */
 export function createTraceStep(
-    rawPropsSnapshot: Readonly<Record<string, unknown>>,
-    selfCorrectionAttempts: number,
+  rawPropsSnapshot: Readonly<Record<string, unknown>>,
+  selfCorrectionAttempts: number,
 ): CompilationStep {
-    /**
-     * Pipeline Step 5: Builds the `CompilationResult`.
-     *
-     * Terminal step — does NOT call `next()`. Constructs provenance,
-     * determines status, generates diff (if configured), and attaches
-     * the final result to the context for the compile orchestrator to read.
-     */
-    const traceStep: CompilationStep = (
-        context: CompilationContext,
-        _next: () => Promise<CompilationContext>,
-    ): Promise<CompilationContext> => {
-        const { contract, config, agent } = context;
+  /**
+   * Pipeline Step 5: Builds the `CompilationResult`.
+   *
+   * Terminal step — does NOT call `next()`. Constructs provenance,
+   * determines status, generates diff (if configured), and attaches
+   * the final result to the context for the compile orchestrator to read.
+   */
+  const traceStep: CompilationStep = (
+    context: CompilationContext,
+    _next: () => Promise<CompilationContext>,
+  ): Promise<CompilationContext> => {
+    const { contract, config, agent } = context;
 
-        // Build provenance metadata (C12, T14)
-        const provenance: CompilationProvenance = {
-            agent,
-            registry: 'local',
-            compiledAt: new Date().toISOString(),
-            compilerVersion: COMPILER_VERSION,
-            ...(contract._meta.forged ? { forgeMode: 'local' as const } : {}),
-            ...(contract.origin !== undefined
-                ? {
-                    contractOrigin: {
-                        registryUrl: contract.origin.registryUrl,
-                        publisher: contract.origin.publisher,
-                    },
-                }
-                : {}),
-        };
-
-        // Determine compilation status
-        const status = determineStatus(context, selfCorrectionAttempts);
-
-        // Generate diff if configured (C13)
-        const diff = generateDiff(
-            rawPropsSnapshot,
-            context.props,
-            config.includeDiff,
-        );
-
-        // Build the final CompilationResult
-        const result: CompilationResult = {
-            componentName: contract.name,
-            props: Object.freeze({ ...context.props }),
-            status,
-            provenance,
-            errors: Object.freeze([...context.errors]),
-            selfCorrectionAttempts,
-            ...(diff !== undefined ? { diff } : {}),
-        };
-
-        // Attach result to context for the orchestrator to extract.
-        // We use a type-safe extension rather than `any`.
-        (context as CompilationContext & { __result?: CompilationResult }).__result = result;
-
-        // Terminal step — do NOT call next()
-        return Promise.resolve(context);
+    // Build provenance metadata (C12, T14)
+    const provenance: CompilationProvenance = {
+      agent,
+      registry: 'local',
+      compiledAt: new Date().toISOString(),
+      compilerVersion: COMPILER_VERSION,
+      ...(contract._meta.forged ? { forgeMode: 'local' as const } : {}),
+      ...(contract.origin !== undefined
+        ? {
+            contractOrigin: {
+              registryUrl: contract.origin.registryUrl,
+              publisher: contract.origin.publisher,
+            },
+          }
+        : {}),
     };
 
-    return traceStep;
+    // Determine compilation status
+    const status = determineStatus(context, selfCorrectionAttempts);
+
+    // Generate diff if configured (C13)
+    const diff = generateDiff(rawPropsSnapshot, context.props, config.includeDiff);
+
+    // Build the final CompilationResult
+    const result: CompilationResult = {
+      componentName: contract.name,
+      props: Object.freeze({ ...context.props }),
+      status,
+      provenance,
+      errors: Object.freeze([...context.errors]),
+      selfCorrectionAttempts,
+      ...(diff !== undefined ? { diff } : {}),
+    };
+
+    // Attach result to context for the orchestrator to extract.
+    // We use a type-safe extension rather than `any`.
+    (context as CompilationContext & { __result?: CompilationResult }).__result = result;
+
+    // Terminal step — do NOT call next()
+    return Promise.resolve(context);
+  };
+
+  return traceStep;
 }

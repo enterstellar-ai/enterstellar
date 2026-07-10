@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/test/fixtures
+ * @module @enterstellar/test/fixtures
  * @description VCR-style fixture save/load utilities for integration tests.
  *
  * Fixtures capture intent → response mappings as JSON files in a directory
@@ -30,7 +30,7 @@
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { EnterstellarError, ComponentIntentSchema } from '@enterstellar-ai/types';
+import { EnterstellarError, ComponentIntentSchema } from '@enterstellar/types';
 import { z } from 'zod';
 
 import type { FixtureEntry } from './types.js';
@@ -42,7 +42,7 @@ import type { FixtureEntry } from './types.js';
 /**
  * Zod schema for validating `FixtureEntry` data loaded from disk.
  *
- * Uses `ComponentIntentSchema` from `@enterstellar-ai/types` to validate the nested
+ * Uses `ComponentIntentSchema` from `@enterstellar/types` to validate the nested
  * `response` field. This ensures loaded fixtures conform to the expected
  * shape and prevents corrupt or tampered fixture files from silently
  * passing through.
@@ -50,9 +50,9 @@ import type { FixtureEntry } from './types.js';
  * @see Design Choice L8 — Zod for runtime validation.
  */
 const FixtureEntrySchema = z.object({
-    intent: z.string(),
-    response: ComponentIntentSchema,
-    recordedAt: z.number(),
+  intent: z.string(),
+  response: ComponentIntentSchema,
+  recordedAt: z.number(),
 });
 
 // ---------------------------------------------------------------------------
@@ -83,27 +83,28 @@ const FIXTURE_FILENAME = 'enterstellar-fixtures.json';
  * ```
  */
 export async function saveFixtures(
-    fixtures: readonly FixtureEntry[],
-    directory: string,
+  fixtures: readonly FixtureEntry[],
+  directory: string,
 ): Promise<void> {
-    try {
-        // Create directory recursively if it does not exist.
-        await mkdir(directory, { recursive: true });
+  try {
+    // Create directory recursively if it does not exist.
+    await mkdir(directory, { recursive: true });
 
-        const filePath = join(directory, FIXTURE_FILENAME);
-        const content = JSON.stringify(fixtures, null, 2);
+    const filePath = join(directory, FIXTURE_FILENAME);
+    const content = JSON.stringify(fixtures, null, 2);
 
-        await writeFile(filePath, content, 'utf-8');
-    } catch (error: unknown) {
-        throw new EnterstellarError(
-            'ENS-5007',
-            'test',
-            `Failed to save fixtures to "${directory}": ${error instanceof Error ? error.message : String(error)
-            }`,
-            true, // Recoverable — retry may succeed (e.g., permissions fixed)
-            error,
-        );
-    }
+    await writeFile(filePath, content, 'utf-8');
+  } catch (error: unknown) {
+    throw new EnterstellarError(
+      'ENS-5007',
+      'test',
+      `Failed to save fixtures to "${directory}": ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      true, // Recoverable — retry may succeed (e.g., permissions fixed)
+      error,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -126,62 +127,62 @@ export async function saveFixtures(
  * // fixtures: FixtureEntry[]
  * ```
  */
-export async function loadFixtures(
-    directory: string,
-): Promise<readonly FixtureEntry[]> {
-    const filePath = join(directory, FIXTURE_FILENAME);
+export async function loadFixtures(directory: string): Promise<readonly FixtureEntry[]> {
+  const filePath = join(directory, FIXTURE_FILENAME);
 
-    let content: string;
+  let content: string;
 
-    try {
-        content = await readFile(filePath, 'utf-8');
-    } catch (error: unknown) {
-        throw new EnterstellarError(
-            'ENS-5008',
-            'test',
-            `Failed to read fixtures from "${filePath}": ${error instanceof Error ? error.message : String(error)
-            }. Run tests in record mode first to create fixtures.`,
-            false,
-            error,
-        );
+  try {
+    content = await readFile(filePath, 'utf-8');
+  } catch (error: unknown) {
+    throw new EnterstellarError(
+      'ENS-5008',
+      'test',
+      `Failed to read fixtures from "${filePath}": ${
+        error instanceof Error ? error.message : String(error)
+      }. Run tests in record mode first to create fixtures.`,
+      false,
+      error,
+    );
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(content);
+
+    // Validate that the parsed content is an array.
+    if (!Array.isArray(parsed)) {
+      throw new EnterstellarError(
+        'ENS-5008',
+        'test',
+        `Fixture file "${filePath}" does not contain an array. ` +
+          `Expected FixtureEntry[], got ${typeof parsed}.`,
+        false,
+      );
     }
 
-    try {
-        const parsed: unknown = JSON.parse(content);
+    // Validate each element against the FixtureEntry Zod schema.
+    // This ensures loaded fixtures conform to the expected shape
+    // and catches corrupt or tampered fixture files early (L8).
+    const validated = z.array(FixtureEntrySchema).parse(parsed);
 
-        // Validate that the parsed content is an array.
-        if (!Array.isArray(parsed)) {
-            throw new EnterstellarError(
-                'ENS-5008',
-                'test',
-                `Fixture file "${filePath}" does not contain an array. ` +
-                `Expected FixtureEntry[], got ${typeof parsed}.`,
-                false,
-            );
-        }
-
-        // Validate each element against the FixtureEntry Zod schema.
-        // This ensures loaded fixtures conform to the expected shape
-        // and catches corrupt or tampered fixture files early (L8).
-        const validated = z.array(FixtureEntrySchema).parse(parsed);
-
-        return validated as readonly FixtureEntry[];
-    } catch (error: unknown) {
-        // Re-throw EnterstellarErrors from the array check above.
-        if (error instanceof EnterstellarError) {
-            throw error;
-        }
-
-        // Wrap Zod validation errors and JSON parse errors in EnterstellarError.
-        throw new EnterstellarError(
-            'ENS-5008',
-            'test',
-            `Failed to parse fixtures from "${filePath}": ${error instanceof Error ? error.message : String(error)
-            }. File may be corrupted.`,
-            false,
-            error,
-        );
+    return validated as readonly FixtureEntry[];
+  } catch (error: unknown) {
+    // Re-throw EnterstellarErrors from the array check above.
+    if (error instanceof EnterstellarError) {
+      throw error;
     }
+
+    // Wrap Zod validation errors and JSON parse errors in EnterstellarError.
+    throw new EnterstellarError(
+      'ENS-5008',
+      'test',
+      `Failed to parse fixtures from "${filePath}": ${
+        error instanceof Error ? error.message : String(error)
+      }. File may be corrupted.`,
+      false,
+      error,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -198,22 +199,21 @@ export async function loadFixtures(
  * @returns Array of absolute file paths ending in `.json`.
  * @throws {EnterstellarError} Code `ENS-5008` if the directory cannot be read.
  */
-export async function listFixtureFiles(
-    directory: string,
-): Promise<readonly string[]> {
-    try {
-        const entries = await readdir(directory);
-        return entries
-            .filter((entry) => entry.endsWith('.json'))
-            .map((entry) => join(directory, entry));
-    } catch (error: unknown) {
-        throw new EnterstellarError(
-            'ENS-5008',
-            'test',
-            `Failed to list fixture files in "${directory}": ${error instanceof Error ? error.message : String(error)
-            }`,
-            false,
-            error,
-        );
-    }
+export async function listFixtureFiles(directory: string): Promise<readonly string[]> {
+  try {
+    const entries = await readdir(directory);
+    return entries
+      .filter((entry) => entry.endsWith('.json'))
+      .map((entry) => join(directory, entry));
+  } catch (error: unknown) {
+    throw new EnterstellarError(
+      'ENS-5008',
+      'test',
+      `Failed to list fixture files in "${directory}": ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      false,
+      error,
+    );
+  }
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/errors
+ * @module @enterstellar/adapters/errors
  * @description Error factory functions for the adapters module.
  *
  * Every error is an `EnterstellarError` with:
@@ -20,7 +20,7 @@
  * @see Design Choice C14 — error code ranges
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import type { AdapterType } from './types.js';
 
@@ -47,15 +47,15 @@ import type { AdapterType } from './types.js';
  * ```
  */
 export function adapterValidationError(
-    adapterType: AdapterType,
-    reason: string,
+  adapterType: AdapterType,
+  reason: string,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-7001',
-        'adapters',
-        `Adapter validation failed for "${adapterType}": ${reason}`,
-        false, // non-recoverable — developer misconfiguration
-    );
+  return new EnterstellarError(
+    'ENS-7001',
+    'adapters',
+    `Adapter validation failed for "${adapterType}": ${reason}`,
+    false, // non-recoverable — developer misconfiguration
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -82,17 +82,17 @@ export function adapterValidationError(
  * ```
  */
 export function adapterMethodError(
-    adapterName: string,
-    methodName: string,
-    cause?: unknown,
+  adapterName: string,
+  methodName: string,
+  cause?: unknown,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-7002',
-        'adapters',
-        `Adapter "${adapterName}" method "${methodName}" threw.`,
-        true, // recoverable — transient infrastructure failure
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-7002',
+    'adapters',
+    `Adapter "${adapterName}" method "${methodName}" threw.`,
+    true, // recoverable — transient infrastructure failure
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -119,17 +119,17 @@ export function adapterMethodError(
  * ```
  */
 export function adapterQueryError(
-    adapterName: string,
-    resource: string,
-    cause?: unknown,
+  adapterName: string,
+  resource: string,
+  cause?: unknown,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-7003',
-        'adapters',
-        `Adapter "${adapterName}" query failed for resource "${resource}".`,
-        true, // recoverable — transient data source failure
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-7003',
+    'adapters',
+    `Adapter "${adapterName}" query failed for resource "${resource}".`,
+    true, // recoverable — transient data source failure
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -157,18 +157,18 @@ export function adapterQueryError(
  * ```
  */
 export function adapterMutationError(
-    adapterName: string,
-    resource: string,
-    action: 'create' | 'update' | 'delete',
-    cause?: unknown,
+  adapterName: string,
+  resource: string,
+  action: 'create' | 'update' | 'delete',
+  cause?: unknown,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-7004',
-        'adapters',
-        `Adapter "${adapterName}" mutation "${action}" failed for resource "${resource}".`,
-        true, // recoverable — transient data source failure
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-7004',
+    'adapters',
+    `Adapter "${adapterName}" mutation "${action}" failed for resource "${resource}".`,
+    true, // recoverable — transient data source failure
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -195,15 +195,15 @@ export function adapterMutationError(
  * ```
  */
 export function adapterAuthError(
-    adapterName: string,
-    operation: string,
-    cause?: unknown,
+  adapterName: string,
+  operation: string,
+  cause?: unknown,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-7005',
-        'adapters',
-        `Adapter "${adapterName}" auth operation "${operation}" failed.`,
-        true, // recoverable — auth provider may be temporarily unavailable
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-7005',
+    'adapters',
+    `Adapter "${adapterName}" auth operation "${operation}" failed.`,
+    true, // recoverable — auth provider may be temporarily unavailable
+    cause,
+  );
 }

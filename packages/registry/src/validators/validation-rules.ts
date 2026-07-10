@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/registry/validators/validation-rules
+ * @module @enterstellar/registry/validators/validation-rules
  * @description Individual validation rule functions for ComponentContract.
  *
  * Each function validates a single aspect of the contract and returns
@@ -39,81 +39,81 @@ const PASCAL_CASE_PATTERN = /^[A-Z][A-Za-z0-9]+$/;
  * @see https://www.w3.org/TR/wai-aria-1.2/#role_definitions
  */
 const VALID_ARIA_ROLES: ReadonlySet<string> = new Set([
-    // Widget roles
-    'alert',
-    'alertdialog',
-    'button',
-    'checkbox',
-    'combobox',
-    'dialog',
-    'grid',
-    'gridcell',
-    'link',
-    'listbox',
-    'log',
-    'marquee',
-    'menu',
-    'menubar',
-    'menuitem',
-    'menuitemcheckbox',
-    'menuitemradio',
-    'option',
-    'progressbar',
-    'radio',
-    'radiogroup',
-    'scrollbar',
-    'searchbox',
-    'separator',
-    'slider',
-    'spinbutton',
-    'status',
-    'switch',
-    'tab',
-    'tablist',
-    'tabpanel',
-    'textbox',
-    'timer',
-    'toolbar',
-    'tooltip',
-    'tree',
-    'treegrid',
-    'treeitem',
-    // Document structure roles
-    'article',
-    'cell',
-    'columnheader',
-    'definition',
-    'directory',
-    'document',
-    'feed',
-    'figure',
-    'group',
-    'heading',
-    'img',
-    'list',
-    'listitem',
-    'math',
-    'none',
-    'note',
-    'presentation',
-    'row',
-    'rowgroup',
-    'rowheader',
-    'table',
-    'term',
-    // Landmark roles
-    'banner',
-    'complementary',
-    'contentinfo',
-    'form',
-    'main',
-    'navigation',
-    'region',
-    'search',
-    // Live region roles
-    'application',
-    'generic',
-    'meter',
+  // Widget roles
+  'alert',
+  'alertdialog',
+  'button',
+  'checkbox',
+  'combobox',
+  'dialog',
+  'grid',
+  'gridcell',
+  'link',
+  'listbox',
+  'log',
+  'marquee',
+  'menu',
+  'menubar',
+  'menuitem',
+  'menuitemcheckbox',
+  'menuitemradio',
+  'option',
+  'progressbar',
+  'radio',
+  'radiogroup',
+  'scrollbar',
+  'searchbox',
+  'separator',
+  'slider',
+  'spinbutton',
+  'status',
+  'switch',
+  'tab',
+  'tablist',
+  'tabpanel',
+  'textbox',
+  'timer',
+  'toolbar',
+  'tooltip',
+  'tree',
+  'treegrid',
+  'treeitem',
+  // Document structure roles
+  'article',
+  'cell',
+  'columnheader',
+  'definition',
+  'directory',
+  'document',
+  'feed',
+  'figure',
+  'group',
+  'heading',
+  'img',
+  'list',
+  'listitem',
+  'math',
+  'none',
+  'note',
+  'presentation',
+  'row',
+  'rowgroup',
+  'rowheader',
+  'table',
+  'term',
+  // Landmark roles
+  'banner',
+  'complementary',
+  'contentinfo',
+  'form',
+  'main',
+  'navigation',
+  'region',
+  'search',
+  // Live region roles
+  'application',
+  'generic',
+  'meter',
 ]);
 
 /**
@@ -133,14 +133,14 @@ const REQUIRED_STATES = ['loading', 'error', 'empty', 'ready'] as const;
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validatePascalCase(name: string): ValidationViolation | null {
-    if (!PASCAL_CASE_PATTERN.test(name)) {
-        return {
-            rule: 'R1',
-            field: 'name',
-            message: `Component name must be PascalCase: got '${name}'.`,
-        };
-    }
-    return null;
+  if (!PASCAL_CASE_PATTERN.test(name)) {
+    return {
+      rule: 'R1',
+      field: 'name',
+      message: `Component name must be PascalCase: got '${name}'.`,
+    };
+  }
+  return null;
 }
 
 /**
@@ -150,14 +150,14 @@ export function validatePascalCase(name: string): ValidationViolation | null {
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validateDescriptionPresence(description: string): ValidationViolation | null {
-    if (!description.trim()) {
-        return {
-            rule: 'R9',
-            field: 'description',
-            message: 'Description is required.',
-        };
-    }
-    return null;
+  if (!description.trim()) {
+    return {
+      rule: 'R9',
+      field: 'description',
+      message: 'Description is required.',
+    };
+  }
+  return null;
 }
 
 /**
@@ -167,14 +167,14 @@ export function validateDescriptionPresence(description: string): ValidationViol
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validateDescriptionLength(description: string): ValidationViolation | null {
-    if (description.length > 120) {
-        return {
-            rule: 'R2',
-            field: 'description',
-            message: `Description exceeds 120 characters (${String(description.length)}).`,
-        };
-    }
-    return null;
+  if (description.length > 120) {
+    return {
+      rule: 'R2',
+      field: 'description',
+      message: `Description exceeds 120 characters (${String(description.length)}).`,
+    };
+  }
+  return null;
 }
 
 /**
@@ -185,14 +185,14 @@ export function validateDescriptionLength(description: string): ValidationViolat
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validateTags(tags: readonly string[]): ValidationViolation | null {
-    if (tags.length < 1 || tags.length > 10) {
-        return {
-            rule: 'R3',
-            field: 'tags',
-            message: `Tags must have 1–10 entries, got ${String(tags.length)}.`,
-        };
-    }
-    return null;
+  if (tags.length < 1 || tags.length > 10) {
+    return {
+      rule: 'R3',
+      field: 'tags',
+      message: `Tags must have 1–10 entries, got ${String(tags.length)}.`,
+    };
+  }
+  return null;
 }
 
 /**
@@ -204,31 +204,36 @@ export function validateTags(tags: readonly string[]): ValidationViolation | nul
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validateStates(
-    states: { readonly loading: string; readonly error: string; readonly empty: string; readonly ready: string },
-    componentName: string,
+  states: {
+    readonly loading: string;
+    readonly error: string;
+    readonly empty: string;
+    readonly ready: string;
+  },
+  componentName: string,
 ): ValidationViolation | null {
-    // R4: Check all required states are present and non-empty
-    for (const state of REQUIRED_STATES) {
-        const value = states[state];
-        if (!value.trim()) {
-            return {
-                rule: 'R4',
-                field: `states.${state}`,
-                message: `Missing required lifecycle state: '${state}'.`,
-            };
-        }
+  // R4: Check all required states are present and non-empty
+  for (const state of REQUIRED_STATES) {
+    const value = states[state];
+    if (!value.trim()) {
+      return {
+        rule: 'R4',
+        field: `states.${state}`,
+        message: `Missing required lifecycle state: '${state}'.`,
+      };
     }
+  }
 
-    // R5: states.ready must reference the component's own name
-    if (states.ready !== componentName) {
-        return {
-            rule: 'R5',
-            field: 'states.ready',
-            message: `states.ready must reference the component's own name: expected '${componentName}', got '${states.ready}'.`,
-        };
-    }
+  // R5: states.ready must reference the component's own name
+  if (states.ready !== componentName) {
+    return {
+      rule: 'R5',
+      field: 'states.ready',
+      message: `states.ready must reference the component's own name: expected '${componentName}', got '${states.ready}'.`,
+    };
+  }
 
-    return null;
+  return null;
 }
 
 /**
@@ -238,17 +243,19 @@ export function validateStates(
  * @param tokens - The design token record to check.
  * @returns A `ValidationViolation` or `null` if valid.
  */
-export function validateTokens(tokens: Readonly<Record<string, string>>): ValidationViolation | null {
-    for (const [key, value] of Object.entries(tokens)) {
-        if (!value.startsWith('token:')) {
-            return {
-                rule: 'R6',
-                field: `tokens.${key}`,
-                message: `Token value must start with 'token:': key '${key}' has value '${value}'.`,
-            };
-        }
+export function validateTokens(
+  tokens: Readonly<Record<string, string>>,
+): ValidationViolation | null {
+  for (const [key, value] of Object.entries(tokens)) {
+    if (!value.startsWith('token:')) {
+      return {
+        rule: 'R6',
+        field: `tokens.${key}`,
+        message: `Token value must start with 'token:': key '${key}' has value '${value}'.`,
+      };
     }
-    return null;
+  }
+  return null;
 }
 
 /**
@@ -262,20 +269,20 @@ export function validateTokens(tokens: Readonly<Record<string, string>>): Valida
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validatePropsSchema(props: unknown): ValidationViolation | null {
-    if (
-        props === null ||
-        props === undefined ||
-        typeof props !== 'object' ||
-        !('safeParse' in props) ||
-        typeof (props as Record<string, unknown>)['safeParse'] !== 'function'
-    ) {
-        return {
-            rule: 'R7',
-            field: 'props',
-            message: 'Props must be a Zod schema with a safeParse method.',
-        };
-    }
-    return null;
+  if (
+    props === null ||
+    props === undefined ||
+    typeof props !== 'object' ||
+    !('safeParse' in props) ||
+    typeof (props as Record<string, unknown>)['safeParse'] !== 'function'
+  ) {
+    return {
+      rule: 'R7',
+      field: 'props',
+      message: 'Props must be a Zod schema with a safeParse method.',
+    };
+  }
+  return null;
 }
 
 /**
@@ -285,12 +292,12 @@ export function validatePropsSchema(props: unknown): ValidationViolation | null 
  * @returns A `ValidationViolation` or `null` if valid.
  */
 export function validateAriaRole(role: string): ValidationViolation | null {
-    if (!VALID_ARIA_ROLES.has(role)) {
-        return {
-            rule: 'R8',
-            field: 'accessibility.role',
-            message: `Invalid WAI-ARIA role: '${role}'.`,
-        };
-    }
-    return null;
+  if (!VALID_ARIA_ROLES.has(role)) {
+    return {
+      rule: 'R8',
+      field: 'accessibility.role',
+      message: `Invalid WAI-ARIA role: '${role}'.`,
+    };
+  }
+  return null;
 }

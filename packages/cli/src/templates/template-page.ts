@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-page
+ * @module @enterstellar/cli/templates/template-page
  * @description Generates the main application page with an Zone example.
  *
  * Produces a page component that demonstrates the core Enterstellar integration:
@@ -37,16 +37,16 @@ import type { ProjectTemplate } from './template-package-json.js';
  * ```
  */
 export function getPagePath(template: ProjectTemplate): string {
-    switch (template) {
-        case 'nextjs': {
-            return 'src/app/page.tsx';
-        }
-        case 'vite-react':
-        case 'minimal':
-        case 'full': {
-            return 'src/App.tsx';
-        }
+  switch (template) {
+    case 'nextjs': {
+      return 'src/app/page.tsx';
     }
+    case 'vite-react':
+    case 'minimal':
+    case 'full': {
+      return 'src/App.tsx';
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -71,12 +71,12 @@ export function getPagePath(template: ProjectTemplate): string {
  * ```
  */
 export function generatePage(template: ProjectTemplate): string {
-    const useClientDirective = template === 'nextjs' ? "'use client';\n\n" : '';
-    const exportStyle = template === 'nextjs' ? 'export default' : 'export';
-    const functionName = template === 'nextjs' ? 'HomePage' : 'App';
-    const globalsCssPath = template === 'nextjs' ? '../globals.css' : './globals.css';
+  const useClientDirective = template === 'nextjs' ? "'use client';\n\n" : '';
+  const exportStyle = template === 'nextjs' ? 'export default' : 'export';
+  const functionName = template === 'nextjs' ? 'HomePage' : 'App';
+  const globalsCssPath = template === 'nextjs' ? '../globals.css' : './globals.css';
 
-    return `${useClientDirective}/**
+  return `${useClientDirective}/**
  * ${functionName} — Enterstellar Zone Example
  *
  * This page demonstrates a basic Enterstellar integration with:
@@ -93,7 +93,7 @@ export function generatePage(template: ProjectTemplate): string {
 import '${globalsCssPath}';
 
 import React from 'react';
-import { Provider, Zone } from '@enterstellar-ai/react';
+import { Provider, Zone } from '@enterstellar/react';
 
 import { registry } from '${template === 'nextjs' ? '../enterstellar/registry.js' : './enterstellar/registry.js'}';
 

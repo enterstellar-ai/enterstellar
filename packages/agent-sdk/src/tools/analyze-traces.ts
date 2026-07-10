@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/analyze-traces
+ * @module @enterstellar/agent-sdk/tools/analyze-traces
  * @description Implements the `enterstellar_analyze_traces` MCP tool.
  *
  * Queries `EnterstellarStore` for local session traces and groups them by a
@@ -30,11 +30,7 @@
  * @see Design Choice AS5 — local traces from `EnterstellarStore`.
  */
 
-import type {
-    TraceAnalysis,
-    TraceAnalysisGroup,
-    AgentSDKStore,
-} from '../types.js';
+import type { TraceAnalysis, TraceAnalysisGroup, AgentSDKStore } from '../types.js';
 import { traceAnalysisInvalidError } from '../errors.js';
 
 // ---------------------------------------------------------------------------
@@ -45,7 +41,7 @@ import { traceAnalysisInvalidError } from '../errors.js';
 const VALID_GROUP_BY_VALUES = ['component', 'zone', 'status', 'strategy'] as const;
 
 /** Type for valid groupBy values. */
-type GroupByDimension = typeof VALID_GROUP_BY_VALUES[number];
+type GroupByDimension = (typeof VALID_GROUP_BY_VALUES)[number];
 
 /** Milliseconds in one hour. */
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -54,30 +50,30 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 const ONE_DAY_MS = 24 * ONE_HOUR_MS;
 
 // ---------------------------------------------------------------------------
-// Trace Shape (structural — avoids importing @enterstellar-ai/types AgentTrace)
+// Trace Shape (structural — avoids importing @enterstellar/types AgentTrace)
 // ---------------------------------------------------------------------------
 
 /**
  * Minimal trace shape for analysis.
  *
- * Structurally matches the subset of `AgentTrace` from `@enterstellar-ai/types`
+ * Structurally matches the subset of `AgentTrace` from `@enterstellar/types`
  * that trace analysis actually inspects. Avoids tight coupling.
  */
 type AnalyzableTrace = {
-    readonly timestamp: string;
-    readonly resolution: {
-        readonly strategy: string;
-        readonly resolvedComponent: string;
-    };
-    readonly compilation: {
-        readonly status: string;
-    };
-    readonly determinism: {
-        readonly zone: string;
-    };
-    readonly metrics: {
-        readonly totalMs: number;
-    };
+  readonly timestamp: string;
+  readonly resolution: {
+    readonly strategy: string;
+    readonly resolvedComponent: string;
+  };
+  readonly compilation: {
+    readonly status: string;
+  };
+  readonly determinism: {
+    readonly zone: string;
+  };
+  readonly metrics: {
+    readonly totalMs: number;
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -106,54 +102,52 @@ type AnalyzableTrace = {
  * ```
  */
 export function executeAnalyzeTraces(
-    store: AgentSDKStore | undefined,
-    timeRange: string,
-    groupBy: string,
+  store: AgentSDKStore | undefined,
+  timeRange: string,
+  groupBy: string,
 ): TraceAnalysis {
-    // -----------------------------------------------------------------------
-    // Validate dependencies
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Validate dependencies
+  // -----------------------------------------------------------------------
 
-    if (store === undefined) {
-        throw traceAnalysisInvalidError(
-            'EnterstellarStore is not configured. Provide it via createAgentSDK({ store: ... }).',
-        );
-    }
+  if (store === undefined) {
+    throw traceAnalysisInvalidError(
+      'EnterstellarStore is not configured. Provide it via createAgentSDK({ store: ... }).',
+    );
+  }
 
-    // -----------------------------------------------------------------------
-    // Validate groupBy dimension
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Validate groupBy dimension
+  // -----------------------------------------------------------------------
 
-    if (!isValidGroupBy(groupBy)) {
-        throw traceAnalysisInvalidError(
-            `Invalid groupBy value '${groupBy}'.`,
-        );
-    }
+  if (!isValidGroupBy(groupBy)) {
+    throw traceAnalysisInvalidError(`Invalid groupBy value '${groupBy}'.`);
+  }
 
-    // -----------------------------------------------------------------------
-    // Retrieve and filter traces
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Retrieve and filter traces
+  // -----------------------------------------------------------------------
 
-    const allTraces = store.get('traces');
-    const traces: readonly AnalyzableTrace[] = Array.isArray(allTraces)
-        ? (allTraces as readonly AnalyzableTrace[])
-        : [];
+  const allTraces = store.get('traces');
+  const traces: readonly AnalyzableTrace[] = Array.isArray(allTraces)
+    ? (allTraces as readonly AnalyzableTrace[])
+    : [];
 
-    const cutoffMs = computeCutoffMs(timeRange);
-    const filteredTraces = filterByTimeRange(traces, cutoffMs);
+  const cutoffMs = computeCutoffMs(timeRange);
+  const filteredTraces = filterByTimeRange(traces, cutoffMs);
 
-    // -----------------------------------------------------------------------
-    // Group and aggregate
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Group and aggregate
+  // -----------------------------------------------------------------------
 
-    const groups = groupTraces(filteredTraces, groupBy);
+  const groups = groupTraces(filteredTraces, groupBy);
 
-    return {
-        timeRange,
-        groupBy,
-        totalTraces: filteredTraces.length,
-        groups,
-    };
+  return {
+    timeRange,
+    groupBy,
+    totalTraces: filteredTraces.length,
+    groups,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -167,7 +161,7 @@ export function executeAnalyzeTraces(
  * @returns `true` if the value is a valid groupBy dimension.
  */
 function isValidGroupBy(value: string): value is GroupByDimension {
-    return (VALID_GROUP_BY_VALUES as readonly string[]).includes(value);
+  return (VALID_GROUP_BY_VALUES as readonly string[]).includes(value);
 }
 
 /**
@@ -177,21 +171,21 @@ function isValidGroupBy(value: string): value is GroupByDimension {
  * @returns Cutoff in epoch milliseconds. `0` means no filtering.
  */
 function computeCutoffMs(timeRange: string): number {
-    const now = Date.now();
+  const now = Date.now();
 
-    switch (timeRange) {
-        case 'last-hour':
-            return now - ONE_HOUR_MS;
-        case 'last-day':
-            return now - ONE_DAY_MS;
-        case 'all':
-            return 0;
-        default: {
-            // Try parsing as ISO 8601 timestamp
-            const parsed = Date.parse(timeRange);
-            return Number.isNaN(parsed) ? 0 : parsed;
-        }
+  switch (timeRange) {
+    case 'last-hour':
+      return now - ONE_HOUR_MS;
+    case 'last-day':
+      return now - ONE_DAY_MS;
+    case 'all':
+      return 0;
+    default: {
+      // Try parsing as ISO 8601 timestamp
+      const parsed = Date.parse(timeRange);
+      return Number.isNaN(parsed) ? 0 : parsed;
     }
+  }
 }
 
 /**
@@ -202,17 +196,17 @@ function computeCutoffMs(timeRange: string): number {
  * @returns Filtered array of traces within the time range.
  */
 function filterByTimeRange(
-    traces: readonly AnalyzableTrace[],
-    cutoffMs: number,
+  traces: readonly AnalyzableTrace[],
+  cutoffMs: number,
 ): readonly AnalyzableTrace[] {
-    if (cutoffMs === 0) {
-        return traces;
-    }
+  if (cutoffMs === 0) {
+    return traces;
+  }
 
-    return traces.filter((trace) => {
-        const traceMs = Date.parse(trace.timestamp);
-        return !Number.isNaN(traceMs) && traceMs >= cutoffMs;
-    });
+  return traces.filter((trace) => {
+    const traceMs = Date.parse(trace.timestamp);
+    return !Number.isNaN(traceMs) && traceMs >= cutoffMs;
+  });
 }
 
 /**
@@ -223,16 +217,16 @@ function filterByTimeRange(
  * @returns The grouping key string.
  */
 function extractGroupKey(trace: AnalyzableTrace, groupBy: GroupByDimension): string {
-    switch (groupBy) {
-        case 'component':
-            return trace.resolution.resolvedComponent;
-        case 'zone':
-            return trace.determinism.zone;
-        case 'status':
-            return trace.compilation.status;
-        case 'strategy':
-            return trace.resolution.strategy;
-    }
+  switch (groupBy) {
+    case 'component':
+      return trace.resolution.resolvedComponent;
+    case 'zone':
+      return trace.determinism.zone;
+    case 'status':
+      return trace.compilation.status;
+    case 'strategy':
+      return trace.resolution.strategy;
+  }
 }
 
 /**
@@ -243,46 +237,49 @@ function extractGroupKey(trace: AnalyzableTrace, groupBy: GroupByDimension): str
  * @returns Array of `TraceAnalysisGroup` sorted by count descending.
  */
 function groupTraces(
-    traces: readonly AnalyzableTrace[],
-    groupBy: GroupByDimension,
+  traces: readonly AnalyzableTrace[],
+  groupBy: GroupByDimension,
 ): readonly TraceAnalysisGroup[] {
-    // Accumulate per-group counters
-    const accumulators = new Map<string, {
-        count: number;
-        totalLatencyMs: number;
-        passCount: number;
-    }>();
-
-    for (const trace of traces) {
-        const key = extractGroupKey(trace, groupBy);
-        const existing = accumulators.get(key);
-
-        if (existing !== undefined) {
-            existing.count += 1;
-            existing.totalLatencyMs += trace.metrics.totalMs;
-            existing.passCount += trace.compilation.status === 'pass' ? 1 : 0;
-        } else {
-            accumulators.set(key, {
-                count: 1,
-                totalLatencyMs: trace.metrics.totalMs,
-                passCount: trace.compilation.status === 'pass' ? 1 : 0,
-            });
-        }
+  // Accumulate per-group counters
+  const accumulators = new Map<
+    string,
+    {
+      count: number;
+      totalLatencyMs: number;
+      passCount: number;
     }
+  >();
 
-    // Convert to output format and sort by count descending
-    const groups: TraceAnalysisGroup[] = [];
+  for (const trace of traces) {
+    const key = extractGroupKey(trace, groupBy);
+    const existing = accumulators.get(key);
 
-    for (const [key, acc] of accumulators) {
-        groups.push({
-            key,
-            count: acc.count,
-            avgLatencyMs: acc.count > 0 ? acc.totalLatencyMs / acc.count : 0,
-            successRate: acc.count > 0 ? acc.passCount / acc.count : 0,
-        });
+    if (existing !== undefined) {
+      existing.count += 1;
+      existing.totalLatencyMs += trace.metrics.totalMs;
+      existing.passCount += trace.compilation.status === 'pass' ? 1 : 0;
+    } else {
+      accumulators.set(key, {
+        count: 1,
+        totalLatencyMs: trace.metrics.totalMs,
+        passCount: trace.compilation.status === 'pass' ? 1 : 0,
+      });
     }
+  }
 
-    groups.sort((a, b) => b.count - a.count);
+  // Convert to output format and sort by count descending
+  const groups: TraceAnalysisGroup[] = [];
 
-    return groups;
+  for (const [key, acc] of accumulators) {
+    groups.push({
+      key,
+      count: acc.count,
+      avgLatencyMs: acc.count > 0 ? acc.totalLatencyMs / acc.count : 0,
+      successRate: acc.count > 0 ? acc.passCount / acc.count : 0,
+    });
+  }
+
+  groups.sort((a, b) => b.count - a.count);
+
+  return groups;
 }

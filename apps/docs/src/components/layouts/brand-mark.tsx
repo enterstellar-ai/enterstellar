@@ -1,5 +1,5 @@
 /**
- * @enterstellar-ai/docs — Enterstellar Logomark Component (Global Brand Asset)
+ * @enterstellar/docs — Enterstellar Logomark Component (Global Brand Asset)
  *
  * The inline SVG approach (vs `<img>`) is required so that `mix-blend-mode`
  * compositing on parent containers can sample the SVG's rendered pixels
@@ -21,15 +21,15 @@
  * @module shared/brand-mark
  */
 
-"use client";
-import type { JSX } from "react";
+'use client';
+import type { JSX } from 'react';
 
-import { useId } from "react";
-export type BrandMarkVariant = "white" | "black" | "color";
+import { useId } from 'react';
+export type BrandMarkVariant = 'white' | 'black' | 'color';
 
 export interface BrandMarkProps {
   variant?: BrandMarkVariant;
-  mode?: "icon" | "mark";
+  mode?: 'icon' | 'mark';
   className?: string;
 }
 
@@ -47,19 +47,16 @@ export interface BrandMarkProps {
  * @param gradientId - The unique gradient ID to reference for `color` variant.
  * @returns The fill attribute value for a given path instance.
  */
-function resolveFill(
-  variant: BrandMarkVariant,
-  gradientId: string
-): string {
+function resolveFill(variant: BrandMarkVariant, gradientId: string): string {
   switch (variant) {
-    case "white":
-      return "white";
-    case "black":
+    case 'white':
+      return 'white';
+    case 'black':
       // Near-black matching --swatch--black design token.
       // Using the SVG fill attribute (not CSS) keeps this component
       // free of inline style props per architectural convention.
-      return "#0a0a0a";
-    case "color":
+      return '#0a0a0a';
+    case 'color':
     default:
       return `url(#${gradientId})`;
   }
@@ -88,8 +85,8 @@ function resolveFill(
  * ```
  */
 export default function BrandMark({
-  variant = "color",
-  mode = "mark",
+  variant = 'color',
+  mode = 'mark',
   className,
 }: BrandMarkProps): JSX.Element {
   /**
@@ -103,12 +100,12 @@ export default function BrandMark({
   const uid = useId();
   // Sanitise the React-generated ID: useId() can produce `:r0:` style
   // strings with colons, which are invalid in SVG id attributes.
-  const safeUid = uid.replace(/:/g, "_");
+  const safeUid = uid.replace(/:/g, '_');
   const gradientIdA = `brandmark_grad_a_${safeUid}`;
   const gradientIdB = `brandmark_grad_b_${safeUid}`;
 
   /** CSS class applied to the root SVG element */
-  const modeClass = mode === "icon" ? "brandmark_icon" : "brandmark_mark";
+  const modeClass = mode === 'icon' ? 'brandmark_icon' : 'brandmark_mark';
 
   /** Fill values for the two paths */
   const fillA = resolveFill(variant, gradientIdA);
@@ -121,7 +118,7 @@ export default function BrandMark({
       viewBox="0 0 212.63 212.63"
       aria-hidden="true"
       focusable="false"
-      className={[modeClass, className].filter(Boolean).join(" ")}
+      className={[modeClass, className].filter(Boolean).join(' ')}
     >
       {/*
        * Gradient <defs> are only rendered for the color variant —
@@ -129,7 +126,7 @@ export default function BrandMark({
        * shares the same ID namespace, so unused defs are omitted
        * to keep the DOM clean.
        */}
-      {variant === "color" && (
+      {variant === 'color' && (
         <defs>
           {/* Primary gradient: pink → yellow (right / lower-right arm) */}
           <linearGradient

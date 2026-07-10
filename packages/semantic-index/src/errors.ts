@@ -1,8 +1,8 @@
 /**
- * @module @enterstellar-ai/semantic-index/errors
+ * @module @enterstellar/semantic-index/errors
  * @description Semantic Index error factory functions.
  *
- * Every error uses `EnterstellarError` from `@enterstellar-ai/types` with the `ENS-502x` code range.
+ * Every error uses `EnterstellarError` from `@enterstellar/types` with the `ENS-502x` code range.
  * Each factory returns a pre-configured `EnterstellarError` with the correct code,
  * module (`'semantic-index'`), message, and recoverability flag.
  *
@@ -14,7 +14,7 @@
  * @see Design Choice C14 — ~15 error codes across 5 ranges
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // ENS-5020: Embedding provider failure
@@ -32,13 +32,13 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * @returns An `EnterstellarError` with code `ENS-5020`, recoverable.
  */
 export function embeddingProviderError(reason: string, cause?: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5020',
-        'semantic-index',
-        `[ENS-5020] Embedding provider failed: ${reason}`,
-        true,
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-5020',
+    'semantic-index',
+    `[ENS-5020] Embedding provider failed: ${reason}`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -54,12 +54,12 @@ export function embeddingProviderError(reason: string, cause?: unknown): Enterst
  * @returns An `EnterstellarError` with code `ENS-5021`, non-recoverable.
  */
 export function indexNotBuiltError(): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5021',
-        'semantic-index',
-        '[ENS-5021] Search called before build(). Call index.build() before searching.',
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-5021',
+    'semantic-index',
+    '[ENS-5021] Search called before build(). Call index.build() before searching.',
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -78,12 +78,12 @@ export function indexNotBuiltError(): EnterstellarError {
  * @see Design Choice SI5 — default topK: 5, max: 20.
  */
 export function invalidTopKError(topK: number): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5022',
-        'semantic-index',
-        `[ENS-5022] Invalid topK: ${String(topK)}. Must be between 1 and 20.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-5022',
+    'semantic-index',
+    `[ENS-5022] Invalid topK: ${String(topK)}. Must be between 1 and 20.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -104,13 +104,13 @@ export function invalidTopKError(topK: number): EnterstellarError {
  * @see Design Choice SI12 — hybrid fallback on cloud unreachable.
  */
 export function cloudUnreachableError(endpoint: string, cause?: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5023',
-        'semantic-index',
-        `[ENS-5023] Cloud semantic search endpoint unreachable: ${endpoint}`,
-        true,
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-5023',
+    'semantic-index',
+    `[ENS-5023] Cloud semantic search endpoint unreachable: ${endpoint}`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -131,12 +131,12 @@ export function cloudUnreachableError(endpoint: string, cause?: unknown): Enters
  * @returns An `EnterstellarError` with code `ENS-5024`, non-recoverable.
  */
 export function dimensionMismatchError(expected: number, received: number): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5024',
-        'semantic-index',
-        `[ENS-5024] Embedding dimension mismatch: expected ${String(expected)}, got ${String(received)}.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-5024',
+    'semantic-index',
+    `[ENS-5024] Embedding dimension mismatch: expected ${String(expected)}, got ${String(received)}.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -157,12 +157,16 @@ export function dimensionMismatchError(expected: number, received: number): Ente
  *
  * @see Design Choice SI11 — warmup pre-computes embeddings + caches.
  */
-export function warmupFailedError(failedCount: number, totalCount: number, cause?: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5025',
-        'semantic-index',
-        `[ENS-5025] Warmup failed for ${String(failedCount)}/${String(totalCount)} intents.`,
-        true,
-        cause,
-    );
+export function warmupFailedError(
+  failedCount: number,
+  totalCount: number,
+  cause?: unknown,
+): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-5025',
+    'semantic-index',
+    `[ENS-5025] Warmup failed for ${String(failedCount)}/${String(totalCount)} intents.`,
+    true,
+    cause,
+  );
 }

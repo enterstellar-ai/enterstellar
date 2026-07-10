@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapter-supabase/types
+ * @module @enterstellar/adapter-supabase/types
  * @description Configuration types for Supabase adapter factories.
  *
  * These types define the input shapes consumers pass to
@@ -26,42 +26,42 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  * @example
  * ```ts
  * import { createClient } from '@supabase/supabase-js';
- * import { createSupabaseAuthAdapter } from '@enterstellar-ai/adapter-supabase';
+ * import { createSupabaseAuthAdapter } from '@enterstellar/adapter-supabase';
  *
  * const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  * const auth = createSupabaseAuthAdapter({ client: supabase });
  * ```
  */
 export type SupabaseAuthConfig = {
-    /**
-     * The Supabase client instance.
-     * Must be initialized with `createClient()` from `@supabase/supabase-js`.
-     */
-    readonly client: SupabaseClient;
+  /**
+   * The Supabase client instance.
+   * Must be initialized with `createClient()` from `@supabase/supabase-js`.
+   */
+  readonly client: SupabaseClient;
 
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     * @default `'supabase-auth'`
-     */
-    readonly name?: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   * @default `'supabase-auth'`
+   */
+  readonly name?: string;
 
-    /**
-     * Custom role extraction function.
-     *
-     * Called with the raw Supabase `user` object after a successful session
-     * fetch. Returns an array of role strings for RBAC zone gating.
-     *
-     * @default Extracts from `user.user_metadata.roles` (falls back to `[]`).
-     * @param user - The raw Supabase user object.
-     * @returns Array of role strings (e.g., `['clinician', 'admin']`).
-     *
-     * @example
-     * ```ts
-     * // Extract roles from custom claims
-     * roleExtractor: (user) => (user as any).app_metadata?.roles ?? []
-     * ```
-     */
-    readonly roleExtractor?: (user: unknown) => string[];
+  /**
+   * Custom role extraction function.
+   *
+   * Called with the raw Supabase `user` object after a successful session
+   * fetch. Returns an array of role strings for RBAC zone gating.
+   *
+   * @default Extracts from `user.user_metadata.roles` (falls back to `[]`).
+   * @param user - The raw Supabase user object.
+   * @returns Array of role strings (e.g., `['clinician', 'admin']`).
+   *
+   * @example
+   * ```ts
+   * // Extract roles from custom claims
+   * roleExtractor: (user) => (user as any).app_metadata?.roles ?? []
+   * ```
+   */
+  readonly roleExtractor?: (user: unknown) => string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -77,22 +77,22 @@ export type SupabaseAuthConfig = {
  * @example
  * ```ts
  * import { createClient } from '@supabase/supabase-js';
- * import { createSupabaseDataAdapter } from '@enterstellar-ai/adapter-supabase';
+ * import { createSupabaseDataAdapter } from '@enterstellar/adapter-supabase';
  *
  * const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  * const data = createSupabaseDataAdapter({ client: supabase });
  * ```
  */
 export type SupabaseDataConfig = {
-    /**
-     * The Supabase client instance.
-     * Must be initialized with `createClient()` from `@supabase/supabase-js`.
-     */
-    readonly client: SupabaseClient;
+  /**
+   * The Supabase client instance.
+   * Must be initialized with `createClient()` from `@supabase/supabase-js`.
+   */
+  readonly client: SupabaseClient;
 
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     * @default `'supabase-data'`
-     */
-    readonly name?: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   * @default `'supabase-data'`
+   */
+  readonly name?: string;
 };

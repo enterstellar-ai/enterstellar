@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/test
+ * @module @enterstellar/test
  * @description Intent-based testing framework for Enterstellar GenUI.
  *
  * Provides a deterministic test harness that exercises the real Enterstellar compiler
@@ -14,8 +14,8 @@
  * ## Quick Start
  *
  * ```ts
- * import { createTestHarness } from '@enterstellar-ai/test';
- * import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+ * import { createTestHarness } from '@enterstellar/test';
+ * import { createRegistry, defineComponent } from '@enterstellar/registry';
  *
  * const registry = createRegistry({ components: [PatientVitals] });
  * const harness = createTestHarness({ registry });
@@ -46,27 +46,27 @@ export { createTestHarness } from './create-test-harness.js';
 // Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    EnterstellarTestHarness,
-    TestHarnessConfig,
-    ResolveOptions,
-    CompileRawInput,
-    TestAssertions,
-    IntentCoverageResult,
-    TestResultRecord,
-    RegressionEntry,
-    FixtureEntry,
+  EnterstellarTestHarness,
+  TestHarnessConfig,
+  ResolveOptions,
+  CompileRawInput,
+  TestAssertions,
+  IntentCoverageResult,
+  TestResultRecord,
+  RegressionEntry,
+  FixtureEntry,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Assertion Helpers (framework-agnostic)
 // ---------------------------------------------------------------------------
 export {
-    componentToBe,
-    confidenceAbove,
-    compilationToPass,
-    tokenCompliant,
-    latencyBelow,
-    accessibilityToPass,
+  componentToBe,
+  confidenceAbove,
+  compilationToPass,
+  tokenCompliant,
+  latencyBelow,
+  accessibilityToPass,
 } from './assertions.js';
 
 // ---------------------------------------------------------------------------

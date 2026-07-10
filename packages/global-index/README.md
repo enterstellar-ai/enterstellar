@@ -1,10 +1,10 @@
-# @enterstellar-ai/global-index
+# @enterstellar/global-index
 
 > Federated registry discovery and search — the npm for ComponentContracts.
 
 ## Purpose
 
-`@enterstellar-ai/global-index` provides `createGlobalIndex()` — the client SDK for the Global Index service at `index.enterstellar.dev`. It enables contract discovery across federated registries, full-text search, registry management, and publish-to-earn tracking. Every public method is type-safe, returns frozen objects, and produces `EnterstellarError` on failure — never raw exceptions.
+`@enterstellar/global-index` provides `createGlobalIndex()` — the client SDK for the Global Index service at `index.enterstellar.dev`. It enables contract discovery across federated registries, full-text search, registry management, and publish-to-earn tracking. Every public method is type-safe, returns frozen objects, and produces `EnterstellarError` on failure — never raw exceptions.
 
 **Key properties:**
 
@@ -21,8 +21,8 @@
 ## Quick Start
 
 ```ts
-import { createGlobalIndex } from '@enterstellar-ai/global-index';
-import { createEnterstellarCloudClient } from '@enterstellar-ai/cloud';
+import { createGlobalIndex } from '@enterstellar/global-index';
+import { createEnterstellarCloudClient } from '@enterstellar/cloud';
 
 const cloud = createEnterstellarCloudClient({ apiKey: 'cloud-key', tier: 'pro' });
 const index = createGlobalIndex({

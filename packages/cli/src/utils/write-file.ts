@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/utils/write-file
+ * @module @enterstellar/cli/utils/write-file
  * @description Safe file writer with automatic parent directory creation.
  *
  * Used by both `enterstellar init` and `enterstellar add component` to write scaffolded files.
@@ -49,29 +49,29 @@ import { createFileWriteError } from './errors.js';
  * ```
  */
 export async function safeWriteFile(
-    filePath: string,
-    content: string,
-    overwrite: boolean = false,
+  filePath: string,
+  content: string,
+  overwrite: boolean = false,
 ): Promise<boolean> {
-    // Check if file already exists when overwrite is disabled
-    if (!overwrite) {
-        const exists = await fileExists(filePath);
-        if (exists) {
-            return false;
-        }
+  // Check if file already exists when overwrite is disabled
+  if (!overwrite) {
+    const exists = await fileExists(filePath);
+    if (exists) {
+      return false;
     }
+  }
 
-    try {
-        // Create parent directories recursively
-        const parentDir = dirname(filePath);
-        await mkdir(parentDir, { recursive: true });
+  try {
+    // Create parent directories recursively
+    const parentDir = dirname(filePath);
+    await mkdir(parentDir, { recursive: true });
 
-        // Write the file with UTF-8 encoding
-        await fsWriteFile(filePath, content, 'utf-8');
-        return true;
-    } catch (error: unknown) {
-        throw createFileWriteError(filePath, error);
-    }
+    // Write the file with UTF-8 encoding
+    await fsWriteFile(filePath, content, 'utf-8');
+    return true;
+  } catch (error: unknown) {
+    throw createFileWriteError(filePath, error);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -94,10 +94,10 @@ export async function safeWriteFile(
  * ```
  */
 export async function fileExists(filePath: string): Promise<boolean> {
-    try {
-        await access(filePath);
-        return true;
-    } catch {
-        return false;
-    }
+  try {
+    await access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
 }

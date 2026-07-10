@@ -1,4 +1,4 @@
-# @enterstellar-ai/contracts-shadcn
+# @enterstellar/contracts-shadcn
 
 > Pre-converted Enterstellar ComponentContracts for [shadcn/ui](https://ui.shadcn.com/) — enabling one-line registration of shadcn components into the Enterstellar GenUI Compiler.
 
@@ -13,8 +13,8 @@ shadcn/ui uses a **code-copy distribution model** — components are copied into
 ## Quick Start
 
 ```ts
-import { registerShadcnContracts } from '@enterstellar-ai/contracts-shadcn';
-import { createRegistry } from '@enterstellar-ai/registry';
+import { registerShadcnContracts } from '@enterstellar/contracts-shadcn';
+import { createRegistry } from '@enterstellar/registry';
 
 // Import your local shadcn component implementations.
 import { Button } from '@/components/ui/button';
@@ -84,12 +84,12 @@ No configuration required. This package provides pre-built contracts — no buil
 
 ### Dependencies
 
-| Package                            | Purpose                                                                          |
-| :--------------------------------- | :------------------------------------------------------------------------------- |
-| `@enterstellar-ai/react` (peer)    | Provides `defineComponent()` for contract validation and renderer registration.  |
-| `@enterstellar-ai/registry` (peer) | Provides `defineComponent()` and `ComponentContractInput` for contract creation. |
-| `@enterstellar-ai/types` (peer)    | Provides `ComponentContract` type definition.                                    |
-| `zod` (peer)                       | Runtime schema validation for contract prop types.                               |
+| Package                         | Purpose                                                                          |
+| :------------------------------ | :------------------------------------------------------------------------------- |
+| `@enterstellar/react` (peer)    | Provides `defineComponent()` for contract validation and renderer registration.  |
+| `@enterstellar/registry` (peer) | Provides `defineComponent()` and `ComponentContractInput` for contract creation. |
+| `@enterstellar/types` (peer)    | Provides `ComponentContract` type definition.                                    |
+| `zod` (peer)                    | Runtime schema validation for contract prop types.                               |
 
 > **Note:** There is no `shadcn` peer dependency — shadcn uses a code-copy model. The developer imports their own copied components directly.
 

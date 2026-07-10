@@ -1,10 +1,10 @@
 /**
- * @module @enterstellar-ai/migration/extract/extract-manifest
+ * @module @enterstellar/migration/extract/extract-manifest
  * @description Phase 1 entry point — extracts a `StructuralManifest` from
  * a single component source string using `ts-morph` AST analysis.
  *
  * This is THE shared function mandated by Correction 4: importable by both
- * `@enterstellar-ai/cli` (local `enterstellar migrate`) and `@enterstellar-ai/cloud` (server endpoint
+ * `@enterstellar/cli` (local `enterstellar migrate`) and `@enterstellar/cloud` (server endpoint
  * at `POST /api/v1/migrate/extract`).
  *
  * **Critical design decision (Correction 4, L145-146):**
@@ -41,27 +41,27 @@ import { Project } from 'ts-morph';
 import { z } from 'zod';
 
 import type {
-    EnrichableField,
-    ExtractDiagnostic,
-    ExtractResult,
-    StructuralManifest,
+  EnrichableField,
+  ExtractDiagnostic,
+  ExtractResult,
+  StructuralManifest,
 } from '../types.js';
 
 import {
-    inferCategory,
-    generateHeuristicIntent,
-    generateHeuristicDescription,
+  inferCategory,
+  generateHeuristicIntent,
+  generateHeuristicDescription,
 } from './heuristics.js';
 
 import {
-    findComponentExport,
-    extractDefaultProps,
-    detectExistingZodSchemas,
-    detectEventHandlers,
-    extractJsDoc,
-    detectAriaAttributes,
-    detectDesignTokenRefs,
-    detectLifecycleStates,
+  findComponentExport,
+  extractDefaultProps,
+  detectExistingZodSchemas,
+  detectEventHandlers,
+  extractJsDoc,
+  detectAriaAttributes,
+  detectDesignTokenRefs,
+  detectLifecycleStates,
 } from './ts-morph-helpers.js';
 
 import { typeToZodSchema } from './zod-inference.js';
@@ -78,14 +78,14 @@ import { typeToZodSchema } from './zod-inference.js';
  * this factory alongside `extractManifest()`:
  *
  * ```ts
- * const { extractManifest, createExtractionProject } = await import('@enterstellar-ai/migration');
+ * const { extractManifest, createExtractionProject } = await import('@enterstellar/migration');
  * const project = createExtractionProject();
  * for (const file of files) {
  *     extractManifest(source, filename, project);
  * }
  * ```
  *
- * **Why a factory?** `ts-morph` (~2MB) lives in `@enterstellar-ai/migration`'s
+ * **Why a factory?** `ts-morph` (~2MB) lives in `@enterstellar/migration`'s
  * dependency tree. If the CLI imported `Project` directly, `ts-morph`
  * would be in the CLI's dependency tree too — increasing install size
  * for ALL CLI commands (`enterstellar init`, `enterstellar add`), not just `enterstellar migrate`.
@@ -95,7 +95,7 @@ import { typeToZodSchema } from './zod-inference.js';
  * @see Mid-Session Decision #7 — ts-morph out of CLI cold-start path
  */
 export function createExtractionProject(): Project {
-    return new Project({ useInMemoryFileSystem: true });
+  return new Project({ useInMemoryFileSystem: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ export function createExtractionProject(): Project {
  *
  * @example
  * ```ts
- * import { extractManifest } from '@enterstellar-ai/migration';
+ * import { extractManifest } from '@enterstellar/migration';
  *
  * // Server usage (Correction 4 — source string from HTTP body):
  * const result = extractManifest(sourceCode, 'Button.tsx');
@@ -145,181 +145,182 @@ export function createExtractionProject(): Project {
  * @see Correction 4 — shared between CLI and Cloud
  */
 export function extractManifest(
-    source: string,
-    filename?: string,
-    project?: Project,
+  source: string,
+  filename?: string,
+  project?: Project,
 ): ExtractResult {
-    const resolvedFilename = filename ?? 'component.tsx';
-    const diagnostics: ExtractDiagnostic[] = [];
+  const resolvedFilename = filename ?? 'component.tsx';
+  const diagnostics: ExtractDiagnostic[] = [];
 
-    // --- Step 1: Resolve project and create in-memory source file ---
-    const resolvedProject = project ?? new Project({ useInMemoryFileSystem: true });
-    const sourceFile = resolvedProject.createSourceFile(
-        resolvedFilename,
-        source,
-        { overwrite: true },
+  // --- Step 1: Resolve project and create in-memory source file ---
+  const resolvedProject = project ?? new Project({ useInMemoryFileSystem: true });
+  const sourceFile = resolvedProject.createSourceFile(resolvedFilename, source, {
+    overwrite: true,
+  });
+
+  // --- Step 2: Find component export (SKIP if not found) ---
+  const componentExport = findComponentExport(sourceFile);
+  if (componentExport === undefined) {
+    throw new Error(
+      `SKIP: No component export found in "${resolvedFilename}". ` +
+        'File must export a PascalCase function component (named or default).',
     );
+  }
 
-    // --- Step 2: Find component export (SKIP if not found) ---
-    const componentExport = findComponentExport(sourceFile);
-    if (componentExport === undefined) {
-        throw new Error(
-            `SKIP: No component export found in "${resolvedFilename}". ` +
-            'File must export a PascalCase function component (named or default).',
-        );
-    }
+  const { name, propsType, generics } = componentExport;
 
-    const { name, propsType, generics } = componentExport;
+  // --- Step 3: Extract structural fields ---
 
-    // --- Step 3: Extract structural fields ---
+  // 3a. Props → Zod schema
+  const props: z.ZodType =
+    propsType !== undefined ? typeToZodSchema(propsType, diagnostics) : z.object({});
 
-    // 3a. Props → Zod schema
-    const props: z.ZodType = propsType !== undefined
-        ? typeToZodSchema(propsType, diagnostics)
-        : z.object({});
+  // 3b. Default props
+  const defaultProps = extractDefaultProps(sourceFile, name);
 
-    // 3b. Default props
-    const defaultProps = extractDefaultProps(sourceFile, name);
+  // 3c. Existing Zod schemas (variable names — E2 fix)
+  const existingZodSchemas = detectExistingZodSchemas(sourceFile);
 
-    // 3c. Existing Zod schemas (variable names — E2 fix)
-    const existingZodSchemas = detectExistingZodSchemas(sourceFile);
+  // 3d. Event handlers
+  const eventHandlers = detectEventHandlers(sourceFile);
 
-    // 3d. Event handlers
-    const eventHandlers = detectEventHandlers(sourceFile);
+  // --- Step 4: Extract enrichable fields ---
 
-    // --- Step 4: Extract enrichable fields ---
+  // 4a. JSDoc → description, tags, deprecated
+  const jsDoc = extractJsDoc(sourceFile, name);
 
-    // 4a. JSDoc → description, tags, deprecated
-    const jsDoc = extractJsDoc(sourceFile, name);
+  // 4b. ARIA attributes
+  const ariaResult = detectAriaAttributes(sourceFile);
+  const hasAriaAttrs = Object.keys(ariaResult.attrs).length > 0;
 
-    // 4b. ARIA attributes
-    const ariaResult = detectAriaAttributes(sourceFile);
-    const hasAriaAttrs = Object.keys(ariaResult.attrs).length > 0;
+  // 4c. Design token references
+  const tokenResult = detectDesignTokenRefs(sourceFile);
 
-    // 4c. Design token references
-    const tokenResult = detectDesignTokenRefs(sourceFile);
+  // 4d. Lifecycle states
+  const lifecycleResult = detectLifecycleStates(sourceFile);
 
-    // 4d. Lifecycle states
-    const lifecycleResult = detectLifecycleStates(sourceFile);
+  // 4e. Category (from filename path)
+  const inferredCategory = inferCategory(resolvedFilename);
+  // 'utility' is the default fallback — only non-default matches are ast-determined
+  const categoryIsAstDetermined =
+    inferredCategory !== 'utility' || resolvedFilename.toLowerCase().includes('utility');
 
-    // 4e. Category (from filename path)
-    const inferredCategory = inferCategory(resolvedFilename);
-    // 'utility' is the default fallback — only non-default matches are ast-determined
-    const categoryIsAstDetermined = inferredCategory !== 'utility'
-        || resolvedFilename.toLowerCase().includes('utility');
+  // --- Step 5: Apply Correction 2 provenance decision rules ---
+  // M1 fix: use actual AST node line numbers instead of hardcoded line: 1
 
-    // --- Step 5: Apply Correction 2 provenance decision rules ---
-    // M1 fix: use actual AST node line numbers instead of hardcoded line: 1
-
-    const description: EnrichableField<string> = jsDoc.description !== undefined
-        ? {
-            value: jsDoc.description,
-            source: 'ast-determined',
-            sourceLocation: { file: resolvedFilename, line: jsDoc.line ?? 1 },
+  const description: EnrichableField<string> =
+    jsDoc.description !== undefined
+      ? {
+          value: jsDoc.description,
+          source: 'ast-determined',
+          sourceLocation: { file: resolvedFilename, line: jsDoc.line ?? 1 },
         }
-        : {
-            value: generateHeuristicDescription(name, jsDoc.deprecated),
-            source: 'heuristic-fallback',
+      : {
+          value: generateHeuristicDescription(name, jsDoc.deprecated),
+          source: 'heuristic-fallback',
         };
 
-    const tags: EnrichableField<readonly string[]> = jsDoc.tags !== undefined
-        ? {
-            value: jsDoc.tags,
-            source: 'ast-determined',
-            sourceLocation: { file: resolvedFilename, line: jsDoc.line ?? 1 },
+  const tags: EnrichableField<readonly string[]> =
+    jsDoc.tags !== undefined
+      ? {
+          value: jsDoc.tags,
+          source: 'ast-determined',
+          sourceLocation: { file: resolvedFilename, line: jsDoc.line ?? 1 },
         }
-        : {
-            value: [],
-            source: 'heuristic-fallback',
+      : {
+          value: [],
+          source: 'heuristic-fallback',
         };
 
-    const category: EnrichableField<string> = categoryIsAstDetermined
-        ? {
-            value: inferredCategory,
-            source: 'ast-determined',
-            // Category is path-derived — line 1 is the correct semantic location
-            sourceLocation: { file: resolvedFilename, line: 1 },
-        }
-        : {
-            value: inferredCategory,
-            source: 'heuristic-fallback',
-        };
-
-    // Intent is NEVER ast-determined — always heuristic-fallback
-    const intent: EnrichableField<string> = {
-        value: generateHeuristicIntent(name),
+  const category: EnrichableField<string> = categoryIsAstDetermined
+    ? {
+        value: inferredCategory,
+        source: 'ast-determined',
+        // Category is path-derived — line 1 is the correct semantic location
+        sourceLocation: { file: resolvedFilename, line: 1 },
+      }
+    : {
+        value: inferredCategory,
         source: 'heuristic-fallback',
-    };
+      };
 
-    const ariaAttributes: EnrichableField<Readonly<Record<string, string>>> = hasAriaAttrs
-        ? {
-            value: ariaResult.attrs,
-            source: 'ast-determined',
-            sourceLocation: { file: resolvedFilename, line: ariaResult.firstLine ?? 1 },
+  // Intent is NEVER ast-determined — always heuristic-fallback
+  const intent: EnrichableField<string> = {
+    value: generateHeuristicIntent(name),
+    source: 'heuristic-fallback',
+  };
+
+  const ariaAttributes: EnrichableField<Readonly<Record<string, string>>> = hasAriaAttrs
+    ? {
+        value: ariaResult.attrs,
+        source: 'ast-determined',
+        sourceLocation: { file: resolvedFilename, line: ariaResult.firstLine ?? 1 },
+      }
+    : {
+        value: {},
+        source: 'heuristic-fallback',
+      };
+
+  const designTokenRefsField: EnrichableField<readonly string[]> =
+    tokenResult.tokens.length > 0
+      ? {
+          value: tokenResult.tokens,
+          source: 'ast-determined',
+          sourceLocation: { file: resolvedFilename, line: tokenResult.firstLine ?? 1 },
         }
-        : {
-            value: {},
-            source: 'heuristic-fallback',
+      : {
+          value: [],
+          source: 'heuristic-fallback',
         };
 
-    const designTokenRefsField: EnrichableField<readonly string[]> = tokenResult.tokens.length > 0
-        ? {
-            value: tokenResult.tokens,
-            source: 'ast-determined',
-            sourceLocation: { file: resolvedFilename, line: tokenResult.firstLine ?? 1 },
+  const lifecycleStatesField: EnrichableField<readonly string[]> =
+    lifecycleResult.states.length > 0
+      ? {
+          value: lifecycleResult.states,
+          source: 'ast-determined',
+          sourceLocation: { file: resolvedFilename, line: lifecycleResult.firstLine ?? 1 },
         }
-        : {
-            value: [],
-            source: 'heuristic-fallback',
+      : {
+          value: [],
+          source: 'heuristic-fallback',
         };
 
-    const lifecycleStatesField: EnrichableField<readonly string[]> = lifecycleResult.states.length > 0
-        ? {
-            value: lifecycleResult.states,
-            source: 'ast-determined',
-            sourceLocation: { file: resolvedFilename, line: lifecycleResult.firstLine ?? 1 },
-        }
-        : {
-            value: [],
-            source: 'heuristic-fallback',
-        };
+  // --- Step 6: Assemble StructuralManifest ---
 
-    // --- Step 6: Assemble StructuralManifest ---
+  const manifest: StructuralManifest = {
+    // Structural (bare values, always AST-determined)
+    name,
+    props,
+    defaultProps,
+    generics,
+    existingZodSchemas,
+    eventHandlers,
 
-    const manifest: StructuralManifest = {
-        // Structural (bare values, always AST-determined)
-        name,
-        props,
-        defaultProps,
-        generics,
-        existingZodSchemas,
-        eventHandlers,
+    // Enrichable (wrapped with provenance)
+    description,
+    tags,
+    category,
+    intent,
+    ariaAttributes,
+    designTokenRefs: designTokenRefsField,
+    lifecycleStates: lifecycleStatesField,
+  };
 
-        // Enrichable (wrapped with provenance)
-        description,
-        tags,
-        category,
-        intent,
-        ariaAttributes,
-        designTokenRefs: designTokenRefsField,
-        lifecycleStates: lifecycleStatesField,
-    };
+  // --- Step 7: Add informational diagnostics ---
 
-    // --- Step 7: Add informational diagnostics ---
+  if (generics.length > 0) {
+    diagnostics.push({
+      level: 'info',
+      message: `Component "${name}" has ${String(generics.length)} generic type parameter(s). Contract will include REVIEW annotations.`,
+    });
+  }
 
-    if (generics.length > 0) {
-        diagnostics.push({
-            level: 'info',
-            message: `Component "${name}" has ${String(generics.length)} generic type parameter(s). Contract will include REVIEW annotations.`,
-        });
-    }
+  if (existingZodSchemas.length > 0) {
+    diagnostics.push({
+      level: 'info',
+      message: `Existing Zod schemas detected: ${existingZodSchemas.join(', ')}. Phase 3 will add a provenance comment.`,
+    });
+  }
 
-    if (existingZodSchemas.length > 0) {
-        diagnostics.push({
-            level: 'info',
-            message: `Existing Zod schemas detected: ${existingZodSchemas.join(', ')}. Phase 3 will add a provenance comment.`,
-        });
-    }
-
-    return { manifest, diagnostics };
+  return { manifest, diagnostics };
 }

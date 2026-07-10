@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/adapter-supabase",
+  "name": "@enterstellar/adapter-supabase",
   "description": "Supabase adapter — Auth and Data adapter implementations for Supabase.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -55,12 +55,12 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "@supabase/supabase-js": "^2.99.0"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/adapters": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/adapters": "workspace:*",
     "@supabase/supabase-js": "^2.99.0"
   }
 }

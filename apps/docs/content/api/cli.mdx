@@ -1,12 +1,12 @@
 ---
-title: "@enterstellar-ai/cli"
+title: "@enterstellar/cli"
 description: The Enterstellar CLI — init, add component, migrate, review. Four commands for project scaffolding, component generation, codebase migration, and annotation review.
 icon: Terminal
 ---
 
 ## Purpose
 
-`@enterstellar-ai/cli` provides the `enterstellar` binary and `create-enterstellar-app` for project scaffolding, contract generation, codebase migration (existing components → Enterstellar contracts), and annotation review.
+`@enterstellar/cli` provides the `enterstellar` binary and `create-enterstellar-app` for project scaffolding, contract generation, codebase migration (existing components → Enterstellar contracts), and annotation review.
 
 The CLI has 4 commands. Manual arg parsing is used instead of a framework — 4 commands don't justify the ~300KB dependency weight.
 
@@ -14,10 +14,10 @@ The CLI has 4 commands. Manual arg parsing is used instead of a framework — 4 
 
 ```bash
 # Global install
-npm install -g @enterstellar-ai/cli
+npm install -g @enterstellar/cli
 
 # Or use via npx (no install)
-npx @enterstellar-ai/cli init
+npx @enterstellar/cli init
 ```
 
 ## Commands
@@ -39,7 +39,7 @@ enterstellar init my-app
 - `src/enterstellar/components/` — components directory (contracts + renderers + tests)
 - `enterstellar/connection.ts` — `createAgentConnection()` setup
 - `enterstellar/tokens.ts` — starter `DesignTokenSet`
-- `package.json` additions — `@enterstellar-ai/react`, `@enterstellar-ai/registry`, `zod`
+- `package.json` additions — `@enterstellar/react`, `@enterstellar/registry`, `zod`
 
 ---
 
@@ -128,7 +128,7 @@ Alias for `enterstellar init`. Available as a standalone binary:
 ```bash
 npx create-enterstellar-app my-app
 # equivalent to:
-npx @enterstellar-ai/cli init my-app
+npx @enterstellar/cli init my-app
 ```
 
 ---
@@ -143,7 +143,7 @@ import {
   addComponentCommand,
   migrateCommand,
   reviewCommand,
-} from '@enterstellar-ai/cli';
+} from '@enterstellar/cli';
 
 // Programmatic init
 await initCommand('./my-project');

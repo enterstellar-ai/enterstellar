@@ -1,10 +1,10 @@
-# @enterstellar-ai/cloud
+# @enterstellar/cloud
 
 > Enterstellar Cloud SDK — typed, universal client for `api.enterstellar.dev`. 13 methods + SSE streaming. Throw-on-error. Zero framework dependencies.
 
 ## Purpose
 
-`@enterstellar-ai/cloud` provides `createEnterstellarCloudClient()` — the client-side SDK for all Enterstellar Cloud API interactions. Every method returns `CloudResult<T>` with `{ data, ipu }` — a universal wrapper that carries the response data and server-authoritative IPU metering in a single, predictable shape. Operational errors (429, 4xx, retries exhausted) throw `CloudError` with structured metadata (`upgradeUrl`, `retryAfterMs`, `requestId`) — callers never receive degraded or partial results.
+`@enterstellar/cloud` provides `createEnterstellarCloudClient()` — the client-side SDK for all Enterstellar Cloud API interactions. Every method returns `CloudResult<T>` with `{ data, ipu }` — a universal wrapper that carries the response data and server-authoritative IPU metering in a single, predictable shape. Operational errors (429, 4xx, retries exhausted) throw `CloudError` with structured metadata (`upgradeUrl`, `retryAfterMs`, `requestId`) — callers never receive degraded or partial results.
 
 **Key properties:**
 
@@ -23,7 +23,7 @@
 ## Quick Start
 
 ```ts
-import { createEnterstellarCloudClient } from '@enterstellar-ai/cloud';
+import { createEnterstellarCloudClient } from '@enterstellar/cloud';
 
 const cloud = createEnterstellarCloudClient({
   apiKey: process.env['ENTERSTELLAR_API_KEY']!,

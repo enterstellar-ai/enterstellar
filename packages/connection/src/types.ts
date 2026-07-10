@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/connection/types
+ * @module @enterstellar/connection/types
  * @description Internal configuration types for the connection module.
  *
  * These are data shapes (not object-with-methods), so they are `type` aliases
@@ -52,10 +52,10 @@ export type DropStrategy = 'oldest' | 'newest';
  * @see Design Choice P5
  */
 export type BackpressureConfig = {
-    /** Maximum number of buffered intents before dropping. Default: 50. */
-    readonly maxBuffer: number;
-    /** Which end of the buffer to drop from when full. Default: `'oldest'`. */
-    readonly dropStrategy: DropStrategy;
+  /** Maximum number of buffered intents before dropping. Default: 50. */
+  readonly maxBuffer: number;
+  /** Which end of the buffer to drop from when full. Default: `'oldest'`. */
+  readonly dropStrategy: DropStrategy;
 };
 
 /**
@@ -66,8 +66,8 @@ export type BackpressureConfig = {
  * @see Design Choice P12, S11
  */
 export type ReconnectConfig = {
-    /** Maximum delay between reconnect attempts in milliseconds. Default: 30_000. */
-    readonly maxDelay: number;
+  /** Maximum delay between reconnect attempts in milliseconds. Default: 30_000. */
+  readonly maxDelay: number;
 };
 
 /**
@@ -80,14 +80,14 @@ export type ReconnectConfig = {
  * @see Bible §4.3b
  */
 export type ConnectionConfig = {
-    /** Agent endpoint URL (WebSocket or HTTP). Must be non-empty. */
-    readonly url: string;
-    /** Transport selection strategy. Default: `'auto'`. */
-    readonly transport: TransportType;
-    /** Backpressure configuration for inbound intent buffering. */
-    readonly backpressure: BackpressureConfig;
-    /** Reconnect configuration for automatic recovery after disconnects. */
-    readonly reconnect: ReconnectConfig;
+  /** Agent endpoint URL (WebSocket or HTTP). Must be non-empty. */
+  readonly url: string;
+  /** Transport selection strategy. Default: `'auto'`. */
+  readonly transport: TransportType;
+  /** Backpressure configuration for inbound intent buffering. */
+  readonly backpressure: BackpressureConfig;
+  /** Reconnect configuration for automatic recovery after disconnects. */
+  readonly reconnect: ReconnectConfig;
 };
 
 /**
@@ -96,19 +96,19 @@ export type ConnectionConfig = {
  * @see Bible §4.3b
  */
 export type ConnectionInput = {
-    /** Agent endpoint URL (WebSocket or HTTP). Required. */
-    readonly url: string;
-    /** Transport selection strategy. Default: `'auto'`. */
-    readonly transport?: TransportType;
-    /** Backpressure configuration. Partial — unset fields use defaults. */
-    readonly backpressure?: {
-        readonly maxBuffer?: number;
-        readonly dropStrategy?: DropStrategy;
-    };
-    /** Reconnect configuration. Partial — unset fields use defaults. */
-    readonly reconnect?: {
-        readonly maxDelay?: number;
-    };
+  /** Agent endpoint URL (WebSocket or HTTP). Required. */
+  readonly url: string;
+  /** Transport selection strategy. Default: `'auto'`. */
+  readonly transport?: TransportType;
+  /** Backpressure configuration. Partial — unset fields use defaults. */
+  readonly backpressure?: {
+    readonly maxBuffer?: number;
+    readonly dropStrategy?: DropStrategy;
+  };
+  /** Reconnect configuration. Partial — unset fields use defaults. */
+  readonly reconnect?: {
+    readonly maxDelay?: number;
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -117,13 +117,13 @@ export type ConnectionInput = {
 
 /** Default backpressure configuration. */
 export const BACKPRESSURE_DEFAULTS: BackpressureConfig = {
-    maxBuffer: 50,
-    dropStrategy: 'oldest',
+  maxBuffer: 50,
+  dropStrategy: 'oldest',
 } as const;
 
 /** Default reconnect configuration. */
 export const RECONNECT_DEFAULTS: ReconnectConfig = {
-    maxDelay: 30_000,
+  maxDelay: 30_000,
 } as const;
 
 /** Default transport type. */
@@ -158,42 +158,42 @@ export const INITIAL_BACKOFF_MS = 1_000;
 
 /** Zod schema for `BackpressureConfig` runtime validation. */
 export const BackpressureConfigSchema = z.object({
-    maxBuffer: z
-        .number()
-        .int('maxBuffer must be an integer.')
-        .positive('maxBuffer must be positive.'),
-    dropStrategy: z.enum(['oldest', 'newest']),
+  maxBuffer: z
+    .number()
+    .int('maxBuffer must be an integer.')
+    .positive('maxBuffer must be positive.'),
+  dropStrategy: z.enum(['oldest', 'newest']),
 });
 
 /** Zod schema for `ReconnectConfig` runtime validation. */
 export const ReconnectConfigSchema = z.object({
-    maxDelay: z
-        .number()
-        .int('maxDelay must be an integer.')
-        .min(1_000, 'maxDelay must be at least 1000ms.'),
+  maxDelay: z
+    .number()
+    .int('maxDelay must be an integer.')
+    .min(1_000, 'maxDelay must be at least 1000ms.'),
 });
 
 /** Zod schema for the user-facing `ConnectionInput` runtime validation. */
 export const ConnectionInputSchema = z.object({
-    url: z.string().min(1, 'Connection URL is required.'),
-    transport: z.enum(['websocket', 'sse', 'polling', 'auto']).optional(),
-    backpressure: z
-        .object({
-            maxBuffer: z
-                .number()
-                .int('maxBuffer must be an integer.')
-                .positive('maxBuffer must be positive.')
-                .optional(),
-            dropStrategy: z.enum(['oldest', 'newest']).optional(),
-        })
+  url: z.string().min(1, 'Connection URL is required.'),
+  transport: z.enum(['websocket', 'sse', 'polling', 'auto']).optional(),
+  backpressure: z
+    .object({
+      maxBuffer: z
+        .number()
+        .int('maxBuffer must be an integer.')
+        .positive('maxBuffer must be positive.')
         .optional(),
-    reconnect: z
-        .object({
-            maxDelay: z
-                .number()
-                .int('maxDelay must be an integer.')
-                .min(1_000, 'maxDelay must be at least 1000ms.')
-                .optional(),
-        })
+      dropStrategy: z.enum(['oldest', 'newest']).optional(),
+    })
+    .optional(),
+  reconnect: z
+    .object({
+      maxDelay: z
+        .number()
+        .int('maxDelay must be an integer.')
+        .min(1_000, 'maxDelay must be at least 1000ms.')
         .optional(),
+    })
+    .optional(),
 });

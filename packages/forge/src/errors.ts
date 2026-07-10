@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge/errors
+ * @module @enterstellar/forge/errors
  * @description Forge-specific error factory functions for `ENS-4xxx` codes.
  *
  * Each factory creates a well-typed `EnterstellarError` with:
@@ -15,8 +15,7 @@
  * @see Design Choice F9 — always fall back to LocalForge, never hard-fail.
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
-
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // ENS-4001: Forge Generation Failed
@@ -35,15 +34,15 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * @see Design Choice F9 — never hard-fail the user.
  */
 export function forgeGenerationFailedError(
-    intentComponent: string,
-    reason: string,
+  intentComponent: string,
+  reason: string,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4001',
-        'forge',
-        `Forge generation failed for intent component '${intentComponent}': ${reason}`,
-        true,
-    );
+  return new EnterstellarError(
+    'ENS-4001',
+    'forge',
+    `Forge generation failed for intent component '${intentComponent}': ${reason}`,
+    true,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -62,15 +61,13 @@ export function forgeGenerationFailedError(
  * @see Design Choice F2 — decision tree for template selection.
  * @see Design Choice F3 — silent escalation to CloudForge on no match.
  */
-export function templateNotFoundError(
-    category: string,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4002',
-        'forge',
-        `No LocalForge template matches category '${category}'. Escalating to CloudForge.`,
-        true,
-    );
+export function templateNotFoundError(category: string): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-4002',
+    'forge',
+    `No LocalForge template matches category '${category}'. Escalating to CloudForge.`,
+    true,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -89,20 +86,16 @@ export function templateNotFoundError(
  *
  * @see Design Choice F9 — always fall back, never hard-fail.
  */
-export function cloudForgeNetworkError(
-    cause: unknown,
-): EnterstellarError {
-    const message = cause instanceof Error
-        ? cause.message
-        : String(cause);
+export function cloudForgeNetworkError(cause: unknown): EnterstellarError {
+  const message = cause instanceof Error ? cause.message : String(cause);
 
-    return new EnterstellarError(
-        'ENS-4003',
-        'forge',
-        `CloudForge callback failed: ${message}. Falling back to LocalForge.`,
-        true,
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-4003',
+    'forge',
+    `CloudForge callback failed: ${message}. Falling back to LocalForge.`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -123,15 +116,15 @@ export function cloudForgeNetworkError(
  * @see Principle L3 — compiler never bypassed, even for forged contracts.
  */
 export function forgeCompilationFailedError(
-    forgedName: string,
-    errorCount: number,
+  forgedName: string,
+  errorCount: number,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4004',
-        'forge',
-        `Forged contract '${forgedName}' failed compilation with ${String(errorCount)} error(s). Rendering fallback.`,
-        true,
-    );
+  return new EnterstellarError(
+    'ENS-4004',
+    'forge',
+    `Forged contract '${forgedName}' failed compilation with ${String(errorCount)} error(s). Rendering fallback.`,
+    true,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -152,13 +145,13 @@ export function forgeCompilationFailedError(
  * @see Design Choice F3 — custom templates pass structural validation.
  */
 export function templateValidationError(
-    templateName: string,
-    violations: readonly string[],
+  templateName: string,
+  violations: readonly string[],
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4005',
-        'forge',
-        `Custom template '${templateName}' failed validation: ${violations.join('; ')}`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-4005',
+    'forge',
+    `Custom template '${templateName}' failed validation: ${violations.join('; ')}`,
+    false,
+  );
 }

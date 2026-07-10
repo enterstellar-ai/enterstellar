@@ -1,10 +1,10 @@
 /**
- * @module @enterstellar-ai/forge/cloud-forge
+ * @module @enterstellar/forge/cloud-forge
  * @description CloudForge — LLM-powered contract generation via consumer callback.
  *
  * CloudForge handles complex/novel patterns that LocalForge templates cannot
  * serve. It delegates to a consumer-provided `CloudForgeCallback` that wires
- * to the actual LLM transport (e.g., `@enterstellar-ai/cloud`, OpenAI, Anthropic).
+ * to the actual LLM transport (e.g., `@enterstellar/cloud`, OpenAI, Anthropic).
  *
  * **CloudForge is metered** — each invocation consumes IPU on Enterstellar Cloud.
  *
@@ -28,9 +28,9 @@
  * @see Design Choice C4 — callback pattern (same as compiler CorrectionCallback).
  */
 
-import { createComponentId, ComponentContractSchema } from '@enterstellar-ai/types';
+import { createComponentId, ComponentContractSchema } from '@enterstellar/types';
 
-import type { ComponentContract, ComponentIntent, DesignTokenSet } from '@enterstellar-ai/types';
+import type { ComponentContract, ComponentIntent, DesignTokenSet } from '@enterstellar/types';
 
 import type { CloudForgeCallback, ForgeConstraints } from './types.js';
 import { generateForgedName } from './naming.js';
@@ -57,38 +57,37 @@ import { generateForgedName } from './naming.js';
  * @see Design Choice F5 — system prompt constrains LLM output.
  * @see Design Choice L13 — no advertiser content in the prompt.
  */
-function buildSystemPrompt(
-    intent: ComponentIntent,
-    constraints: ForgeConstraints,
-): string {
-    const tokenNames = extractTokenNames(constraints.designTokens);
-    const requiredStates = constraints.requiredStates.join(', ');
-    const a11yLevel = constraints.accessibility;
-    const maxComplexity = String(constraints.maxComplexity);
+function buildSystemPrompt(intent: ComponentIntent, constraints: ForgeConstraints): string {
+  const tokenNames = extractTokenNames(constraints.designTokens);
+  const requiredStates = constraints.requiredStates.join(', ');
+  const a11yLevel = constraints.accessibility;
+  const maxComplexity = String(constraints.maxComplexity);
 
-    return [
-        'You are the Enterstellar CloudForge — a component contract generator.',
-        'Generate ONLY a valid ComponentContract JSON object. NO HTML, NO JSX, NO render functions.',
-        '',
-        '## Rules',
-        '1. The contract must include: name, description (≤120 chars), category, tags (3-10), tokens, accessibility, states, examples.',
-        '2. All token values MUST start with "token:" and reference ONLY these available tokens:',
-        `   [${tokenNames.join(', ')}]`,
-        `3. All lifecycle states are REQUIRED: ${requiredStates}.`,
-        `4. Accessibility level: ${a11yLevel}. Include role and ariaLabel.`,
-        `5. Maximum complexity (nesting depth): ${maxComplexity}.`,
-        '6. Do NOT include a "render" field — rendering is handled by platform-specific renderers.',
-        '7. Do NOT inject any promotional, advertising, or third-party content.',
-        '',
-        '## Intent',
-        `Component requested: "${intent.component}"`,
-        `Props provided: ${JSON.stringify(intent.props)}`,
-        intent.mode !== undefined ? `Display mode: "${intent.mode}"` : '',
-        intent.interaction !== undefined ? `Interaction: "${intent.interaction}"` : '',
-        '',
-        '## Output Format',
-        'Respond with a single JSON object matching the ComponentContract schema.',
-    ].filter((line) => line !== '').join('\n');
+  return [
+    'You are the Enterstellar CloudForge — a component contract generator.',
+    'Generate ONLY a valid ComponentContract JSON object. NO HTML, NO JSX, NO render functions.',
+    '',
+    '## Rules',
+    '1. The contract must include: name, description (≤120 chars), category, tags (3-10), tokens, accessibility, states, examples.',
+    '2. All token values MUST start with "token:" and reference ONLY these available tokens:',
+    `   [${tokenNames.join(', ')}]`,
+    `3. All lifecycle states are REQUIRED: ${requiredStates}.`,
+    `4. Accessibility level: ${a11yLevel}. Include role and ariaLabel.`,
+    `5. Maximum complexity (nesting depth): ${maxComplexity}.`,
+    '6. Do NOT include a "render" field — rendering is handled by platform-specific renderers.',
+    '7. Do NOT inject any promotional, advertising, or third-party content.',
+    '',
+    '## Intent',
+    `Component requested: "${intent.component}"`,
+    `Props provided: ${JSON.stringify(intent.props)}`,
+    intent.mode !== undefined ? `Display mode: "${intent.mode}"` : '',
+    intent.interaction !== undefined ? `Interaction: "${intent.interaction}"` : '',
+    '',
+    '## Output Format',
+    'Respond with a single JSON object matching the ComponentContract schema.',
+  ]
+    .filter((line) => line !== '')
+    .join('\n');
 }
 
 /**
@@ -101,13 +100,13 @@ function buildSystemPrompt(
  * @returns A flat array of all token keys prefixed with `token:`.
  */
 function extractTokenNames(tokens: DesignTokenSet): string[] {
-    const names: string[] = [];
+  const names: string[] = [];
 
-    for (const key of Object.keys(tokens)) {
-        names.push(`token:${key}`);
-    }
+  for (const key of Object.keys(tokens)) {
+    names.push(`token:${key}`);
+  }
 
-    return names;
+  return names;
 }
 
 // ---------------------------------------------------------------------------
@@ -127,12 +126,12 @@ function extractTokenNames(tokens: DesignTokenSet): string[] {
  * @see Registration Rule R6 — all token values start with `token:`.
  */
 function validateTokenAllowlist(contract: ComponentContract): boolean {
-    for (const value of Object.values(contract.tokens)) {
-        if (!value.startsWith('token:')) {
-            return false;
-        }
+  for (const value of Object.values(contract.tokens)) {
+    if (!value.startsWith('token:')) {
+      return false;
     }
-    return true;
+  }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -164,73 +163,73 @@ function validateTokenAllowlist(contract: ComponentContract): boolean {
  * @see Design Choice F9 — never hard-fail.
  */
 export async function forgeCloud(
-    intent: ComponentIntent,
-    constraints: ForgeConstraints,
-    callback: CloudForgeCallback,
+  intent: ComponentIntent,
+  constraints: ForgeConstraints,
+  callback: CloudForgeCallback,
 ): Promise<ComponentContract | null> {
-    // -----------------------------------------------------------------------
-    // Step 1: Build system prompt (guardrail layer 1)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 1: Build system prompt (guardrail layer 1)
+  // -----------------------------------------------------------------------
 
-    const systemPrompt = buildSystemPrompt(intent, constraints);
+  const systemPrompt = buildSystemPrompt(intent, constraints);
 
-    // -----------------------------------------------------------------------
-    // Step 2: Invoke the consumer callback
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 2: Invoke the consumer callback
+  // -----------------------------------------------------------------------
 
-    let rawContract: ComponentContract | null;
+  let rawContract: ComponentContract | null;
 
-    try {
-        rawContract = await callback(intent, systemPrompt);
-    } catch {
-        // Callback failed — network error, timeout, quota, etc. (F9)
-        return null;
-    }
+  try {
+    rawContract = await callback(intent, systemPrompt);
+  } catch {
+    // Callback failed — network error, timeout, quota, etc. (F9)
+    return null;
+  }
 
-    if (rawContract === null) {
-        return null;
-    }
+  if (rawContract === null) {
+    return null;
+  }
 
-    // -----------------------------------------------------------------------
-    // Step 3: Zod validation (guardrail layer 2)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 3: Zod validation (guardrail layer 2)
+  // -----------------------------------------------------------------------
 
-    const parsed = ComponentContractSchema.safeParse(rawContract);
+  const parsed = ComponentContractSchema.safeParse(rawContract);
 
-    if (!parsed.success) {
-        // LLM returned an invalid contract structure — reject silently.
-        return null;
-    }
+  if (!parsed.success) {
+    // LLM returned an invalid contract structure — reject silently.
+    return null;
+  }
 
-    // -----------------------------------------------------------------------
-    // Step 4: Token allowlist validation (guardrail layer 3)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 4: Token allowlist validation (guardrail layer 3)
+  // -----------------------------------------------------------------------
 
-    if (!validateTokenAllowlist(rawContract)) {
-        // LLM used raw CSS values or unknown tokens — reject silently.
-        return null;
-    }
+  if (!validateTokenAllowlist(rawContract)) {
+    // LLM used raw CSS values or unknown tokens — reject silently.
+    return null;
+  }
 
-    // -----------------------------------------------------------------------
-    // Step 5: Override naming and metadata
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 5: Override naming and metadata
+  // -----------------------------------------------------------------------
 
-    const forgedName = generateForgedName(intent.component);
+  const forgedName = generateForgedName(intent.component);
 
-    const contract: ComponentContract = {
-        ...rawContract,
-        name: forgedName,
-        id: createComponentId(forgedName),
-        _meta: {
-            forged: true,
-            version: '0.0.0',
-            createdAt: new Date().toISOString(),
-        },
-    };
+  const contract: ComponentContract = {
+    ...rawContract,
+    name: forgedName,
+    id: createComponentId(forgedName),
+    _meta: {
+      forged: true,
+      version: '0.0.0',
+      createdAt: new Date().toISOString(),
+    },
+  };
 
-    // -----------------------------------------------------------------------
-    // Step 6: Freeze and return
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 6: Freeze and return
+  // -----------------------------------------------------------------------
 
-    return Object.freeze(contract);
+  return Object.freeze(contract);
 }

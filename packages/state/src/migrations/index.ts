@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/state/migrations
- * @description Built-in state migrations for `@enterstellar-ai/state`.
+ * @module @enterstellar/state/migrations
+ * @description Built-in state migrations for `@enterstellar/state`.
  *
  * All migrations are forward-only: they transform a `SerializedState` from
  * an older `schemaVersion` to a newer one. Migrations chain sequentially
@@ -20,7 +20,7 @@
  * @see Design Choice S5 (amended v2) — semver schema versioning + chained migrations.
  */
 
-import type { MigrationConfig } from '@enterstellar-ai/types';
+import type { MigrationConfig } from '@enterstellar/types';
 import type { MigrationRegistry } from '../types.js';
 
 // ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ import type { MigrationRegistry } from '../types.js';
  * ```
  */
 const BUILT_IN_MIGRATIONS: readonly MigrationConfig[] = [
-    // No migrations yet — v1.0.0 is the first version.
+  // No migrations yet — v1.0.0 is the first version.
 ];
 
 // ---------------------------------------------------------------------------
@@ -65,11 +65,11 @@ const BUILT_IN_MIGRATIONS: readonly MigrationConfig[] = [
  * @returns A `MigrationRegistry` with all built-in migrations.
  */
 export function createMigrationRegistry(): MigrationRegistry {
-    const registry: MigrationRegistry = new Map();
+  const registry: MigrationRegistry = new Map();
 
-    for (const migration of BUILT_IN_MIGRATIONS) {
-        registry.set(migration.from, migration);
-    }
+  for (const migration of BUILT_IN_MIGRATIONS) {
+    registry.set(migration.from, migration);
+  }
 
-    return registry;
+  return registry;
 }

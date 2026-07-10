@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/types/token
+ * @module @enterstellar/types/token
  * @description Design token types and resolver interface.
  *
  * Design tokens are symbolic references (e.g., `'token:danger'`) that the
@@ -34,8 +34,8 @@ export type DesignTokenSet = Readonly<Record<string, string>>;
  * Ensures all values are non-empty strings.
  */
 export const DesignTokenSetSchema: z.ZodType<Record<string, string>> = z.record(
-    z.string(),
-    z.string().min(1, 'Token value must be a non-empty string.'),
+  z.string(),
+  z.string().min(1, 'Token value must be a non-empty string.'),
 );
 
 // ---------------------------------------------------------------------------
@@ -47,12 +47,12 @@ export const DesignTokenSetSchema: z.ZodType<Record<string, string>> = z.record(
  * token resolution. Enables platform-aware and theme-aware lookups.
  */
 export type TokenResolverContext = {
-    /** Active platform for resolution (e.g., `'web'`, `'native'`, `'desktop'`). */
-    readonly platform?: string;
-    /** Active theme (e.g., `'light'`, `'dark'`). */
-    readonly theme?: string;
-    /** Display density (e.g., `'compact'`, `'comfortable'`, `'spacious'`). */
-    readonly density?: string;
+  /** Active platform for resolution (e.g., `'web'`, `'native'`, `'desktop'`). */
+  readonly platform?: string;
+  /** Active theme (e.g., `'light'`, `'dark'`). */
+  readonly theme?: string;
+  /** Display density (e.g., `'compact'`, `'comfortable'`, `'spacious'`). */
+  readonly density?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -83,20 +83,20 @@ export type TokenResolverContext = {
  * ```
  */
 export interface TokenResolver {
-    /**
-     * Resolves a token path to a concrete value.
-     *
-     * @param tokenPath - The symbolic token path (e.g., `'token:danger'`).
-     * @param context - Optional resolution context (platform, theme, density).
-     * @returns The resolved concrete value, or `undefined` if the token is unknown.
-     */
-    resolve(tokenPath: string, context?: TokenResolverContext): string | undefined;
+  /**
+   * Resolves a token path to a concrete value.
+   *
+   * @param tokenPath - The symbolic token path (e.g., `'token:danger'`).
+   * @param context - Optional resolution context (platform, theme, density).
+   * @returns The resolved concrete value, or `undefined` if the token is unknown.
+   */
+  resolve(tokenPath: string, context?: TokenResolverContext): string | undefined;
 
-    /**
-     * Validates whether a token path exists in the active token set.
-     *
-     * @param tokenPath - The symbolic token path to validate.
-     * @returns `true` if the token path is known and resolvable.
-     */
-    validate(tokenPath: string): boolean;
+  /**
+   * Validates whether a token path exists in the active token set.
+   *
+   * @param tokenPath - The symbolic token path to validate.
+   * @returns `true` if the token path is known and resolvable.
+   */
+  validate(tokenPath: string): boolean;
 }

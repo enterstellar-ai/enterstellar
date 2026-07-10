@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/nesting
+ * @module @enterstellar/compiler/nesting
  * @description Maximum nesting depth validation for `ComponentIntent` trees.
  *
  * Prevents stack overflows and DOM performance degradation from deeply nested
@@ -11,7 +11,7 @@
  * @see Design Choice P4 — max 10 levels, configurable 3–20, error `ENS-2010`.
  */
 
-import type { CompilationError } from '@enterstellar-ai/types';
+import type { CompilationError } from '@enterstellar/types';
 
 import { maxNestingDepthError } from './errors.js';
 
@@ -23,12 +23,12 @@ import { maxNestingDepthError } from './errors.js';
  * Result of a nesting depth validation check.
  */
 export type NestingValidationResult = {
-    /** Whether the intent tree passes the depth check. */
-    readonly valid: boolean;
-    /** The maximum depth found in the intent tree. */
-    readonly maxDepthFound: number;
-    /** Error if depth exceeds the configured maximum. */
-    readonly error?: CompilationError;
+  /** Whether the intent tree passes the depth check. */
+  readonly valid: boolean;
+  /** The maximum depth found in the intent tree. */
+  readonly maxDepthFound: number;
+  /** Error if depth exceeds the configured maximum. */
+  readonly error?: CompilationError;
 };
 
 // ---------------------------------------------------------------------------
@@ -43,8 +43,8 @@ export type NestingValidationResult = {
  * counts it as a nesting level.
  */
 type IntentLike = {
-    readonly component: string;
-    readonly props: Readonly<Record<string, unknown>>;
+  readonly component: string;
+  readonly props: Readonly<Record<string, unknown>>;
 };
 
 /**
@@ -55,16 +55,16 @@ type IntentLike = {
  * @returns `true` if the value looks like a nested intent.
  */
 function isIntentLike(value: unknown): value is IntentLike {
-    if (typeof value !== 'object' || value === null) {
-        return false;
-    }
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
 
-    const obj = value as Record<string, unknown>;
-    return (
-        typeof obj['component'] === 'string' &&
-        typeof obj['props'] === 'object' &&
-        obj['props'] !== null
-    );
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj['component'] === 'string' &&
+    typeof obj['props'] === 'object' &&
+    obj['props'] !== null
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -82,42 +82,33 @@ function isIntentLike(value: unknown): value is IntentLike {
  * @param currentDepth - Current depth in the tree (starts at 1).
  * @returns The maximum depth found in the subtree.
  */
-function calculateDepth(
-    props: Readonly<Record<string, unknown>>,
-    currentDepth: number,
-): number {
-    let maxDepth = currentDepth;
+function calculateDepth(props: Readonly<Record<string, unknown>>, currentDepth: number): number {
+  let maxDepth = currentDepth;
 
-    for (const key of Object.keys(props)) {
-        const value = props[key];
+  for (const key of Object.keys(props)) {
+    const value = props[key];
 
-        if (isIntentLike(value)) {
-            // Found a nested intent — recurse one level deeper
-            const childDepth = calculateDepth(
-                value.props,
-                currentDepth + 1,
-            );
-            if (childDepth > maxDepth) {
-                maxDepth = childDepth;
-            }
-        } else if (Array.isArray(value)) {
-            // Check array elements for nested intents
-            for (const element of value) {
-                if (isIntentLike(element)) {
-                    const childDepth = calculateDepth(
-                        element.props,
-                        currentDepth + 1,
-                    );
-                    if (childDepth > maxDepth) {
-                        maxDepth = childDepth;
-                    }
-                }
-            }
+    if (isIntentLike(value)) {
+      // Found a nested intent — recurse one level deeper
+      const childDepth = calculateDepth(value.props, currentDepth + 1);
+      if (childDepth > maxDepth) {
+        maxDepth = childDepth;
+      }
+    } else if (Array.isArray(value)) {
+      // Check array elements for nested intents
+      for (const element of value) {
+        if (isIntentLike(element)) {
+          const childDepth = calculateDepth(element.props, currentDepth + 1);
+          if (childDepth > maxDepth) {
+            maxDepth = childDepth;
+          }
         }
-        // Primitive values and non-intent objects: no nesting increase
+      }
     }
+    // Primitive values and non-intent objects: no nesting increase
+  }
 
-    return maxDepth;
+  return maxDepth;
 }
 
 // ---------------------------------------------------------------------------
@@ -147,22 +138,22 @@ function calculateDepth(
  * ```
  */
 export function validateNestingDepth(
-    props: Readonly<Record<string, unknown>>,
-    maxNestingDepth: number,
+  props: Readonly<Record<string, unknown>>,
+  maxNestingDepth: number,
 ): NestingValidationResult {
-    // Root intent is depth 1
-    const maxDepthFound = calculateDepth(props, 1);
+  // Root intent is depth 1
+  const maxDepthFound = calculateDepth(props, 1);
 
-    if (maxDepthFound > maxNestingDepth) {
-        return {
-            valid: false,
-            maxDepthFound,
-            error: maxNestingDepthError(maxDepthFound, maxNestingDepth),
-        };
-    }
-
+  if (maxDepthFound > maxNestingDepth) {
     return {
-        valid: true,
-        maxDepthFound,
+      valid: false,
+      maxDepthFound,
+      error: maxNestingDepthError(maxDepthFound, maxNestingDepth),
     };
+  }
+
+  return {
+    valid: true,
+    maxDepthFound,
+  };
 }

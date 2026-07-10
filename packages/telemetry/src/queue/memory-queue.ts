@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/queue/memory-queue
+ * @module @enterstellar/telemetry/queue/memory-queue
  * @description In-memory `SignalQueue` implementation.
  *
  * Backed by a plain array. FIFO ordering guaranteed.
@@ -10,7 +10,7 @@
  * @see Design Choice TL4 — `queueStrategy: 'memory'`.
  */
 
-import type { ForgeSignal } from '@enterstellar-ai/types';
+import type { ForgeSignal } from '@enterstellar/types';
 
 import type { SignalQueue } from './signal-queue.js';
 
@@ -34,34 +34,34 @@ import type { SignalQueue } from './signal-queue.js';
  * ```
  */
 export function createMemoryQueue(): SignalQueue {
-    /** Internal FIFO buffer. Front = index 0, back = index length-1. */
-    let buffer: ForgeSignal[] = [];
+  /** Internal FIFO buffer. Front = index 0, back = index length-1. */
+  let buffer: ForgeSignal[] = [];
 
-    return {
-        enqueue(signal: ForgeSignal): Promise<void> {
-            buffer.push(signal);
-            return Promise.resolve();
-        },
+  return {
+    enqueue(signal: ForgeSignal): Promise<void> {
+      buffer.push(signal);
+      return Promise.resolve();
+    },
 
-        dequeue(count: number): Promise<readonly ForgeSignal[]> {
-            // Clamp to available signals.
-            const batch = buffer.splice(0, count);
-            return Promise.resolve(batch);
-        },
+    dequeue(count: number): Promise<readonly ForgeSignal[]> {
+      // Clamp to available signals.
+      const batch = buffer.splice(0, count);
+      return Promise.resolve(batch);
+    },
 
-        requeue(signals: readonly ForgeSignal[]): Promise<void> {
-            // Prepend to front — failed signals get retry priority.
-            buffer = [...signals, ...buffer];
-            return Promise.resolve();
-        },
+    requeue(signals: readonly ForgeSignal[]): Promise<void> {
+      // Prepend to front — failed signals get retry priority.
+      buffer = [...signals, ...buffer];
+      return Promise.resolve();
+    },
 
-        size(): Promise<number> {
-            return Promise.resolve(buffer.length);
-        },
+    size(): Promise<number> {
+      return Promise.resolve(buffer.length);
+    },
 
-        clear(): Promise<void> {
-            buffer = [];
-            return Promise.resolve();
-        },
-    };
+    clear(): Promise<void> {
+      buffer = [];
+      return Promise.resolve();
+    },
+  };
 }

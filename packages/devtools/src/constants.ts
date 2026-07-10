@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/devtools/constants
- * @description Module-level constants for `@enterstellar-ai/devtools`.
+ * @module @enterstellar/devtools/constants
+ * @description Module-level constants for `@enterstellar/devtools`.
  *
  * All values are derived from locked design choices (DT2, DT4, DT5).
  * These are the single source of truth — never hardcode these values
@@ -55,21 +55,21 @@ export const DEVTOOLS_PANEL_HEIGHT_PERCENT = 80;
  * @see Design Choice DT4
  */
 export const P0_TABS: readonly DevToolsTab[] = [
-    'trace-timeline',
-    'component-inspector',
-    'validation-log',
+  'trace-timeline',
+  'component-inspector',
+  'validation-log',
 ] as const;
 
 /**
  * All tabs (P0 + deferred). Order determines tab bar rendering order.
  */
 export const ALL_TABS: readonly DevToolsTab[] = [
-    'trace-timeline',
-    'component-inspector',
-    'validation-log',
-    'cache-dashboard',
-    'performance-profiler',
-    'replay-mode',
+  'trace-timeline',
+  'component-inspector',
+  'validation-log',
+  'cache-dashboard',
+  'performance-profiler',
+  'replay-mode',
 ] as const;
 
 /**
@@ -77,12 +77,12 @@ export const ALL_TABS: readonly DevToolsTab[] = [
  * Keyed by `DevToolsTab` for type-safe lookup.
  */
 export const TAB_LABELS: Readonly<Record<DevToolsTab, string>> = {
-    'trace-timeline': 'Timeline',
-    'component-inspector': 'Inspector',
-    'validation-log': 'Validation',
-    'cache-dashboard': 'Cache',
-    'performance-profiler': 'Performance',
-    'replay-mode': 'Replay',
+  'trace-timeline': 'Timeline',
+  'component-inspector': 'Inspector',
+  'validation-log': 'Validation',
+  'cache-dashboard': 'Cache',
+  'performance-profiler': 'Performance',
+  'replay-mode': 'Replay',
 } as const;
 
 /**

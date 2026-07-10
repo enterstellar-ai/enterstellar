@@ -1,20 +1,20 @@
 /**
- * @module @enterstellar-ai/telemetry
+ * @module @enterstellar/telemetry
  * @description ForgeSignal collection, queuing, and upload. Zero-PII telemetry for the Forge.
  *
- * This is the public API barrel for `@enterstellar-ai/telemetry`. Consumers import
- * from `@enterstellar-ai/telemetry` — internal modules are not part of the public API.
+ * This is the public API barrel for `@enterstellar/telemetry`. Consumers import
+ * from `@enterstellar/telemetry` — internal modules are not part of the public API.
  *
  * **Quick Start:**
  * ```ts
- * import { createTelemetryCollector } from '@enterstellar-ai/telemetry';
+ * import { createTelemetryCollector } from '@enterstellar/telemetry';
  *
  * const telemetry = await createTelemetryCollector({
  *   platform: 'web',
  *   registrySize: 42,
  * });
  *
- * // Called automatically by @enterstellar-ai/compiler and @enterstellar-ai/react (TL1).
+ * // Called automatically by @enterstellar/compiler and @enterstellar/react (TL1).
  * telemetry.record({ ... });
  *
  * // On shutdown:
@@ -36,9 +36,9 @@ export { createTelemetryCollector } from './create-telemetry.js';
 // Types (re-exported for consumer use)
 // ---------------------------------------------------------------------------
 export type {
-    TelemetryCollector,
-    TelemetryConfig,
-    TelemetryStats,
-    FlushResult,
-    ForgeSignalInput,
+  TelemetryCollector,
+  TelemetryConfig,
+  TelemetryStats,
+  FlushResult,
+  ForgeSignalInput,
 } from './types.js';

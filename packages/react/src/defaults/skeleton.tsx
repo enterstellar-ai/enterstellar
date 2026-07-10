@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/defaults/enterstellar-skeleton
+ * @module @enterstellar/react/defaults/enterstellar-skeleton
  * @description Default loading skeleton for Enterstellar zones.
  *
  * Rendered by `<LifecycleWrapper>` when the zone is in `loading` state
@@ -19,7 +19,7 @@
  *
  * @example
  * ```tsx
- * import { EnterstellarSkeleton } from '@enterstellar-ai/react';
+ * import { EnterstellarSkeleton } from '@enterstellar/react';
  *
  * // Used automatically by LifecycleWrapper:
  * <LifecycleWrapper state="loading" ... />
@@ -44,12 +44,12 @@ import type { CSSProperties } from 'react';
  * @internal
  */
 const SKELETON_CONTAINER_STYLES: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'var(--enterstellar-skeleton-gap, 12px)',
-    padding: 'var(--enterstellar-skeleton-padding, 16px)',
-    width: '100%',
-    boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'var(--enterstellar-skeleton-gap, 12px)',
+  padding: 'var(--enterstellar-skeleton-padding, 16px)',
+  width: '100%',
+  boxSizing: 'border-box',
 } as const;
 
 /**
@@ -68,17 +68,17 @@ const SKELETON_CONTAINER_STYLES: CSSProperties = {
  * @internal
  */
 const SKELETON_BAR_BASE: CSSProperties = {
-    height: 'var(--enterstellar-skeleton-bar-height, 14px)',
-    borderRadius: 'var(--enterstellar-skeleton-bar-radius, 6px)',
-    backgroundColor: 'var(--enterstellar-skeleton-color, #e5e7eb)',
-    /** Shimmer overlay via linear gradient animation. */
-    backgroundImage:
-        'linear-gradient(90deg, transparent 0%, var(--enterstellar-skeleton-shine, rgba(255,255,255,0.4)) 50%, transparent 100%)',
-    backgroundSize: '200% 100%',
-    backgroundRepeat: 'no-repeat',
-    // Animate background position for shimmer effect.
-    // Falls back to static color if `@keyframes enterstellar-skeleton-shimmer` isn't defined.
-    animation: 'enterstellar-skeleton-shimmer 1.5s ease-in-out infinite',
+  height: 'var(--enterstellar-skeleton-bar-height, 14px)',
+  borderRadius: 'var(--enterstellar-skeleton-bar-radius, 6px)',
+  backgroundColor: 'var(--enterstellar-skeleton-color, #e5e7eb)',
+  /** Shimmer overlay via linear gradient animation. */
+  backgroundImage:
+    'linear-gradient(90deg, transparent 0%, var(--enterstellar-skeleton-shine, rgba(255,255,255,0.4)) 50%, transparent 100%)',
+  backgroundSize: '200% 100%',
+  backgroundRepeat: 'no-repeat',
+  // Animate background position for shimmer effect.
+  // Falls back to static color if `@keyframes enterstellar-skeleton-shimmer` isn't defined.
+  animation: 'enterstellar-skeleton-shimmer 1.5s ease-in-out infinite',
 } as const;
 
 /**
@@ -95,15 +95,15 @@ const BAR_WIDTHS = ['100%', '75%', '50%'] as const;
  * @internal
  */
 const SR_ONLY_STYLES: CSSProperties = {
-    position: 'absolute',
-    width: '1px',
-    height: '1px',
-    padding: '0',
-    margin: '-1px',
-    overflow: 'hidden',
-    clip: 'rect(0, 0, 0, 0)',
-    whiteSpace: 'nowrap',
-    borderWidth: '0',
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: '0',
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  borderWidth: '0',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -129,20 +129,20 @@ let keyframesInjected = false;
  * @internal
  */
 function injectShimmerKeyframes(): void {
-    if (keyframesInjected || typeof document === 'undefined') {
-        return;
-    }
+  if (keyframesInjected || typeof document === 'undefined') {
+    return;
+  }
 
-    const style = document.createElement('style');
-    style.setAttribute('data-enterstellar-skeleton-keyframes', '');
-    style.textContent = `
+  const style = document.createElement('style');
+  style.setAttribute('data-enterstellar-skeleton-keyframes', '');
+  style.textContent = `
         @keyframes enterstellar-skeleton-shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
     `;
-    document.head.appendChild(style);
-    keyframesInjected = true;
+  document.head.appendChild(style);
+  keyframesInjected = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,30 +166,30 @@ function injectShimmerKeyframes(): void {
  * @see Principle L2 — CSS custom properties for all visual values.
  */
 export function EnterstellarSkeleton(): React.JSX.Element {
-    // Inject keyframes on first render (client-side only)
-    injectShimmerKeyframes();
+  // Inject keyframes on first render (client-side only)
+  injectShimmerKeyframes();
 
-    return (
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      data-enterstellar-skeleton
+      style={SKELETON_CONTAINER_STYLES}
+    >
+      {/* Visually hidden text for screen readers */}
+      <span style={SR_ONLY_STYLES}>Loading…</span>
+
+      {/* Three pulse bars with varying widths */}
+      {BAR_WIDTHS.map((width) => (
         <div
-            role="status"
-            aria-busy="true"
-            data-enterstellar-skeleton
-            style={SKELETON_CONTAINER_STYLES}
-        >
-            {/* Visually hidden text for screen readers */}
-            <span style={SR_ONLY_STYLES}>Loading…</span>
-
-            {/* Three pulse bars with varying widths */}
-            {BAR_WIDTHS.map((width) => (
-                <div
-                    key={width}
-                    aria-hidden="true"
-                    style={{
-                        ...SKELETON_BAR_BASE,
-                        width,
-                    }}
-                />
-            ))}
-        </div>
-    );
+          key={width}
+          aria-hidden="true"
+          style={{
+            ...SKELETON_BAR_BASE,
+            width,
+          }}
+        />
+      ))}
+    </div>
+  );
 }

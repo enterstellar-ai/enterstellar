@@ -1,8 +1,8 @@
 /**
- * @module @enterstellar-ai/cloud/types
- * @description Public and internal type definitions for the `@enterstellar-ai/cloud` SDK.
+ * @module @enterstellar/cloud/types
+ * @description Public and internal type definitions for the `@enterstellar/cloud` SDK.
  *
- * This file defines the complete API surface of `@enterstellar-ai/cloud`:
+ * This file defines the complete API surface of `@enterstellar/cloud`:
  *
  * **Public types** (re-exported from barrel):
  * - {@link CloudConfig} — client configuration (SD1, SD8, TA2, D111).
@@ -32,11 +32,11 @@
  */
 
 import type {
-    AgentTrace,
-    ComponentContract,
-    ForgeSignal,
-    SemanticSearchResult,
-} from '@enterstellar-ai/types';
+  AgentTrace,
+  ComponentContract,
+  ForgeSignal,
+  SemanticSearchResult,
+} from '@enterstellar/types';
 
 import type { CloudErrorBody } from './errors.js';
 
@@ -58,13 +58,7 @@ import type { CloudErrorBody } from './errors.js';
  *
  * @see Design Choice D111 — `session_type TEXT DEFAULT 'app'`.
  */
-export type SessionType =
-    | 'app'
-    | 'browser'
-    | 'os'
-    | 'connect'
-    | 'agent'
-    | 'other';
+export type SessionType = 'app' | 'browser' | 'os' | 'connect' | 'agent' | 'other';
 
 // ---------------------------------------------------------------------------
 // CloudConfig (SD1, SD8, TA2, D111, F21)
@@ -96,78 +90,78 @@ export type SessionType =
  * @see Design Choice D111 — `session_type` on all request payloads.
  */
 export type CloudConfig = {
-    /**
-     * API key for authenticating with Enterstellar Cloud.
-     *
-     * Two formats are supported:
-     * - `ak_<project_key>` — full mode, all methods available.
-     * - `pk_anon_<install_id>` — anonymous mode, only `submitSignal()` (SD1).
-     *
-     * The SDK auto-detects the key type by prefix. No separate mode parameter.
-     *
-     * @see Design Choice SD1 — auto-detect anonymous mode.
-     * @see Design Choice AG1 — key format: `ak_<uuid>`, `pk_anon_<uuid>`.
-     */
-    readonly apiKey: string;
+  /**
+   * API key for authenticating with Enterstellar Cloud.
+   *
+   * Two formats are supported:
+   * - `ak_<project_key>` — full mode, all methods available.
+   * - `pk_anon_<install_id>` — anonymous mode, only `submitSignal()` (SD1).
+   *
+   * The SDK auto-detects the key type by prefix. No separate mode parameter.
+   *
+   * @see Design Choice SD1 — auto-detect anonymous mode.
+   * @see Design Choice AG1 — key format: `ak_<uuid>`, `pk_anon_<uuid>`.
+   */
+  readonly apiKey: string;
 
-    /**
-     * Base URL of the Enterstellar Cloud API.
-     *
-     * Path segments (`/v1/forge`, `/v1/usage`, etc.) are appended automatically.
-     * Override for staging, self-hosted, or local development environments.
-     *
-     * @default 'https://api.enterstellar.dev'
-     *
-     * @see Design Choice SD8 — default with override.
-     */
-    readonly baseUrl?: string | undefined;
+  /**
+   * Base URL of the Enterstellar Cloud API.
+   *
+   * Path segments (`/v1/forge`, `/v1/usage`, etc.) are appended automatically.
+   * Override for staging, self-hosted, or local development environments.
+   *
+   * @default 'https://api.enterstellar.dev'
+   *
+   * @see Design Choice SD8 — default with override.
+   */
+  readonly baseUrl?: string | undefined;
 
-    /**
-     * Global HTTP request timeout in milliseconds.
-     *
-     * When set, overrides ALL per-operation timeout defaults. When omitted,
-     * each operation uses its own default:
-     * - `forge` / `forge.stream()`: 30,000ms (P99 = 10s, 3× safety margin)
-     * - `certify`: 90,000ms (CR5: max 60s runtime + overhead)
-     * - `analytics` / `businessAnalytics`: 30,000ms (OLAP queries)
-     * - All other operations: 10,000ms
-     *
-     * Applied per-request via `AbortController`.
-     *
-     * @see Audit Finding F21 — per-operation timeout defaults.
-     */
-    readonly timeoutMs?: number | undefined;
+  /**
+   * Global HTTP request timeout in milliseconds.
+   *
+   * When set, overrides ALL per-operation timeout defaults. When omitted,
+   * each operation uses its own default:
+   * - `forge` / `forge.stream()`: 30,000ms (P99 = 10s, 3× safety margin)
+   * - `certify`: 90,000ms (CR5: max 60s runtime + overhead)
+   * - `analytics` / `businessAnalytics`: 30,000ms (OLAP queries)
+   * - All other operations: 10,000ms
+   *
+   * Applied per-request via `AbortController`.
+   *
+   * @see Audit Finding F21 — per-operation timeout defaults.
+   */
+  readonly timeoutMs?: number | undefined;
 
-    /**
-     * Client-side trace consent flag (TA2 dual-consent gate).
-     *
-     * When `false` (default), `submitTrace()` returns immediately without
-     * making a network call — `{ data: { accepted: false }, ipu: null }`.
-     *
-     * Both this flag AND the per-trace `consent.anonymizedAggregation` field
-     * AND the server-side `projects.trace_consent` column must be `true`
-     * for a trace to reach the Cloud. Defense-in-depth.
-     *
-     * @default false
-     *
-     * @see Design Choice TA2 — dual-consent: client flag + server flag.
-     * @see Audit Finding F13 — mandatory client consent flag.
-     */
-    readonly traceConsent?: boolean | undefined;
+  /**
+   * Client-side trace consent flag (TA2 dual-consent gate).
+   *
+   * When `false` (default), `submitTrace()` returns immediately without
+   * making a network call — `{ data: { accepted: false }, ipu: null }`.
+   *
+   * Both this flag AND the per-trace `consent.anonymizedAggregation` field
+   * AND the server-side `projects.trace_consent` column must be `true`
+   * for a trace to reach the Cloud. Defense-in-depth.
+   *
+   * @default false
+   *
+   * @see Design Choice TA2 — dual-consent: client flag + server flag.
+   * @see Audit Finding F13 — mandatory client consent flag.
+   */
+  readonly traceConsent?: boolean | undefined;
 
-    /**
-     * The Enterstellar product surface originating this SDK session (D111).
-     *
-     * Applied to all request payloads. The server stores this value on
-     * `forge_signals.session_type`, `traces.session_type`, and
-     * `ipu_ledger.session_type` columns for stratified analytics.
-     *
-     * @default 'app'
-     *
-     * @see Design Choice D111 — `session_type TEXT DEFAULT 'app'`.
-     * @see Audit Finding F15 — session type on all submissions.
-     */
-    readonly sessionType?: SessionType | undefined;
+  /**
+   * The Enterstellar product surface originating this SDK session (D111).
+   *
+   * Applied to all request payloads. The server stores this value on
+   * `forge_signals.session_type`, `traces.session_type`, and
+   * `ipu_ledger.session_type` columns for stratified analytics.
+   *
+   * @default 'app'
+   *
+   * @see Design Choice D111 — `session_type TEXT DEFAULT 'app'`.
+   * @see Audit Finding F15 — session type on all submissions.
+   */
+  readonly sessionType?: SessionType | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -184,14 +178,14 @@ export type CloudConfig = {
  * @see Bible §9.3 — response header format.
  */
 export type CloudIPU = {
-    /** Total IPUs consumed in the current billing period (`X-IPU-Used`). */
-    readonly used: number;
+  /** Total IPUs consumed in the current billing period (`X-IPU-Used`). */
+  readonly used: number;
 
-    /** IPUs remaining in the current billing period (`X-IPU-Remaining`). */
-    readonly remaining: number;
+  /** IPUs remaining in the current billing period (`X-IPU-Remaining`). */
+  readonly remaining: number;
 
-    /** IPUs charged for THIS specific request (`X-IPU-Cost`). */
-    readonly cost: number;
+  /** IPUs charged for THIS specific request (`X-IPU-Cost`). */
+  readonly cost: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -225,14 +219,14 @@ export type CloudIPU = {
  * ```
  */
 export type CloudResult<T> = {
-    /** The endpoint-specific payload. */
-    readonly data: T;
+  /** The endpoint-specific payload. */
+  readonly data: T;
 
-    /**
-     * IPU consumption metadata from response headers.
-     * `null` for `pk_anon` requests (no IPU concept in anonymous mode).
-     */
-    readonly ipu: CloudIPU | null;
+  /**
+   * IPU consumption metadata from response headers.
+   * `null` for `pk_anon` requests (no IPU concept in anonymous mode).
+   */
+  readonly ipu: CloudIPU | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -251,20 +245,20 @@ export type CloudResult<T> = {
  * @see Design Choice AM11 — billing period is anniversary-based.
  */
 export type CloudUsage = {
-    /** Total IPUs consumed in the current billing period. */
-    readonly used: number;
+  /** Total IPUs consumed in the current billing period. */
+  readonly used: number;
 
-    /** IPU limit for the current billing period (tier-dependent). */
-    readonly limit: number;
+  /** IPU limit for the current billing period (tier-dependent). */
+  readonly limit: number;
 
-    /**
-     * The project's service tier as reported by the server.
-     *
-     * A `string` (not a fixed union) to avoid breaking when new tiers
-     * are added server-side. Known values: `'free'`, `'starter'`,
-     * `'pro'`, `'enterprise'`.
-     */
-    readonly tier: string;
+  /**
+   * The project's service tier as reported by the server.
+   *
+   * A `string` (not a fixed union) to avoid breaking when new tiers
+   * are added server-side. Known values: `'free'`, `'starter'`,
+   * `'pro'`, `'enterprise'`.
+   */
+  readonly tier: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -283,17 +277,17 @@ export type CloudUsage = {
  * @see Design Choice F5 — LLM with system prompt constraints.
  */
 export type ForgeOptions = {
-    /** Natural-language description of the desired component. */
-    readonly intent: string;
+  /** Natural-language description of the desired component. */
+  readonly intent: string;
 
-    /**
-     * Additional generation constraints passed to the CloudForge prompt.
-     *
-     * These are forwarded as-is to the server's prompt builder. Known
-     * keys include `designTokens`, `maxComplexity`, `requiredStates`,
-     * `accessibility`. Unknown keys are silently ignored by the server.
-     */
-    readonly constraints?: Readonly<Record<string, unknown>> | undefined;
+  /**
+   * Additional generation constraints passed to the CloudForge prompt.
+   *
+   * These are forwarded as-is to the server's prompt builder. Known
+   * keys include `designTokens`, `maxComplexity`, `requiredStates`,
+   * `accessibility`. Unknown keys are silently ignored by the server.
+   */
+  readonly constraints?: Readonly<Record<string, unknown>> | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -341,11 +335,11 @@ export type ForgeOptions = {
  * ```
  */
 export type ForgeFragment =
-    | ForgeMetaFragment
-    | ForgeNodeFragment
-    | ForgePropertyFragment
-    | ForgeCompleteFragment
-    | ForgeErrorFragment;
+  | ForgeMetaFragment
+  | ForgeNodeFragment
+  | ForgePropertyFragment
+  | ForgeCompleteFragment
+  | ForgeErrorFragment;
 
 /**
  * SSE `meta` event — first fragment in the stream.
@@ -354,16 +348,16 @@ export type ForgeFragment =
  * consumption data parsed from the HTTP response headers.
  */
 export type ForgeMetaFragment = {
-    readonly type: 'meta';
-    /** Provider and model metadata delivered via SSE `meta` event (CF9). */
-    readonly data: {
-        /** The LLM provider used for this generation (e.g., `'anthropic'`, `'openai'`). */
-        readonly provider: string;
-        /** The specific model used (e.g., `'claude-sonnet-4-20250514'`). */
-        readonly model: string;
-    };
-    /** IPU consumption from HTTP response headers. `null` for `pk_anon`. */
-    readonly ipu: CloudIPU | null;
+  readonly type: 'meta';
+  /** Provider and model metadata delivered via SSE `meta` event (CF9). */
+  readonly data: {
+    /** The LLM provider used for this generation (e.g., `'anthropic'`, `'openai'`). */
+    readonly provider: string;
+    /** The specific model used (e.g., `'claude-sonnet-4-20250514'`). */
+    readonly model: string;
+  };
+  /** IPU consumption from HTTP response headers. `null` for `pk_anon`. */
+  readonly ipu: CloudIPU | null;
 };
 
 /**
@@ -374,9 +368,9 @@ export type ForgeMetaFragment = {
  * progressive rendering of the generation process.
  */
 export type ForgeNodeFragment = {
-    readonly type: 'node';
-    /** Partial contract data for progressive rendering. */
-    readonly data: Partial<ComponentContract>;
+  readonly type: 'node';
+  /** Partial contract data for progressive rendering. */
+  readonly data: Partial<ComponentContract>;
 };
 
 /**
@@ -387,14 +381,14 @@ export type ForgeNodeFragment = {
  * (e.g., `'tokens.background'`, `'accessibility.role'`).
  */
 export type ForgePropertyFragment = {
-    readonly type: 'property';
-    /** Property path and value for incremental updates. */
-    readonly data: {
-        /** Dot-notation path to the property within the contract. */
-        readonly path: string;
-        /** The resolved property value. */
-        readonly value: unknown;
-    };
+  readonly type: 'property';
+  /** Property path and value for incremental updates. */
+  readonly data: {
+    /** Dot-notation path to the property within the contract. */
+    readonly path: string;
+    /** The resolved property value. */
+    readonly value: unknown;
+  };
 };
 
 /**
@@ -404,11 +398,11 @@ export type ForgePropertyFragment = {
  * validated `ComponentContract` and IPU consumption data.
  */
 export type ForgeCompleteFragment = {
-    readonly type: 'complete';
-    /** The complete, validated `ComponentContract` from the CloudForge LLM. */
-    readonly data: ComponentContract;
-    /** IPU consumption from HTTP response headers. `null` for `pk_anon`. */
-    readonly ipu: CloudIPU | null;
+  readonly type: 'complete';
+  /** The complete, validated `ComponentContract` from the CloudForge LLM. */
+  readonly data: ComponentContract;
+  /** IPU consumption from HTTP response headers. `null` for `pk_anon`. */
+  readonly ipu: CloudIPU | null;
 };
 
 /**
@@ -419,14 +413,14 @@ export type ForgeCompleteFragment = {
  * this fragment.
  */
 export type ForgeErrorFragment = {
-    readonly type: 'error';
-    /** Error details from the server. */
-    readonly data: {
-        /** The `ENS-C{NNNN}` error code from the server. */
-        readonly code: string;
-        /** Human-readable error description. */
-        readonly message: string;
-    };
+  readonly type: 'error';
+  /** Error details from the server. */
+  readonly data: {
+    /** The `ENS-C{NNNN}` error code from the server. */
+    readonly code: string;
+    /** Human-readable error description. */
+    readonly message: string;
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -442,9 +436,7 @@ export type ForgeErrorFragment = {
  *
  * @see Design Choice SD6 — dual API: `forge()` + `forge.stream()`.
  */
-export type ForgeFunction = (
-    options: ForgeOptions,
-) => Promise<CloudResult<ComponentContract>>;
+export type ForgeFunction = (options: ForgeOptions) => Promise<CloudResult<ComponentContract>>;
 
 // ---------------------------------------------------------------------------
 // RouterPrediction (IR2, F10, F19)
@@ -477,39 +469,39 @@ export type ForgeFunction = (
  * ```
  */
 export type RouterPrediction = {
-    /** Ranked component predictions, highest confidence first. */
-    readonly predictions: readonly {
-        /** The predicted component name (PascalCase). */
-        readonly componentName: string;
+  /** Ranked component predictions, highest confidence first. */
+  readonly predictions: readonly {
+    /** The predicted component name (PascalCase). */
+    readonly componentName: string;
 
-        /**
-         * Confidence score (0.0–1.0).
-         * Based on frequency data (Phase 2) or ML model (Phase 3, IR4).
-         */
-        readonly confidence: number;
+    /**
+     * Confidence score (0.0–1.0).
+     * Based on frequency data (Phase 2) or ML model (Phase 3, IR4).
+     */
+    readonly confidence: number;
 
-        /**
-         * URL of the federated registry where this contract is published.
-         * Present only for contracts from federated registries (GI1).
-         * `undefined` for contracts in the Global Index.
-         */
-        readonly registryUrl?: string | undefined;
-    }[];
+    /**
+     * URL of the federated registry where this contract is published.
+     * Present only for contracts from federated registries (GI1).
+     * `undefined` for contracts in the Global Index.
+     */
+    readonly registryUrl?: string | undefined;
+  }[];
 
-    /** Metadata about the prediction model and data quality. */
-    readonly metadata: {
-        /**
-         * Version identifier for the routing model or frequency table.
-         * Used for debugging and A/B testing (IR6).
-         */
-        readonly modelVersion: string;
+  /** Metadata about the prediction model and data quality. */
+  readonly metadata: {
+    /**
+     * Version identifier for the routing model or frequency table.
+     * Used for debugging and A/B testing (IR6).
+     */
+    readonly modelVersion: string;
 
-        /**
-         * Number of ForgeSignals backing this prediction.
-         * Higher count → higher statistical confidence.
-         */
-        readonly signalCount: number;
-    };
+    /**
+     * Number of ForgeSignals backing this prediction.
+     * Higher count → higher statistical confidence.
+     */
+    readonly signalCount: number;
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -530,23 +522,23 @@ export type RouterPrediction = {
  * @see Audit Finding F17 — POST instead of GET for JSON body.
  */
 export type AnalyticsQuery = {
-    /**
-     * The type of analytics query to execute.
-     * Each maps to a pre-built ClickHouse query with known cost (5 IPU).
-     */
-    readonly queryType:
-        | 'intent_patterns'
-        | 'component_performance'
-        | 'journey_reconstruction'
-        | 'anomalies';
+  /**
+   * The type of analytics query to execute.
+   * Each maps to a pre-built ClickHouse query with known cost (5 IPU).
+   */
+  readonly queryType:
+    | 'intent_patterns'
+    | 'component_performance'
+    | 'journey_reconstruction'
+    | 'anomalies';
 
-    /**
-     * Query filters applied to the ClickHouse query.
-     *
-     * Known filter keys: `timeRange`, `projectId`, `intentCategory`, `limit`.
-     * Unknown keys are silently ignored by the server.
-     */
-    readonly filters?: Readonly<Record<string, unknown>> | undefined;
+  /**
+   * Query filters applied to the ClickHouse query.
+   *
+   * Known filter keys: `timeRange`, `projectId`, `intentCategory`, `limit`.
+   * Unknown keys are silently ignored by the server.
+   */
+  readonly filters?: Readonly<Record<string, unknown>> | undefined;
 };
 
 /**
@@ -556,11 +548,11 @@ export type AnalyticsQuery = {
  * that produced them (for client-side discrimination).
  */
 export type AnalyticsResult = {
-    /** Query result rows. Schema varies by `queryType`. */
-    readonly rows: readonly Readonly<Record<string, unknown>>[];
+  /** Query result rows. Schema varies by `queryType`. */
+  readonly rows: readonly Readonly<Record<string, unknown>>[];
 
-    /** The query type that produced these results (echoed from the request). */
-    readonly queryType: string;
+  /** The query type that produced these results (echoed from the request). */
+  readonly queryType: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -574,24 +566,24 @@ export type AnalyticsResult = {
  * for the authenticated project.
  */
 export type TraceListOptions = {
-    /** Filter by correlation ID (groups related traces across operations). */
-    readonly correlationId?: string | undefined;
+  /** Filter by correlation ID (groups related traces across operations). */
+  readonly correlationId?: string | undefined;
 
-    /** Filter by thread ID (groups traces within a single conversation). */
-    readonly threadId?: string | undefined;
+  /** Filter by thread ID (groups traces within a single conversation). */
+  readonly threadId?: string | undefined;
 
-    /**
-     * Pagination cursor from a previous response's `TracePage.cursor`.
-     * Omit for the first page.
-     */
-    readonly cursor?: string | undefined;
+  /**
+   * Pagination cursor from a previous response's `TracePage.cursor`.
+   * Omit for the first page.
+   */
+  readonly cursor?: string | undefined;
 
-    /**
-     * Maximum number of traces to return per page.
-     *
-     * @default 50
-     */
-    readonly limit?: number | undefined;
+  /**
+   * Maximum number of traces to return per page.
+   *
+   * @default 50
+   */
+  readonly limit?: number | undefined;
 };
 
 /**
@@ -602,17 +594,17 @@ export type TraceListOptions = {
  * been returned.
  */
 export type TracePage = {
-    /** Trace records for this page. */
-    readonly items: readonly Readonly<Record<string, unknown>>[];
+  /** Trace records for this page. */
+  readonly items: readonly Readonly<Record<string, unknown>>[];
 
-    /**
-     * Cursor for fetching the next page.
-     * `null` when there are no more results.
-     */
-    readonly cursor: string | null;
+  /**
+   * Cursor for fetching the next page.
+   * `null` when there are no more results.
+   */
+  readonly cursor: string | null;
 
-    /** Whether more pages are available after this one. */
-    readonly hasMore: boolean;
+  /** Whether more pages are available after this one. */
+  readonly hasMore: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -626,18 +618,18 @@ export type TracePage = {
  * lookback period is tier-dependent (§9.1).
  */
 export type LedgerListOptions = {
-    /**
-     * Pagination cursor from a previous response's `LedgerPage.cursor`.
-     * Omit for the first page.
-     */
-    readonly cursor?: string | undefined;
+  /**
+   * Pagination cursor from a previous response's `LedgerPage.cursor`.
+   * Omit for the first page.
+   */
+  readonly cursor?: string | undefined;
 
-    /**
-     * Maximum number of ledger entries to return per page.
-     *
-     * @default 50
-     */
-    readonly limit?: number | undefined;
+  /**
+   * Maximum number of ledger entries to return per page.
+   *
+   * @default 50
+   */
+  readonly limit?: number | undefined;
 };
 
 /**
@@ -647,17 +639,17 @@ export type LedgerListOptions = {
  * `timestamp`, and `request_id` fields.
  */
 export type LedgerPage = {
-    /** Ledger entries for this page. */
-    readonly items: readonly Readonly<Record<string, unknown>>[];
+  /** Ledger entries for this page. */
+  readonly items: readonly Readonly<Record<string, unknown>>[];
 
-    /**
-     * Cursor for fetching the next page.
-     * `null` when there are no more results.
-     */
-    readonly cursor: string | null;
+  /**
+   * Cursor for fetching the next page.
+   * `null` when there are no more results.
+   */
+  readonly cursor: string | null;
 
-    /** Whether more pages are available after this one. */
-    readonly hasMore: boolean;
+  /** Whether more pages are available after this one. */
+  readonly hasMore: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -680,20 +672,20 @@ export type LedgerPage = {
  * @see Audit Finding F14 — type defined per GI5 shape.
  */
 export type CertifyResult = {
-    /**
-     * The initial certification status. Always `'pending'` at creation time.
-     * The full lifecycle is: `none → pending → running → certified | failed`.
-     */
-    readonly status: 'pending';
+  /**
+   * The initial certification status. Always `'pending'` at creation time.
+   * The full lifecycle is: `none → pending → running → certified | failed`.
+   */
+  readonly status: 'pending';
 
-    /**
-     * URL path for polling certification status.
-     * Typically `'/v1/contracts/{contractId}'`. The caller polls this
-     * endpoint and checks the `certification_status` field.
-     *
-     * @see Design Choice CR10 — polling-based notification.
-     */
-    readonly pollUrl: string;
+  /**
+   * URL path for polling certification status.
+   * Typically `'/v1/contracts/{contractId}'`. The caller polls this
+   * endpoint and checks the `certification_status` field.
+   *
+   * @see Design Choice CR10 — polling-based notification.
+   */
+  readonly pollUrl: string;
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -701,7 +693,7 @@ export type CertifyResult = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * The Enterstellar Cloud SDK client — primary public API of `@enterstellar-ai/cloud`.
+ * The Enterstellar Cloud SDK client — primary public API of `@enterstellar/cloud`.
  *
  * Created via {@link createEnterstellarCloudClient}. Provides access to all
  * Cloud-hosted capabilities: forge generation, semantic search, intent
@@ -740,7 +732,7 @@ export type CertifyResult = {
  *
  * @example
  * ```ts
- * import { createEnterstellarCloudClient, CloudError } from '@enterstellar-ai/cloud';
+ * import { createEnterstellarCloudClient, CloudError } from '@enterstellar/cloud';
  *
  * const client = createEnterstellarCloudClient({ apiKey: 'ak_my_key' });
  *
@@ -757,350 +749,329 @@ export type CertifyResult = {
  * ```
  */
 export interface EnterstellarCloudClient {
-    // -------------------------------------------------------------------
-    // Generation (SD6)
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Generation (SD6)
+  // -------------------------------------------------------------------
 
+  /**
+   * Generate a `ComponentContract` via CloudForge.
+   *
+   * Callable and has a `.stream()` method for SSE streaming:
+   * - `forge(options)` → `Promise<CloudResult<ComponentContract>>` (buffers full stream).
+   * - `forge.stream(options)` → `AsyncGenerator<ForgeFragment>` (yields fragments).
+   *
+   * **IPU cost:** 10 per invocation (§9.1).
+   * **Timeout:** 30s default (P99 = 10s, §8.9).
+   * **Idempotency:** `X-Idempotency-Key` sent (AM10).
+   *
+   * @throws {CloudError} `ENS-C4290` if IPU quota exceeded (SD3).
+   * @throws {CloudError} `ENS-5005` if all 3 retries fail (SD5).
+   * @throws {CloudError} `ENS-5002` if client is disposed.
+   * @throws {CloudError} `ENS-5004` if in anonymous mode.
+   *
+   * @see Design Choice SD6 — dual API: `forge()` + `forge.stream()`.
+   * @see Design Choice CL2 — CloudForge = 10 IPU.
+   */
+  forge: ForgeFunction & {
     /**
-     * Generate a `ComponentContract` via CloudForge.
+     * Stream CloudForge generation via Server-Sent Events.
      *
-     * Callable and has a `.stream()` method for SSE streaming:
-     * - `forge(options)` → `Promise<CloudResult<ComponentContract>>` (buffers full stream).
-     * - `forge.stream(options)` → `AsyncGenerator<ForgeFragment>` (yields fragments).
+     * Yields {@link ForgeFragment} objects as the LLM generates the
+     * contract. Use this for progressive rendering. The generator
+     * completes when a `complete` or `error` fragment is yielded.
      *
-     * **IPU cost:** 10 per invocation (§9.1).
-     * **Timeout:** 30s default (P99 = 10s, §8.9).
-     * **Idempotency:** `X-Idempotency-Key` sent (AM10).
+     * @param options - Forge generation options.
+     * @yields {ForgeFragment} Typed SSE fragments.
      *
-     * @throws {CloudError} `ENS-C4290` if IPU quota exceeded (SD3).
-     * @throws {CloudError} `ENS-5005` if all 3 retries fail (SD5).
-     * @throws {CloudError} `ENS-5002` if client is disposed.
-     * @throws {CloudError} `ENS-5004` if in anonymous mode.
-     *
-     * @see Design Choice SD6 — dual API: `forge()` + `forge.stream()`.
-     * @see Design Choice CL2 — CloudForge = 10 IPU.
+     * @see Design Choice CF6 — SSE event types.
+     * @see Design Choice CF14 — SSE streaming format.
      */
-    forge: ForgeFunction & {
-        /**
-         * Stream CloudForge generation via Server-Sent Events.
-         *
-         * Yields {@link ForgeFragment} objects as the LLM generates the
-         * contract. Use this for progressive rendering. The generator
-         * completes when a `complete` or `error` fragment is yielded.
-         *
-         * @param options - Forge generation options.
-         * @yields {ForgeFragment} Typed SSE fragments.
-         *
-         * @see Design Choice CF6 — SSE event types.
-         * @see Design Choice CF14 — SSE streaming format.
-         */
-        stream(options: ForgeOptions): AsyncGenerator<ForgeFragment, void, undefined>;
-    };
+    stream(options: ForgeOptions): AsyncGenerator<ForgeFragment, void, undefined>;
+  };
 
-    // -------------------------------------------------------------------
-    // Search
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Search
+  // -------------------------------------------------------------------
 
-    /**
-     * Search for components via Cloud Semantic Index.
-     *
-     * Proxies to `POST /v1/semantic-search`. Uses the authenticated
-     * project's private Vectorize index (optionally including the
-     * Global Index — see §9.1 note on search scope).
-     *
-     * **IPU cost:** 1 per invocation (§9.1).
-     * **Timeout:** 10s default.
-     * **Idempotency:** `X-Idempotency-Key` sent (AM10).
-     *
-     * @param query - Natural language search query (intent string).
-     * @param topK - Maximum number of results. Defaults to 5 (SI5).
-     * @returns Semantic search results with IPU metadata.
-     *
-     * @throws {CloudError} `ENS-C4290` if IPU quota exceeded.
-     * @throws {CloudError} `ENS-5005` if all retries fail.
-     * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
-     *
-     * @see Design Choice CL2 — semantic search = 1 IPU.
-     */
-    search(
-        query: string,
-        topK?: number,
-    ): Promise<CloudResult<readonly SemanticSearchResult[]>>;
+  /**
+   * Search for components via Cloud Semantic Index.
+   *
+   * Proxies to `POST /v1/semantic-search`. Uses the authenticated
+   * project's private Vectorize index (optionally including the
+   * Global Index — see §9.1 note on search scope).
+   *
+   * **IPU cost:** 1 per invocation (§9.1).
+   * **Timeout:** 10s default.
+   * **Idempotency:** `X-Idempotency-Key` sent (AM10).
+   *
+   * @param query - Natural language search query (intent string).
+   * @param topK - Maximum number of results. Defaults to 5 (SI5).
+   * @returns Semantic search results with IPU metadata.
+   *
+   * @throws {CloudError} `ENS-C4290` if IPU quota exceeded.
+   * @throws {CloudError} `ENS-5005` if all retries fail.
+   * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
+   *
+   * @see Design Choice CL2 — semantic search = 1 IPU.
+   */
+  search(query: string, topK?: number): Promise<CloudResult<readonly SemanticSearchResult[]>>;
 
-    // -------------------------------------------------------------------
-    // Routing (IR2, IR5)
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Routing (IR2, IR5)
+  // -------------------------------------------------------------------
 
-    /**
-     * Predict the component for a single intent hash.
-     *
-     * Proxies to `POST /v1/route`. Returns ranked predictions with
-     * confidence scores and metadata. For unknown intents, returns
-     * empty predictions (IR3) — the caller should fall through to Forge.
-     *
-     * **IPU cost:** 1 per invocation (§9.1).
-     * **Timeout:** 10s default.
-     *
-     * @param intentHash - SHA-256 hash of the intent string.
-     * @returns Ranked predictions with model metadata.
-     *
-     * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
-     *
-     * @see Design Choice IR2 — response shape.
-     * @see Design Choice IR3 — empty predictions for unknown intents.
-     */
-    route(intentHash: string): Promise<CloudResult<RouterPrediction>>;
+  /**
+   * Predict the component for a single intent hash.
+   *
+   * Proxies to `POST /v1/route`. Returns ranked predictions with
+   * confidence scores and metadata. For unknown intents, returns
+   * empty predictions (IR3) — the caller should fall through to Forge.
+   *
+   * **IPU cost:** 1 per invocation (§9.1).
+   * **Timeout:** 10s default.
+   *
+   * @param intentHash - SHA-256 hash of the intent string.
+   * @returns Ranked predictions with model metadata.
+   *
+   * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
+   *
+   * @see Design Choice IR2 — response shape.
+   * @see Design Choice IR3 — empty predictions for unknown intents.
+   */
+  route(intentHash: string): Promise<CloudResult<RouterPrediction>>;
 
-    /**
-     * Predict components for a batch of intent hashes (pre-rendering).
-     *
-     * Proxies to `POST /v1/route/batch`. Send likely next intents
-     * (e.g., from visible buttons) to pre-resolve contracts ahead of time.
-     *
-     * **IPU cost:** 1 × N per invocation (§9.1), where N = `intentHashes.length`.
-     * **Timeout:** 10s default.
-     *
-     * **Ordering guarantee (F19):** `result.data[i]` corresponds to
-     * `intentHashes[i]`. The server preserves input order.
-     *
-     * @param intentHashes - Array of SHA-256 intent hashes to resolve.
-     * @returns Array of predictions in the same order as input.
-     *
-     * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
-     *
-     * @see Design Choice IR5 — batch routing for pre-rendering.
-     * @see Audit Finding F19 — batch ordering invariant.
-     */
-    routeBatch(
-        intentHashes: readonly string[],
-    ): Promise<CloudResult<readonly RouterPrediction[]>>;
+  /**
+   * Predict components for a batch of intent hashes (pre-rendering).
+   *
+   * Proxies to `POST /v1/route/batch`. Send likely next intents
+   * (e.g., from visible buttons) to pre-resolve contracts ahead of time.
+   *
+   * **IPU cost:** 1 × N per invocation (§9.1), where N = `intentHashes.length`.
+   * **Timeout:** 10s default.
+   *
+   * **Ordering guarantee (F19):** `result.data[i]` corresponds to
+   * `intentHashes[i]`. The server preserves input order.
+   *
+   * @param intentHashes - Array of SHA-256 intent hashes to resolve.
+   * @returns Array of predictions in the same order as input.
+   *
+   * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
+   *
+   * @see Design Choice IR5 — batch routing for pre-rendering.
+   * @see Audit Finding F19 — batch ordering invariant.
+   */
+  routeBatch(intentHashes: readonly string[]): Promise<CloudResult<readonly RouterPrediction[]>>;
 
-    // -------------------------------------------------------------------
-    // Signals (SD1, SD4)
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Signals (SD1, SD4)
+  // -------------------------------------------------------------------
 
-    /**
-     * Submit a `ForgeSignal` to the Cloud corpus.
-     *
-     * Proxies to `POST /v1/signals`. This is the **only method that works
-     * in anonymous mode** (`pk_anon_*` keys). The SDK transparently sets
-     * `Authorization: Bearer pk_anon_<install_id>` (SD4).
-     *
-     * **IPU cost:** 0 — signal ingestion is free (§9.1: "data collection
-     * is our #1 strategic asset — never charge for it").
-     * **No idempotency key** — 0 IPU, not required (AM10/F8).
-     *
-     * @param signal - The `ForgeSignal` to submit (from `@enterstellar-ai/telemetry`).
-     * @returns Acceptance confirmation.
-     *
-     * @throws {CloudError} `ENS-5005` if all retries fail. `ENS-5002` if disposed.
-     *
-     * @see Design Choice SD1 — anonymous mode: only `submitSignal()` available.
-     * @see Design Choice SD4 — `@enterstellar-ai/telemetry` uses SDK with `pk_anon`.
-     */
-    submitSignal(
-        signal: ForgeSignal,
-    ): Promise<CloudResult<{ readonly accepted: boolean }>>;
+  /**
+   * Submit a `ForgeSignal` to the Cloud corpus.
+   *
+   * Proxies to `POST /v1/signals`. This is the **only method that works
+   * in anonymous mode** (`pk_anon_*` keys). The SDK transparently sets
+   * `Authorization: Bearer pk_anon_<install_id>` (SD4).
+   *
+   * **IPU cost:** 0 — signal ingestion is free (§9.1: "data collection
+   * is our #1 strategic asset — never charge for it").
+   * **No idempotency key** — 0 IPU, not required (AM10/F8).
+   *
+   * @param signal - The `ForgeSignal` to submit (from `@enterstellar/telemetry`).
+   * @returns Acceptance confirmation.
+   *
+   * @throws {CloudError} `ENS-5005` if all retries fail. `ENS-5002` if disposed.
+   *
+   * @see Design Choice SD1 — anonymous mode: only `submitSignal()` available.
+   * @see Design Choice SD4 — `@enterstellar/telemetry` uses SDK with `pk_anon`.
+   */
+  submitSignal(signal: ForgeSignal): Promise<CloudResult<{ readonly accepted: boolean }>>;
 
-    // -------------------------------------------------------------------
-    // Traces (TA2)
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Traces (TA2)
+  // -------------------------------------------------------------------
 
-    /**
-     * Submit an `AgentTrace` for cloud aggregation and analytics.
-     *
-     * Proxies to `POST /v1/traces`. **Triple consent gate (TA2, F13):**
-     * 1. `CloudConfig.traceConsent` must be `true` (client SDK flag).
-     * 2. `trace.consent.anonymizedAggregation` must be `true` (per-trace).
-     * 3. Server-side `projects.trace_consent` must be `true` (project flag).
-     *
-     * If either client-side check fails, returns immediately with
-     * `{ data: { accepted: false }, ipu: null }` — no network call.
-     *
-     * **IPU cost:** 0 — trace submission is free (§9.1 corrected).
-     *
-     * @param trace - The `AgentTrace` to submit. Must have consent fields.
-     * @returns Acceptance confirmation.
-     *
-     * @throws {CloudError} `ENS-5005` if all retries fail.
-     * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
-     *
-     * @see Design Choice TA2 — dual-consent gate.
-     * @see Design Choice CL2 — trace submission = 0 IPU (corrected from 5).
-     */
-    submitTrace(
-        trace: AgentTrace,
-    ): Promise<CloudResult<{ readonly accepted: boolean }>>;
+  /**
+   * Submit an `AgentTrace` for cloud aggregation and analytics.
+   *
+   * Proxies to `POST /v1/traces`. **Triple consent gate (TA2, F13):**
+   * 1. `CloudConfig.traceConsent` must be `true` (client SDK flag).
+   * 2. `trace.consent.anonymizedAggregation` must be `true` (per-trace).
+   * 3. Server-side `projects.trace_consent` must be `true` (project flag).
+   *
+   * If either client-side check fails, returns immediately with
+   * `{ data: { accepted: false }, ipu: null }` — no network call.
+   *
+   * **IPU cost:** 0 — trace submission is free (§9.1 corrected).
+   *
+   * @param trace - The `AgentTrace` to submit. Must have consent fields.
+   * @returns Acceptance confirmation.
+   *
+   * @throws {CloudError} `ENS-5005` if all retries fail.
+   * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
+   *
+   * @see Design Choice TA2 — dual-consent gate.
+   * @see Design Choice CL2 — trace submission = 0 IPU (corrected from 5).
+   */
+  submitTrace(trace: AgentTrace): Promise<CloudResult<{ readonly accepted: boolean }>>;
 
-    /**
-     * Query traces for the authenticated project.
-     *
-     * Proxies to `GET /v1/traces`. Returns paginated results filtered
-     * by `correlation_id` and/or `thread_id`.
-     *
-     * **IPU cost:** 0 (§9.1).
-     *
-     * @param options - Pagination and filter options. All optional.
-     * @returns Paginated trace listing.
-     *
-     * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
-     */
-    getTraces(
-        options?: TraceListOptions,
-    ): Promise<CloudResult<TracePage>>;
+  /**
+   * Query traces for the authenticated project.
+   *
+   * Proxies to `GET /v1/traces`. Returns paginated results filtered
+   * by `correlation_id` and/or `thread_id`.
+   *
+   * **IPU cost:** 0 (§9.1).
+   *
+   * @param options - Pagination and filter options. All optional.
+   * @returns Paginated trace listing.
+   *
+   * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
+   */
+  getTraces(options?: TraceListOptions): Promise<CloudResult<TracePage>>;
 
-    // -------------------------------------------------------------------
-    // Analytics (TA3, TA5, TA10)
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Analytics (TA3, TA5, TA10)
+  // -------------------------------------------------------------------
 
-    /**
-     * Query trace analytics from ClickHouse.
-     *
-     * Proxies to `POST /v1/traces/analytics` (dedicated analytics Worker,
-     * TA3). Fixed query types with filters (TA5).
-     *
-     * **IPU cost:** 5 per invocation (§9.1).
-     * **Timeout:** 30s default (OLAP queries).
-     *
-     * @param query - The analytics query with `queryType` and optional `filters`.
-     * @returns Analytics result rows.
-     *
-     * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
-     *
-     * @see Design Choice TA3 — dedicated analytics Worker.
-     * @see Design Choice TA5 — fixed query types.
-     */
-    analytics(
-        query: AnalyticsQuery,
-    ): Promise<CloudResult<AnalyticsResult>>;
+  /**
+   * Query trace analytics from ClickHouse.
+   *
+   * Proxies to `POST /v1/traces/analytics` (dedicated analytics Worker,
+   * TA3). Fixed query types with filters (TA5).
+   *
+   * **IPU cost:** 5 per invocation (§9.1).
+   * **Timeout:** 30s default (OLAP queries).
+   *
+   * @param query - The analytics query with `queryType` and optional `filters`.
+   * @returns Analytics result rows.
+   *
+   * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
+   *
+   * @see Design Choice TA3 — dedicated analytics Worker.
+   * @see Design Choice TA5 — fixed query types.
+   */
+  analytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>>;
 
-    /**
-     * Query business/product analytics from ClickHouse.
-     *
-     * Proxies to `POST /v1/analytics/query`. Separate from trace analytics
-     * — this powers the Business Intelligence dashboard features (TA10).
-     *
-     * **IPU cost:** 5 per invocation (§9.1).
-     * **Timeout:** 30s default.
-     *
-     * @param query - The analytics query with `queryType` and optional `filters`.
-     * @returns Analytics result rows.
-     *
-     * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
-     *
-     * @see Design Choice TA10 — Enterstellar Analytics (separate from Trace Analytics).
-     */
-    businessAnalytics(
-        query: AnalyticsQuery,
-    ): Promise<CloudResult<AnalyticsResult>>;
+  /**
+   * Query business/product analytics from ClickHouse.
+   *
+   * Proxies to `POST /v1/analytics/query`. Separate from trace analytics
+   * — this powers the Business Intelligence dashboard features (TA10).
+   *
+   * **IPU cost:** 5 per invocation (§9.1).
+   * **Timeout:** 30s default.
+   *
+   * @param query - The analytics query with `queryType` and optional `filters`.
+   * @returns Analytics result rows.
+   *
+   * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
+   *
+   * @see Design Choice TA10 — Enterstellar Analytics (separate from Trace Analytics).
+   */
+  businessAnalytics(query: AnalyticsQuery): Promise<CloudResult<AnalyticsResult>>;
 
-    // -------------------------------------------------------------------
-    // Billing (CL1)
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Billing (CL1)
+  // -------------------------------------------------------------------
 
-    /**
-     * Query IPU usage for the current billing period.
-     *
-     * Proxies to `GET /v1/usage`. The returned values are server-authoritative
-     * and reconcile the local IPU tracker (CL1 hybrid tracking).
-     *
-     * **IPU cost:** 0 (§9.1).
-     *
-     * @returns Current IPU usage, limit, and tier.
-     *
-     * @throws {CloudError} `ENS-5003` on fetch failure.
-     * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
-     *
-     * @see Design Choice CL1 — hybrid metering, server authoritative.
-     */
-    getUsage(): Promise<CloudResult<CloudUsage>>;
+  /**
+   * Query IPU usage for the current billing period.
+   *
+   * Proxies to `GET /v1/usage`. The returned values are server-authoritative
+   * and reconcile the local IPU tracker (CL1 hybrid tracking).
+   *
+   * **IPU cost:** 0 (§9.1).
+   *
+   * @returns Current IPU usage, limit, and tier.
+   *
+   * @throws {CloudError} `ENS-5003` on fetch failure.
+   * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
+   *
+   * @see Design Choice CL1 — hybrid metering, server authoritative.
+   */
+  getUsage(): Promise<CloudResult<CloudUsage>>;
 
-    /**
-     * Query the per-operation IPU ledger.
-     *
-     * Proxies to `GET /v1/usage/ledger`. Returns paginated IPU charges
-     * for audit and billing verification. Lookback period is tier-dependent.
-     *
-     * **IPU cost:** 0 (§9.1).
-     *
-     * @param options - Pagination options. All optional.
-     * @returns Paginated ledger entries.
-     *
-     * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
-     *
-     * @see Design Choice AM13 — IPU ledger exposure to customers.
-     */
-    getLedger(
-        options?: LedgerListOptions,
-    ): Promise<CloudResult<LedgerPage>>;
+  /**
+   * Query the per-operation IPU ledger.
+   *
+   * Proxies to `GET /v1/usage/ledger`. Returns paginated IPU charges
+   * for audit and billing verification. Lookback period is tier-dependent.
+   *
+   * **IPU cost:** 0 (§9.1).
+   *
+   * @param options - Pagination options. All optional.
+   * @returns Paginated ledger entries.
+   *
+   * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
+   *
+   * @see Design Choice AM13 — IPU ledger exposure to customers.
+   */
+  getLedger(options?: LedgerListOptions): Promise<CloudResult<LedgerPage>>;
 
-    // -------------------------------------------------------------------
-    // Operations
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Operations
+  // -------------------------------------------------------------------
 
-    /**
-     * Initiate "Enterstellar Certified" audit for a published contract.
-     *
-     * Proxies to `POST /v1/contracts/:id/certify`. Deducts 20 IPU,
-     * enqueues the certification job, and returns a `pending` status
-     * with a polling URL (GI5). The Certification Runner executes
-     * tests on a Fly.io microVM (CR5, max 60s).
-     *
-     * Poll `GET /v1/contracts/:id` (via `@enterstellar-ai/global-index`) to check
-     * `certification_status` for completion (CR10).
-     *
-     * **IPU cost:** 20 per invocation (§9.1).
-     * **Timeout:** 90s default (CR5: max 60s + overhead).
-     * **Idempotency:** `X-Idempotency-Key` sent (AM10).
-     *
-     * @param contractId - The contract ID to certify (e.g., `'comp_01HYX...'`).
-     * @returns Pending status with polling URL.
-     *
-     * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
-     *
-     * @see Design Choice GI5 — certification lifecycle.
-     * @see Design Choice CR10 — polling-based notification.
-     */
-    certify(
-        contractId: string,
-    ): Promise<CloudResult<CertifyResult>>;
+  /**
+   * Initiate "Enterstellar Certified" audit for a published contract.
+   *
+   * Proxies to `POST /v1/contracts/:id/certify`. Deducts 20 IPU,
+   * enqueues the certification job, and returns a `pending` status
+   * with a polling URL (GI5). The Certification Runner executes
+   * tests on a Fly.io microVM (CR5, max 60s).
+   *
+   * Poll `GET /v1/contracts/:id` (via `@enterstellar/global-index`) to check
+   * `certification_status` for completion (CR10).
+   *
+   * **IPU cost:** 20 per invocation (§9.1).
+   * **Timeout:** 90s default (CR5: max 60s + overhead).
+   * **Idempotency:** `X-Idempotency-Key` sent (AM10).
+   *
+   * @param contractId - The contract ID to certify (e.g., `'comp_01HYX...'`).
+   * @returns Pending status with polling URL.
+   *
+   * @throws {CloudError} On quota, retry exhaustion, disposal, or anonymous mode.
+   *
+   * @see Design Choice GI5 — certification lifecycle.
+   * @see Design Choice CR10 — polling-based notification.
+   */
+  certify(contractId: string): Promise<CloudResult<CertifyResult>>;
 
-    /**
-     * Initiate GDPR right-to-delete for a project's data.
-     *
-     * Proxies to `DELETE /v1/project/:id/data`. Immediate soft-delete
-     * in D1 (`deleted_at = NOW()`), background Worker hard-purges within
-     * 72h across D1, R2, Vectorize, and ClickHouse (AG9).
-     *
-     * Returns `202 Accepted` — fire-and-forget from the SDK's perspective.
-     *
-     * **IPU cost:** 0 (§9.1).
-     *
-     * @param projectId - The project ID to delete data for.
-     * @returns Acceptance confirmation (`{ accepted: true }`).
-     *
-     * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
-     *
-     * @see Design Choice AG9 — two-phase delete: soft-delete + background purge.
-     * @see Audit Finding F16 — fire-and-forget, no `jobId` (endpoint not in §9.1).
-     */
-    deleteProjectData(
-        projectId: string,
-    ): Promise<CloudResult<{ readonly accepted: boolean }>>;
+  /**
+   * Initiate GDPR right-to-delete for a project's data.
+   *
+   * Proxies to `DELETE /v1/project/:id/data`. Immediate soft-delete
+   * in D1 (`deleted_at = NOW()`), background Worker hard-purges within
+   * 72h across D1, R2, Vectorize, and ClickHouse (AG9).
+   *
+   * Returns `202 Accepted` — fire-and-forget from the SDK's perspective.
+   *
+   * **IPU cost:** 0 (§9.1).
+   *
+   * @param projectId - The project ID to delete data for.
+   * @returns Acceptance confirmation (`{ accepted: true }`).
+   *
+   * @throws {CloudError} `ENS-5002` if disposed. `ENS-5004` if anonymous.
+   *
+   * @see Design Choice AG9 — two-phase delete: soft-delete + background purge.
+   * @see Audit Finding F16 — fire-and-forget, no `jobId` (endpoint not in §9.1).
+   */
+  deleteProjectData(projectId: string): Promise<CloudResult<{ readonly accepted: boolean }>>;
 
-    // -------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Lifecycle
+  // -------------------------------------------------------------------
 
-    /**
-     * Release all resources held by this client.
-     *
-     * After calling `dispose()`, all subsequent method calls throw
-     * `CloudError` (`ENS-5002`). Safe to call multiple times (idempotent).
-     *
-     * Does NOT throw in anonymous mode — always allowed.
-     */
-    dispose(): void;
+  /**
+   * Release all resources held by this client.
+   *
+   * After calling `dispose()`, all subsequent method calls throw
+   * `CloudError` (`ENS-5002`). Safe to call multiple times (idempotent).
+   *
+   * Does NOT throw in anonymous mode — always allowed.
+   */
+  dispose(): void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1121,40 +1092,40 @@ export interface EnterstellarCloudClient {
  * @internal — not part of the public API.
  */
 export type CloudRequestConfig = {
-    /** HTTP method. `DELETE` added for `deleteProjectData()` (AG9). */
-    readonly method: 'GET' | 'POST' | 'DELETE';
+  /** HTTP method. `DELETE` added for `deleteProjectData()` (AG9). */
+  readonly method: 'GET' | 'POST' | 'DELETE';
 
-    /**
-     * URL path segment appended to the base URL.
-     * Must start with `/`. Example: `'/v1/forge'`.
-     */
-    readonly path: string;
+  /**
+   * URL path segment appended to the base URL.
+   * Must start with `/`. Example: `'/v1/forge'`.
+   */
+  readonly path: string;
 
-    /** JSON body to send. Omitted for GET/DELETE requests. */
-    readonly body?: unknown;
+  /** JSON body to send. Omitted for GET/DELETE requests. */
+  readonly body?: unknown;
 
-    /**
-     * The IPU cost for this operation (from `IPU_COSTS`).
-     *
-     * Used by the transport to decide whether to send `X-Idempotency-Key`:
-     * - `ipuCost > 0` → send key (AM10).
-     * - `ipuCost === 0` → do not send key (F8).
-     */
-    readonly ipuCost: number;
+  /**
+   * The IPU cost for this operation (from `IPU_COSTS`).
+   *
+   * Used by the transport to decide whether to send `X-Idempotency-Key`:
+   * - `ipuCost > 0` → send key (AM10).
+   * - `ipuCost === 0` → do not send key (F8).
+   */
+  readonly ipuCost: number;
 
-    /**
-     * Per-operation timeout in milliseconds.
-     *
-     * Overridden by `CloudConfig.timeoutMs` if set globally.
-     * Defaults from `OPERATION_TIMEOUTS` map:
-     * - `forge`: 30,000ms
-     * - `certify`: 90,000ms
-     * - `analytics` / `businessAnalytics`: 30,000ms
-     * - Others: 10,000ms
-     *
-     * @see Audit Finding F21 — per-operation timeout defaults.
-     */
-    readonly operationTimeout?: number | undefined;
+  /**
+   * Per-operation timeout in milliseconds.
+   *
+   * Overridden by `CloudConfig.timeoutMs` if set globally.
+   * Defaults from `OPERATION_TIMEOUTS` map:
+   * - `forge`: 30,000ms
+   * - `certify`: 90,000ms
+   * - `analytics` / `businessAnalytics`: 30,000ms
+   * - Others: 10,000ms
+   *
+   * @see Audit Finding F21 — per-operation timeout defaults.
+   */
+  readonly operationTimeout?: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -1179,44 +1150,44 @@ export type CloudRequestConfig = {
  * @internal — not part of the public API.
  */
 export type CloudResponse<T> = {
-    /** Whether the HTTP response was successful (2xx). */
-    readonly ok: boolean;
+  /** Whether the HTTP response was successful (2xx). */
+  readonly ok: boolean;
 
-    /** HTTP status code. `undefined` on network error before response. */
-    readonly statusCode: number | undefined;
+  /** HTTP status code. `undefined` on network error before response. */
+  readonly statusCode: number | undefined;
 
-    /** Parsed JSON body. `null` when `ok` is `false` or body is empty. */
-    readonly data: T | null;
+  /** Parsed JSON body. `null` when `ok` is `false` or body is empty. */
+  readonly data: T | null;
 
-    /**
-     * Total IPUs consumed this billing period.
-     * From `X-IPU-Used` header. `undefined` on 0-IPU or `pk_anon` requests (AG8).
-     */
-    readonly ipuUsed: number | undefined;
+  /**
+   * Total IPUs consumed this billing period.
+   * From `X-IPU-Used` header. `undefined` on 0-IPU or `pk_anon` requests (AG8).
+   */
+  readonly ipuUsed: number | undefined;
 
-    /**
-     * IPUs remaining this billing period.
-     * From `X-IPU-Remaining` header. `undefined` on 0-IPU or `pk_anon` requests (AG8).
-     */
-    readonly ipuRemaining: number | undefined;
+  /**
+   * IPUs remaining this billing period.
+   * From `X-IPU-Remaining` header. `undefined` on 0-IPU or `pk_anon` requests (AG8).
+   */
+  readonly ipuRemaining: number | undefined;
 
-    /**
-     * IPUs charged for this specific request.
-     * From `X-IPU-Cost` header. `undefined` on `pk_anon` requests (AG8).
-     * `0` on 0-IPU endpoints.
-     */
-    readonly ipuCost: number | undefined;
+  /**
+   * IPUs charged for this specific request.
+   * From `X-IPU-Cost` header. `undefined` on `pk_anon` requests (AG8).
+   * `0` on 0-IPU endpoints.
+   */
+  readonly ipuCost: number | undefined;
 
-    /**
-     * Server request ID for correlation and support tickets.
-     * From `X-Request-Id` header. Bare ULID (AG16).
-     * `undefined` on network error before response.
-     */
-    readonly requestId: string | undefined;
+  /**
+   * Server request ID for correlation and support tickets.
+   * From `X-Request-Id` header. Bare ULID (AG16).
+   * `undefined` on network error before response.
+   */
+  readonly requestId: string | undefined;
 
-    /**
-     * Parsed error body from non-2xx responses (§9.4).
-     * `null` on successful responses or when the error body cannot be parsed.
-     */
-    readonly error: CloudErrorBody | null;
+  /**
+   * Parsed error body from non-2xx responses (§9.4).
+   * `null` on successful responses or when the error body cannot be parsed.
+   */
+  readonly error: CloudErrorBody | null;
 };

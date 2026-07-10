@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/transport/signal-transport
+ * @module @enterstellar/telemetry/transport/signal-transport
  * @description Interface for signal transport implementations.
  *
  * The `SignalTransport` abstracts over different delivery strategies:
@@ -10,7 +10,7 @@
  * @see Design Choice TL9 — enterprise opt-out.
  */
 
-import type { ForgeSignal } from '@enterstellar-ai/types';
+import type { ForgeSignal } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // TransportResult
@@ -20,20 +20,20 @@ import type { ForgeSignal } from '@enterstellar-ai/types';
  * The outcome of a transport `send()` operation.
  */
 export type TransportResult = {
-    /** Whether the batch was accepted by the endpoint. */
-    readonly success: boolean;
+  /** Whether the batch was accepted by the endpoint. */
+  readonly success: boolean;
 
-    /** HTTP status code from the endpoint, if applicable. */
-    readonly statusCode?: number | undefined;
+  /** HTTP status code from the endpoint, if applicable. */
+  readonly statusCode?: number | undefined;
 
-    /**
-     * Suggested delay (in milliseconds) before retrying.
-     * Derived from the `Retry-After` header on 429 responses,
-     * or computed via exponential backoff on 5xx errors.
-     *
-     * `undefined` if no retry is needed (success or permanent failure).
-     */
-    readonly retryAfterMs?: number | undefined;
+  /**
+   * Suggested delay (in milliseconds) before retrying.
+   * Derived from the `Retry-After` header on 429 responses,
+   * or computed via exponential backoff on 5xx errors.
+   *
+   * `undefined` if no retry is needed (success or permanent failure).
+   */
+  readonly retryAfterMs?: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -49,11 +49,11 @@ export type TransportResult = {
  * to decide on retries.
  */
 export interface SignalTransport {
-    /**
-     * Send a batch of signals to the endpoint.
-     *
-     * @param signals - The batch of `ForgeSignal`s to transmit.
-     * @returns The outcome of the transmission attempt.
-     */
-    send(signals: readonly ForgeSignal[]): Promise<TransportResult>;
+  /**
+   * Send a batch of signals to the endpoint.
+   *
+   * @param signals - The batch of `ForgeSignal`s to transmit.
+   * @returns The outcome of the transmission attempt.
+   */
+  send(signals: readonly ForgeSignal[]): Promise<TransportResult>;
 }

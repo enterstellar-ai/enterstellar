@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-registry
+ * @module @enterstellar/cli/templates/template-registry
  * @description Generates `src/enterstellar/registry.ts` for the scaffolded Enterstellar project.
  *
  * Produces a pre-populated registry file that:
- * - Imports `createRegistry` and `defineComponent` from `@enterstellar-ai/registry`
+ * - Imports `createRegistry` and `defineComponent` from `@enterstellar/registry`
  * - Imports the example design token set from `./tokens`
  * - Imports all 5 example component contracts
  * - Creates and exports a configured `EnterstellarRegistry`
@@ -37,7 +37,7 @@
  * ```
  */
 export function generateRegistry(): string {
-    return `/**
+  return `/**
  * Enterstellar Component Registry
  *
  * This file creates and exports the Enterstellar component registry
@@ -48,7 +48,7 @@ export function generateRegistry(): string {
  * @see https://enterstellar.dev/docs/registry
  */
 
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createRegistry } from '@enterstellar/registry';
 
 import { designTokens } from './tokens.js';
 import { ExampleCardContract } from './components/ExampleCard.js';

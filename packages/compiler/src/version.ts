@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/version
+ * @module @enterstellar/compiler/version
  * @description Compiler version constant.
  *
  * Embedded in every `CompilationResult.provenance.compilerVersion` for
@@ -9,7 +9,7 @@
  */
 
 /**
- * Semantic version of the `@enterstellar-ai/compiler` package.
+ * Semantic version of the `@enterstellar/compiler` package.
  * Updated via Changesets on every release.
  */
 export const COMPILER_VERSION = '0.0.0';

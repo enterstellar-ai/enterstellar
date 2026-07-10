@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/devtools/env
+ * @module @enterstellar/devtools/env
  * @description Ambient type declarations for `process.env` access.
  *
  * DevTools references `process.env.NODE_ENV` for the production guard (DT3).
@@ -10,5 +10,5 @@
  */
 
 declare const process: {
-    readonly env: Readonly<Record<string, string | undefined>>;
+  readonly env: Readonly<Record<string, string | undefined>>;
 };

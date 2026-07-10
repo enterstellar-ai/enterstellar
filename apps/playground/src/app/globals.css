@@ -221,7 +221,7 @@
   }
 
   /**
-   * Hide the floating DevTools toggle button from @enterstellar-ai/devtools.
+   * Hide the floating DevTools toggle button from @enterstellar/devtools.
    *
    * The Enterstellar Playground uses an inline [⚡ Debug] button in the
    * ControlsBar as the primary entry point for DevTools. The floating

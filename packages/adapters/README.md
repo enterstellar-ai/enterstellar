@@ -1,4 +1,4 @@
-# @enterstellar-ai/adapters
+# @enterstellar/adapters
 
 > Pluggable infrastructure adapters — auth, data, error handling, analytics.
 
@@ -12,7 +12,7 @@ import {
   createDataAdapter,
   createErrorAdapter,
   createAnalyticsAdapter,
-} from '@enterstellar-ai/adapters';
+} from '@enterstellar/adapters';
 
 // 1. Create adapters with your implementations
 const auth = createAuthAdapter({
@@ -67,7 +67,7 @@ const data = createDataAdapter({
 // <Provider adapters={{ auth, data }} ... />
 
 // 3. For testing, use noop adapters
-import { createNoopAuthAdapter, createNoopDataAdapter } from '@enterstellar-ai/adapters';
+import { createNoopAuthAdapter, createNoopDataAdapter } from '@enterstellar/adapters';
 const testAuth = createNoopAuthAdapter(); // getSession → null, hasRole → false
 const testData = createNoopDataAdapter(); // query → [], mutate → null
 ```
@@ -108,7 +108,7 @@ const testData = createNoopDataAdapter(); // query → [], mutate → null
 | :------------------------------------ | :------ | :-------------------------------------------------------------------------------------- |
 | `validateAdapterConfig(type, config)` | `void`  | Validates name (non-empty string) + required methods (typeof check). Throws `ENS-7001`. |
 
-### Adapter Interfaces (re-exported from `@enterstellar-ai/types`)
+### Adapter Interfaces (re-exported from `@enterstellar/types`)
 
 | Interface          | Methods                                                                                       |
 | :----------------- | :-------------------------------------------------------------------------------------------- |
@@ -132,7 +132,7 @@ const testData = createNoopDataAdapter(); // query → [], mutate → null
 
 ### Config Objects (passed to factories)
 
-Every adapter config requires a `name` (non-empty string) plus all methods defined by the corresponding `@enterstellar-ai/types` interface.
+Every adapter config requires a `name` (non-empty string) plus all methods defined by the corresponding `@enterstellar/types` interface.
 
 | Config                   | Required Methods                        | Async/Sync                                                        |
 | :----------------------- | :-------------------------------------- | :---------------------------------------------------------------- |
@@ -172,7 +172,7 @@ Original errors are preserved in `cause` for debugging.
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags. Overrides `composite: false` for tsup DTS. |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. Single entry: `src/index.ts`.                                      |
 
-**Peer dependencies:** `@enterstellar-ai/types`
+**Peer dependencies:** `@enterstellar/types`
 
 ## See Also
 

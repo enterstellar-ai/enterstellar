@@ -1,11 +1,11 @@
 /**
- * @module @enterstellar-ai/adapters/types
+ * @module @enterstellar/adapters/types
  * @description Module-local configuration types for adapter factories.
  *
  * These types define the "input" shape that consumers pass to
  * `createAuthAdapter()`, `createDataAdapter()`, etc. The actual adapter
  * interfaces (`AuthAdapter`, `DataAdapter`, `ErrorAdapter`, `AnalyticsAdapter`)
- * live in `@enterstellar-ai/types/adapters` and are re-exported from the barrel.
+ * live in `@enterstellar/types/adapters` and are re-exported from the barrel.
  *
  * Each config type mirrors its corresponding adapter interface, plus a
  * mandatory `name` field for identification in error messages and DevTools.
@@ -49,42 +49,42 @@
  * ```
  */
 export type AuthAdapterConfig = {
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     *
-     * @example `'supabase-auth'`, `'clerk-auth'`, `'firebase-auth'`
-     */
-    readonly name: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   *
+   * @example `'supabase-auth'`, `'clerk-auth'`, `'firebase-auth'`
+   */
+  readonly name: string;
 
-    /**
-     * Returns the current authentication session, or `null` if unauthenticated.
-     *
-     * @returns Session object with user ID and role list.
-     */
-    readonly getSession: () => Promise<{ userId: string; roles: string[] } | null>;
+  /**
+   * Returns the current authentication session, or `null` if unauthenticated.
+   *
+   * @returns Session object with user ID and role list.
+   */
+  readonly getSession: () => Promise<{ userId: string; roles: string[] } | null>;
 
-    /**
-     * Checks whether the current user has a specific role.
-     * Essential for RBAC — clinical vs. admin zone visibility.
-     *
-     * @param role - The role to check (e.g., `'clinician'`, `'admin'`).
-     * @returns `true` if the user has the specified role.
-     */
-    readonly hasRole: (role: string) => Promise<boolean>;
+  /**
+   * Checks whether the current user has a specific role.
+   * Essential for RBAC — clinical vs. admin zone visibility.
+   *
+   * @param role - The role to check (e.g., `'clinician'`, `'admin'`).
+   * @returns `true` if the user has the specified role.
+   */
+  readonly hasRole: (role: string) => Promise<boolean>;
 
-    /**
-     * Subscribes to authentication state changes.
-     *
-     * Essential for reactive auth gating — zones re-evaluate visibility
-     * when sessions expire or roles change.
-     *
-     * @param callback - Called when auth state changes. Receives the new
-     *   session object, or `null` if the user became unauthenticated.
-     * @returns An unsubscribe function (synchronous).
-     */
-    readonly onAuthChange: (
-        callback: (session: { userId: string; roles: string[] } | null) => void,
-    ) => () => void;
+  /**
+   * Subscribes to authentication state changes.
+   *
+   * Essential for reactive auth gating — zones re-evaluate visibility
+   * when sessions expire or roles change.
+   *
+   * @param callback - Called when auth state changes. Receives the new
+   *   session object, or `null` if the user became unauthenticated.
+   * @returns An unsubscribe function (synchronous).
+   */
+  readonly onAuthChange: (
+    callback: (session: { userId: string; roles: string[] } | null) => void,
+  ) => () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -123,51 +123,51 @@ export type AuthAdapterConfig = {
  * ```
  */
 export type DataAdapterConfig = {
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     *
-     * @example `'supabase-data'`, `'firebase-data'`, `'prisma-data'`
-     */
-    readonly name: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   *
+   * @example `'supabase-data'`, `'firebase-data'`, `'prisma-data'`
+   */
+  readonly name: string;
 
-    /**
-     * Queries a resource by name with optional parameters.
-     *
-     * @param resource - The resource/table/collection to query (dot-notation per AD3).
-     * @param params - Optional query parameters (filters, pagination, sorting).
-     * @returns Array of records matching the query.
-     */
-    readonly query: (
-        resource: string,
-        params?: Readonly<Record<string, unknown>>,
-    ) => Promise<readonly Record<string, unknown>[]>;
+  /**
+   * Queries a resource by name with optional parameters.
+   *
+   * @param resource - The resource/table/collection to query (dot-notation per AD3).
+   * @param params - Optional query parameters (filters, pagination, sorting).
+   * @returns Array of records matching the query.
+   */
+  readonly query: (
+    resource: string,
+    params?: Readonly<Record<string, unknown>>,
+  ) => Promise<readonly Record<string, unknown>[]>;
 
-    /**
-     * Performs a mutation (create, update, delete) on a resource.
-     *
-     * @param resource - The resource to mutate.
-     * @param action - The mutation type: `'create'`, `'update'`, or `'delete'`.
-     * @param data - The mutation payload.
-     * @returns The mutated record, or `null` for deletes.
-     */
-    readonly mutate: (
-        resource: string,
-        action: 'create' | 'update' | 'delete',
-        data: Readonly<Record<string, unknown>>,
-    ) => Promise<Record<string, unknown> | null>;
+  /**
+   * Performs a mutation (create, update, delete) on a resource.
+   *
+   * @param resource - The resource to mutate.
+   * @param action - The mutation type: `'create'`, `'update'`, or `'delete'`.
+   * @param data - The mutation payload.
+   * @returns The mutated record, or `null` for deletes.
+   */
+  readonly mutate: (
+    resource: string,
+    action: 'create' | 'update' | 'delete',
+    data: Readonly<Record<string, unknown>>,
+  ) => Promise<Record<string, unknown> | null>;
 
-    /**
-     * Subscribes to real-time changes on a resource.
-     * Essential for live data updates in Enterstellar zones (AD4 — realtime at v1).
-     *
-     * @param resource - The resource to subscribe to.
-     * @param callback - Called when the resource changes.
-     * @returns An unsubscribe function (synchronous).
-     */
-    readonly subscribe: (
-        resource: string,
-        callback: (data: readonly Record<string, unknown>[]) => void,
-    ) => () => void;
+  /**
+   * Subscribes to real-time changes on a resource.
+   * Essential for live data updates in Enterstellar zones (AD4 — realtime at v1).
+   *
+   * @param resource - The resource to subscribe to.
+   * @param callback - Called when the resource changes.
+   * @returns An unsubscribe function (synchronous).
+   */
+  readonly subscribe: (
+    resource: string,
+    callback: (data: readonly Record<string, unknown>[]) => void,
+  ) => () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -200,47 +200,44 @@ export type DataAdapterConfig = {
  * ```
  */
 export type ErrorAdapterConfig = {
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     *
-     * @example `'sentry-error'`, `'datadog-error'`, `'console-error'`
-     */
-    readonly name: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   *
+   * @example `'sentry-error'`, `'datadog-error'`, `'console-error'`
+   */
+  readonly name: string;
 
-    /**
-     * Reports an error to the external error tracking service.
-     *
-     * @param error - The error to report (may be an `EnterstellarError`).
-     * @param context - Optional contextual metadata for the error report.
-     */
-    readonly report: (
-        error: Error,
-        context?: Readonly<Record<string, unknown>>,
-    ) => Promise<void>;
+  /**
+   * Reports an error to the external error tracking service.
+   *
+   * @param error - The error to report (may be an `EnterstellarError`).
+   * @param context - Optional contextual metadata for the error report.
+   */
+  readonly report: (error: Error, context?: Readonly<Record<string, unknown>>) => Promise<void>;
 
-    /**
-     * Determines whether a failed operation should be retried.
-     *
-     * Async to support production implementations that consult remote
-     * circuit breakers or rate-limit services before deciding.
-     *
-     * @param error - The error that caused the failure.
-     * @param attemptNumber - The current retry attempt (1-based).
-     * @returns `true` if the operation should be retried.
-     */
-    readonly shouldRetry: (error: Error, attemptNumber: number) => Promise<boolean>;
+  /**
+   * Determines whether a failed operation should be retried.
+   *
+   * Async to support production implementations that consult remote
+   * circuit breakers or rate-limit services before deciding.
+   *
+   * @param error - The error that caused the failure.
+   * @param attemptNumber - The current retry attempt (1-based).
+   * @returns `true` if the operation should be retried.
+   */
+  readonly shouldRetry: (error: Error, attemptNumber: number) => Promise<boolean>;
 
-    /**
-     * Sanitizes an error before it is logged or displayed.
-     * Must strip any PII or sensitive data from the error message and stack.
-     *
-     * Async to support production implementations that call external
-     * PII detection services for HIPAA-compliant sanitization.
-     *
-     * @param error - The error to sanitize.
-     * @returns A sanitized copy of the error.
-     */
-    readonly sanitize: (error: Error) => Promise<Error>;
+  /**
+   * Sanitizes an error before it is logged or displayed.
+   * Must strip any PII or sensitive data from the error message and stack.
+   *
+   * Async to support production implementations that call external
+   * PII detection services for HIPAA-compliant sanitization.
+   *
+   * @param error - The error to sanitize.
+   * @returns A sanitized copy of the error.
+   */
+  readonly sanitize: (error: Error) => Promise<Error>;
 };
 
 // ---------------------------------------------------------------------------
@@ -268,36 +265,30 @@ export type ErrorAdapterConfig = {
  * ```
  */
 export type AnalyticsAdapterConfig = {
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     *
-     * @example `'mixpanel-analytics'`, `'amplitude-analytics'`, `'posthog-analytics'`
-     */
-    readonly name: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   *
+   * @example `'mixpanel-analytics'`, `'amplitude-analytics'`, `'posthog-analytics'`
+   */
+  readonly name: string;
 
-    /**
-     * Tracks a named event with optional properties.
-     * Fire-and-forget — no return value.
-     *
-     * @param event - The event name (e.g., `'zone_rendered'`, `'intent_resolved'`).
-     * @param properties - Optional event properties for segmentation.
-     */
-    readonly track: (
-        event: string,
-        properties?: Readonly<Record<string, unknown>>,
-    ) => void;
+  /**
+   * Tracks a named event with optional properties.
+   * Fire-and-forget — no return value.
+   *
+   * @param event - The event name (e.g., `'zone_rendered'`, `'intent_resolved'`).
+   * @param properties - Optional event properties for segmentation.
+   */
+  readonly track: (event: string, properties?: Readonly<Record<string, unknown>>) => void;
 
-    /**
-     * Identifies the current user for analytics attribution.
-     * Fire-and-forget — no return value.
-     *
-     * @param userId - Unique user identifier.
-     * @param traits - Optional user traits (role, plan, etc.).
-     */
-    readonly identify: (
-        userId: string,
-        traits?: Readonly<Record<string, unknown>>,
-    ) => void;
+  /**
+   * Identifies the current user for analytics attribution.
+   * Fire-and-forget — no return value.
+   *
+   * @param userId - Unique user identifier.
+   * @param traits - Optional user traits (role, plan, etc.).
+   */
+  readonly identify: (userId: string, traits?: Readonly<Record<string, unknown>>) => void;
 };
 
 // ---------------------------------------------------------------------------

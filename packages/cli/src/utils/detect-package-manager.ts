@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/utils/detect-package-manager
+ * @module @enterstellar/cli/utils/detect-package-manager
  * @description Auto-detects the user's package manager from lockfile presence.
  *
  * Per Design Choice CLI3: auto-detect from lockfile (`package-lock.json` → npm,
@@ -42,10 +42,10 @@ export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
  * pnpm is checked first as it is Enterstellar's recommended package manager.
  */
 const LOCKFILE_MAP: ReadonlyArray<readonly [string, PackageManager]> = [
-    ['pnpm-lock.yaml', 'pnpm'],
-    ['bun.lockb', 'bun'],
-    ['yarn.lock', 'yarn'],
-    ['package-lock.json', 'npm'],
+  ['pnpm-lock.yaml', 'pnpm'],
+  ['bun.lockb', 'bun'],
+  ['yarn.lock', 'yarn'],
+  ['package-lock.json', 'npm'],
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -76,12 +76,12 @@ const LOCKFILE_MAP: ReadonlyArray<readonly [string, PackageManager]> = [
  * ```
  */
 export function detectPackageManager(cwd: string): PackageManager | null {
-    for (const [lockfile, manager] of LOCKFILE_MAP) {
-        if (existsSync(join(cwd, lockfile))) {
-            return manager;
-        }
+  for (const [lockfile, manager] of LOCKFILE_MAP) {
+    if (existsSync(join(cwd, lockfile))) {
+      return manager;
     }
-    return null;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,18 +104,18 @@ export function detectPackageManager(cwd: string): PackageManager | null {
  * ```
  */
 export function getInstallCommand(pm: PackageManager): string {
-    switch (pm) {
-        case 'npm': {
-            return 'npm install';
-        }
-        case 'pnpm': {
-            return 'pnpm install';
-        }
-        case 'yarn': {
-            return 'yarn install';
-        }
-        case 'bun': {
-            return 'bun install';
-        }
+  switch (pm) {
+    case 'npm': {
+      return 'npm install';
     }
+    case 'pnpm': {
+      return 'pnpm install';
+    }
+    case 'yarn': {
+      return 'yarn install';
+    }
+    case 'bun': {
+      return 'bun install';
+    }
+  }
 }

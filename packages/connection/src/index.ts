@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/connection
+ * @module @enterstellar/connection
  * @description Transport convenience layer for Enterstellar agent connections.
  *
  * Provides `createAgentConnection()` — the default implementation of the
- * `EnterstellarAgentConnection` interface from `@enterstellar-ai/types`. Manages 3-tier
+ * `EnterstellarAgentConnection` interface from `@enterstellar/types`. Manages 3-tier
  * transport selection (WebSocket → SSE → polling), automatic reconnect with
  * exponential backoff, and inbound intent backpressure.
  *
@@ -16,7 +16,7 @@
  *
  * @example
  * ```ts
- * import { createAgentConnection } from '@enterstellar-ai/connection';
+ * import { createAgentConnection } from '@enterstellar/connection';
  *
  * const connection = createAgentConnection({
  *   url: 'wss://agent.example.com/ws',
@@ -49,20 +49,20 @@ export { createStoreSyncRuntime } from './store-sync.js';
 export type { StoreSyncRuntime } from './store-sync.js';
 
 // ---------------------------------------------------------------------------
-// Public API — Type Re-exports from @enterstellar-ai/types
+// Public API — Type Re-exports from @enterstellar/types
 //
 // These re-exports provide consumer convenience: import everything needed
 // for agent connections from a single package. The canonical definitions
-// remain in @enterstellar-ai/types.
+// remain in @enterstellar/types.
 // ---------------------------------------------------------------------------
 
 export type {
-    EnterstellarAgentConnection,
-    UserSignal,
-    UserSignalType,
-    AgentEventType,
-    SyncConfig,
-} from '@enterstellar-ai/types';
+  EnterstellarAgentConnection,
+  UserSignal,
+  UserSignalType,
+  AgentEventType,
+  SyncConfig,
+} from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Public API — Configuration Types
@@ -72,9 +72,9 @@ export type {
 // ---------------------------------------------------------------------------
 
 export type {
-    ConnectionInput,
-    TransportType,
-    BackpressureConfig,
-    ReconnectConfig,
-    DropStrategy,
+  ConnectionInput,
+  TransportType,
+  BackpressureConfig,
+  ReconnectConfig,
+  DropStrategy,
 } from './types.js';

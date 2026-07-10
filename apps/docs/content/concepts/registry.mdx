@@ -9,7 +9,7 @@ icon: Library
 `createRegistry()` takes an array of `ComponentContract` objects and returns an `EnterstellarRegistry` instance.
 
 ```ts
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createRegistry } from '@enterstellar/registry';
 import { StatusCard } from './components/status-card/StatusCard.contract';
 import { DataTable } from './components/data-table/DataTable.contract';
 import { MetricChart } from './components/metric-chart/MetricChart.contract';
@@ -70,7 +70,7 @@ Names are the LLM's only reference to components. Duplicates are unresolvable â€
 For multi-domain applications, merge independent registries:
 
 ```ts
-import { mergeRegistries } from '@enterstellar-ai/registry';
+import { mergeRegistries } from '@enterstellar/registry';
 import { dashboardRegistry } from './registries/dashboard';
 import { reportingRegistry } from './registries/reporting';
 

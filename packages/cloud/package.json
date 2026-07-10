@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/cloud",
+  "name": "@enterstellar/cloud",
   "description": "Enterstellar Cloud SDK — IPU metering, trace aggregation, and CloudForge relay.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -57,9 +57,9 @@
     "eventsource-parser": "^3.0.6"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*"
+    "@enterstellar/types": "workspace:*"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*"
+    "@enterstellar/types": "workspace:*"
   }
 }

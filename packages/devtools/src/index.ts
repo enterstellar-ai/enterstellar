@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/devtools
- * @description Public API barrel for the `@enterstellar-ai/devtools` package.
+ * @module @enterstellar/devtools
+ * @description Public API barrel for the `@enterstellar/devtools` package.
  *
  * Exports the primary `<EnterstellarDevTools />` component and supporting types
  * for consumer configuration. This is the only file consumers should
@@ -8,8 +8,8 @@
  *
  * Usage:
  * ```tsx
- * import { EnterstellarDevTools } from '@enterstellar-ai/devtools';
- * import type { DevToolsConfig, DevToolsCacheAdapter } from '@enterstellar-ai/devtools';
+ * import { EnterstellarDevTools } from '@enterstellar/devtools';
+ * import type { DevToolsConfig, DevToolsCacheAdapter } from '@enterstellar/devtools';
  * ```
  *
  * @see Bible §4.4 — DevTools module specification
@@ -26,12 +26,7 @@ export { EnterstellarDevTools } from './devtools.js';
 // Type Exports
 // ---------------------------------------------------------------------------
 
-export type {
-    DevToolsConfig,
-    DevToolsTab,
-    DevToolsCacheAdapter,
-    LatencyStats,
-} from './types.js';
+export type { DevToolsConfig, DevToolsTab, DevToolsCacheAdapter, LatencyStats } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Utility Exports

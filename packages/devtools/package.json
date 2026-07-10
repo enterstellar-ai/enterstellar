@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/devtools",
+  "name": "@enterstellar/devtools",
   "description": "Embedded DevTools panel — trace inspector, component inspector, cache dashboard, replay.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,14 +54,14 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/react": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/react": "workspace:*",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/react": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/react": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "react": "^19.2.4",

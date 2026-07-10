@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/enrichment
+ * @module @enterstellar/migration/enrichment
  * @description Phase 2 — LLM enrichment provider layer.
  *
  * Re-exports the provider interface, error types, the provider
@@ -11,7 +11,7 @@
  * **Audit M7:** `buildEnrichmentPrompt` is intentionally NOT exported
  * from this barrel. It is an internal implementation detail of
  * `BYOKeyEnrichmentProvider`. Test files that need direct access can
- * use the deep import path `@enterstellar-ai/migration/src/enrichment/build-prompt`.
+ * use the deep import path `@enterstellar/migration/src/enrichment/build-prompt`.
  *
  * @see Correction 3 — Minimal EnrichmentProvider Interface (migration-02-enrichment.md)
  * @see Audit M7 — buildEnrichmentPrompt is internal-only
@@ -26,8 +26,4 @@ export { resolveProvider } from './resolve-provider.js';
 export type { EnrichmentConfig } from './resolve-provider.js';
 
 // --- Enrichment orchestrator ---
-export {
-    enrichManifest,
-    mergeOverlay,
-    ENRICHABLE_FIELD_KEYS,
-} from './enrich-manifest.js';
+export { enrichManifest, mergeOverlay, ENRICHABLE_FIELD_KEYS } from './enrich-manifest.js';

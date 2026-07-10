@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge/naming
+ * @module @enterstellar/forge/naming
  * @description Deterministic naming for forged ComponentContracts.
  *
  * Forged contracts follow the naming convention:
@@ -51,7 +51,7 @@ const XXHASH_PRIME5 = 0x165667b1;
  * @returns The rotated value as a 32-bit integer.
  */
 function rotl32(value: number, bits: number): number {
-    return ((value << bits) | (value >>> (32 - bits))) >>> 0;
+  return ((value << bits) | (value >>> (32 - bits))) >>> 0;
 }
 
 /**
@@ -62,9 +62,9 @@ function rotl32(value: number, bits: number): number {
  * @returns The lower 32 bits of `a * b`.
  */
 function mul32(a: number, b: number): number {
-    const al = a & 0xffff;
-    const ah = (a >>> 16) & 0xffff;
-    return (((ah * b + al * ((b >>> 16) & 0xffff)) << 16) + (al * (b & 0xffff))) >>> 0;
+  const al = a & 0xffff;
+  const ah = (a >>> 16) & 0xffff;
+  return (((ah * b + al * ((b >>> 16) & 0xffff)) << 16) + al * (b & 0xffff)) >>> 0;
 }
 
 /**
@@ -86,63 +86,78 @@ function mul32(a: number, b: number): number {
  * @see Design Choice F13 — xxHash, 8 hex chars.
  */
 export function xxHash8(input: string, seed: number = 0): string {
-    // Convert string to UTF-8 byte array
-    const encoder = new TextEncoder();
-    const data = encoder.encode(input);
-    const len = data.length;
+  // Convert string to UTF-8 byte array
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const len = data.length;
 
-    let h32: number;
+  let h32: number;
 
-    if (len >= 16) {
-        let v1 = (seed + XXHASH_PRIME1 + XXHASH_PRIME2) >>> 0;
-        let v2 = (seed + XXHASH_PRIME2) >>> 0;
-        let v3 = seed >>> 0;
-        let v4 = (seed - XXHASH_PRIME1) >>> 0;
+  if (len >= 16) {
+    let v1 = (seed + XXHASH_PRIME1 + XXHASH_PRIME2) >>> 0;
+    let v2 = (seed + XXHASH_PRIME2) >>> 0;
+    let v3 = seed >>> 0;
+    let v4 = (seed - XXHASH_PRIME1) >>> 0;
 
-        let offset = 0;
-        const limit = len - 16;
+    let offset = 0;
+    const limit = len - 16;
 
-        // Process 16-byte blocks
-        while (offset <= limit) {
-            v1 = mul32(rotl32((v1 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13), XXHASH_PRIME1);
-            offset += 4;
-            v2 = mul32(rotl32((v2 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13), XXHASH_PRIME1);
-            offset += 4;
-            v3 = mul32(rotl32((v3 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13), XXHASH_PRIME1);
-            offset += 4;
-            v4 = mul32(rotl32((v4 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13), XXHASH_PRIME1);
-            offset += 4;
-        }
-
-        h32 = (rotl32(v1, 1) + rotl32(v2, 7) + rotl32(v3, 12) + rotl32(v4, 18)) >>> 0;
-    } else {
-        h32 = (seed + XXHASH_PRIME5) >>> 0;
+    // Process 16-byte blocks
+    while (offset <= limit) {
+      v1 = mul32(
+        rotl32((v1 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13),
+        XXHASH_PRIME1,
+      );
+      offset += 4;
+      v2 = mul32(
+        rotl32((v2 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13),
+        XXHASH_PRIME1,
+      );
+      offset += 4;
+      v3 = mul32(
+        rotl32((v3 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13),
+        XXHASH_PRIME1,
+      );
+      offset += 4;
+      v4 = mul32(
+        rotl32((v4 + mul32(readU32(data, offset), XXHASH_PRIME2)) >>> 0, 13),
+        XXHASH_PRIME1,
+      );
+      offset += 4;
     }
 
-    h32 = (h32 + len) >>> 0;
+    h32 = (rotl32(v1, 1) + rotl32(v2, 7) + rotl32(v3, 12) + rotl32(v4, 18)) >>> 0;
+  } else {
+    h32 = (seed + XXHASH_PRIME5) >>> 0;
+  }
 
-    // Process remaining 4-byte blocks
-    let offset = len >= 16 ? len - (len % 16) : 0;
-    while (offset + 4 <= len) {
-        h32 = mul32(rotl32((h32 + mul32(readU32(data, offset), XXHASH_PRIME3)) >>> 0, 17), XXHASH_PRIME4);
-        offset += 4;
+  h32 = (h32 + len) >>> 0;
+
+  // Process remaining 4-byte blocks
+  let offset = len >= 16 ? len - (len % 16) : 0;
+  while (offset + 4 <= len) {
+    h32 = mul32(
+      rotl32((h32 + mul32(readU32(data, offset), XXHASH_PRIME3)) >>> 0, 17),
+      XXHASH_PRIME4,
+    );
+    offset += 4;
+  }
+
+  // Process remaining bytes
+  while (offset < len) {
+    const byte = data[offset];
+    if (byte !== undefined) {
+      h32 = mul32(rotl32((h32 + mul32(byte, XXHASH_PRIME5)) >>> 0, 11), XXHASH_PRIME1);
     }
+    offset += 1;
+  }
 
-    // Process remaining bytes
-    while (offset < len) {
-        const byte = data[offset];
-        if (byte !== undefined) {
-            h32 = mul32(rotl32((h32 + mul32(byte, XXHASH_PRIME5)) >>> 0, 11), XXHASH_PRIME1);
-        }
-        offset += 1;
-    }
+  // Final avalanche
+  h32 = mul32(h32 ^ (h32 >>> 15), XXHASH_PRIME2);
+  h32 = mul32(h32 ^ (h32 >>> 13), XXHASH_PRIME3);
+  h32 = (h32 ^ (h32 >>> 16)) >>> 0;
 
-    // Final avalanche
-    h32 = mul32((h32 ^ (h32 >>> 15)), XXHASH_PRIME2);
-    h32 = mul32((h32 ^ (h32 >>> 13)), XXHASH_PRIME3);
-    h32 = (h32 ^ (h32 >>> 16)) >>> 0;
-
-    return h32.toString(16).padStart(8, '0');
+  return h32.toString(16).padStart(8, '0');
 }
 
 /**
@@ -153,11 +168,11 @@ export function xxHash8(input: string, seed: number = 0): string {
  * @returns The 32-bit unsigned integer.
  */
 function readU32(data: Uint8Array, offset: number): number {
-    const b0 = data[offset] ?? 0;
-    const b1 = data[offset + 1] ?? 0;
-    const b2 = data[offset + 2] ?? 0;
-    const b3 = data[offset + 3] ?? 0;
-    return (b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)) >>> 0;
+  const b0 = data[offset] ?? 0;
+  const b1 = data[offset + 1] ?? 0;
+  const b2 = data[offset + 2] ?? 0;
+  const b3 = data[offset + 3] ?? 0;
+  return (b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)) >>> 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -191,15 +206,15 @@ function readU32(data: Uint8Array, offset: number): number {
  * @see Design Choice F13 — slug from intent, truncated to 30 chars.
  */
 export function slugifyIntent(intent: string): string {
-    const slug = intent
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/-{2,}/g, '-')
-        .replace(/^-|-$/g, '')
-        .slice(0, MAX_SLUG_LENGTH)
-        .replace(/-$/g, '');
+  const slug = intent
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, MAX_SLUG_LENGTH)
+    .replace(/-$/g, '');
 
-    return slug.length > 0 ? slug : 'unknown';
+  return slug.length > 0 ? slug : 'unknown';
 }
 
 // ---------------------------------------------------------------------------
@@ -227,7 +242,7 @@ export function slugifyIntent(intent: string): string {
  * @see Design Choice F14 — prefix dropped on promotion to registry.
  */
 export function generateForgedName(intent: string): string {
-    const slug = slugifyIntent(intent);
-    const hash = xxHash8(intent);
-    return `${FORGED_PREFIX}${slug}_${hash}`;
+  const slug = slugifyIntent(intent);
+  const hash = xxHash8(intent);
+  return `${FORGED_PREFIX}${slug}_${hash}`;
 }

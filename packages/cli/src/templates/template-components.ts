@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-components
+ * @module @enterstellar/cli/templates/template-components
  * @description Generates 5 example component files for the scaffolded Enterstellar project.
  *
  * Each component file contains:
@@ -27,8 +27,8 @@
 
 /** A map of filename → file content for all generated component files. */
 export interface ComponentFileMap {
-    readonly filename: string;
-    readonly content: string;
+  readonly filename: string;
+  readonly content: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,13 +53,13 @@ export interface ComponentFileMap {
  * ```
  */
 export function generateComponents(): readonly ComponentFileMap[] {
-    return [
-        { filename: 'ExampleCard.tsx', content: generateExampleCard() },
-        { filename: 'ExampleList.tsx', content: generateExampleList() },
-        { filename: 'ExampleChart.tsx', content: generateExampleChart() },
-        { filename: 'ExampleForm.tsx', content: generateExampleForm() },
-        { filename: 'ExampleDetail.tsx', content: generateExampleDetail() },
-    ];
+  return [
+    { filename: 'ExampleCard.tsx', content: generateExampleCard() },
+    { filename: 'ExampleList.tsx', content: generateExampleList() },
+    { filename: 'ExampleChart.tsx', content: generateExampleChart() },
+    { filename: 'ExampleForm.tsx', content: generateExampleForm() },
+    { filename: 'ExampleDetail.tsx', content: generateExampleDetail() },
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ export function generateComponents(): readonly ComponentFileMap[] {
 // ---------------------------------------------------------------------------
 
 function generateExampleCard(): string {
-    return `/**
+  return `/**
  * ExampleCard — A summary card component.
  *
  * Displays a title, body text, and optional status badge.
@@ -76,7 +76,7 @@ function generateExampleCard(): string {
 
 import React from 'react';
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 /** Props schema for ExampleCard. */
 const ExampleCardProps = z.object({
@@ -148,7 +148,7 @@ export const ExampleCardContract = defineComponent({
 // ---------------------------------------------------------------------------
 
 function generateExampleList(): string {
-    return `/**
+  return `/**
  * ExampleList — A filterable list component.
  *
  * Displays an array of items with optional search filtering.
@@ -157,7 +157,7 @@ function generateExampleList(): string {
 
 import React from 'react';
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 /** Props schema for ExampleList. */
 const ExampleListProps = z.object({
@@ -241,7 +241,7 @@ export const ExampleListContract = defineComponent({
 // ---------------------------------------------------------------------------
 
 function generateExampleChart(): string {
-    return `/**
+  return `/**
  * ExampleChart — A simple bar chart component.
  *
  * Renders horizontal bars with labels and percentage values.
@@ -250,7 +250,7 @@ function generateExampleChart(): string {
 
 import React from 'react';
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 /** Props schema for ExampleChart. */
 const ExampleChartProps = z.object({
@@ -349,7 +349,7 @@ export const ExampleChartContract = defineComponent({
 // ---------------------------------------------------------------------------
 
 function generateExampleForm(): string {
-    return `/**
+  return `/**
  * ExampleForm — A simple input form component.
  *
  * Demonstrates a data-input component with text and select fields.
@@ -358,7 +358,7 @@ function generateExampleForm(): string {
 
 import React from 'react';
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 /** Props schema for ExampleForm. */
 const ExampleFormProps = z.object({
@@ -485,7 +485,7 @@ export const ExampleFormContract = defineComponent({
 // ---------------------------------------------------------------------------
 
 function generateExampleDetail(): string {
-    return `/**
+  return `/**
  * ExampleDetail — A key-value detail view component.
  *
  * Displays structured information as labeled rows.
@@ -494,7 +494,7 @@ function generateExampleDetail(): string {
 
 import React from 'react';
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 /** Props schema for ExampleDetail. */
 const ExampleDetailProps = z.object({

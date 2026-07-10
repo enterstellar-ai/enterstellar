@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapter-firebase/create-firebase-auth-adapter
+ * @module @enterstellar/adapter-firebase/create-firebase-auth-adapter
  * @description Factory function for creating a Firebase-backed `AuthAdapter`.
  *
  * This factory maps Firebase Auth SDK calls to the Enterstellar `AuthAdapter` interface:
@@ -8,7 +8,7 @@
  * - `onAuthChange(cb)` → `onAuthStateChanged(auth, cb)` → returns `unsubscribe`
  *
  * It builds an `AuthAdapterConfig` and delegates to `createAuthAdapter()` from
- * `@enterstellar-ai/adapters`, which handles all validation (ENS-7001) and AD5 error
+ * `@enterstellar/adapters`, which handles all validation (ENS-7001) and AD5 error
  * wrapping (ENS-7005 / ENS-7002). This factory is purely an SDK-to-Enterstellar translator.
  *
  * ## Role Extraction Strategy
@@ -28,11 +28,11 @@
  * @see Design Choice AD5 — error wrapping delegated to createAuthAdapter()
  */
 
-import type { AuthAdapter } from '@enterstellar-ai/types';
+import type { AuthAdapter } from '@enterstellar/types';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 
-import { createAuthAdapter } from '@enterstellar-ai/adapters';
+import { createAuthAdapter } from '@enterstellar/adapters';
 
 import type { FirebaseAuthConfig } from './types.js';
 
@@ -60,13 +60,13 @@ const DEFAULT_NAME = 'firebase-auth';
  * @internal
  */
 async function extractRolesFromClaims(user: User): Promise<string[]> {
-    const tokenResult = await user.getIdTokenResult();
-    const roles = tokenResult.claims['roles'];
+  const tokenResult = await user.getIdTokenResult();
+  const roles = tokenResult.claims['roles'];
 
-    if (!Array.isArray(roles)) return [];
+  if (!Array.isArray(roles)) return [];
 
-    // Ensure all elements are strings — reject non-string values silently
-    return roles.filter((role): role is string => typeof role === 'string');
+  // Ensure all elements are strings — reject non-string values silently
+  return roles.filter((role): role is string => typeof role === 'string');
 }
 
 /**
@@ -82,11 +82,11 @@ async function extractRolesFromClaims(user: User): Promise<string[]> {
  * @internal
  */
 function toEnterstellarSessionSync(
-    user: User | null,
-    roleExtractor: (user: unknown) => string[],
+  user: User | null,
+  roleExtractor: (user: unknown) => string[],
 ): { userId: string; roles: string[] } | null {
-    if (!user) return null;
-    return { userId: user.uid, roles: roleExtractor(user) };
+  if (!user) return null;
+  return { userId: user.uid, roles: roleExtractor(user) };
 }
 
 // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ function toEnterstellarSessionSync(
  * Creates a Firebase-backed `AuthAdapter`.
  *
  * Maps Firebase Auth SDK methods to the Enterstellar `AuthAdapter` interface,
- * then delegates to `createAuthAdapter()` from `@enterstellar-ai/adapters` for
+ * then delegates to `createAuthAdapter()` from `@enterstellar/adapters` for
  * config validation and AD5 error wrapping.
  *
  * @param config - Firebase auth configuration with `Auth` instance and optional overrides.
@@ -108,7 +108,7 @@ function toEnterstellarSessionSync(
  * ```ts
  * import { initializeApp } from 'firebase/app';
  * import { getAuth } from 'firebase/auth';
- * import { createFirebaseAuthAdapter } from '@enterstellar-ai/adapter-firebase';
+ * import { createFirebaseAuthAdapter } from '@enterstellar/adapter-firebase';
  *
  * const app = initializeApp({ projectId: 'my-project', ... });
  * const firebaseAuth = getAuth(app);
@@ -133,94 +133,94 @@ function toEnterstellarSessionSync(
  * ```
  */
 export function createFirebaseAuthAdapter(config: FirebaseAuthConfig): AuthAdapter {
-    const { auth, name = DEFAULT_NAME, roleExtractor } = config;
+  const { auth, name = DEFAULT_NAME, roleExtractor } = config;
 
-    // -----------------------------------------------------------------------
-    // Determine role extraction strategy
-    // -----------------------------------------------------------------------
-    // If a custom roleExtractor is provided, use it synchronously everywhere.
-    // If not, use async getIdTokenResult() for getSession/hasRole,
-    // and fall back to [] for onAuthChange (sync context).
-    const hasCustomExtractor = typeof roleExtractor === 'function';
+  // -----------------------------------------------------------------------
+  // Determine role extraction strategy
+  // -----------------------------------------------------------------------
+  // If a custom roleExtractor is provided, use it synchronously everywhere.
+  // If not, use async getIdTokenResult() for getSession/hasRole,
+  // and fall back to [] for onAuthChange (sync context).
+  const hasCustomExtractor = typeof roleExtractor === 'function';
 
-    // -----------------------------------------------------------------------
-    // Build AuthAdapterConfig and delegate to createAuthAdapter()
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Build AuthAdapterConfig and delegate to createAuthAdapter()
+  // -----------------------------------------------------------------------
 
-    return createAuthAdapter({
-        name,
+  return createAuthAdapter({
+    name,
 
-        /**
-         * Maps to `auth.currentUser` + role extraction.
-         *
-         * If a custom `roleExtractor` is provided, uses it synchronously.
-         * Otherwise, fetches roles from `getIdTokenResult().claims['roles']`.
-         *
-         * Returns `null` if no user is signed in (`auth.currentUser === null`).
-         */
-        async getSession(): Promise<{ userId: string; roles: string[] } | null> {
-            const user = auth.currentUser;
-            if (!user) return null;
+    /**
+     * Maps to `auth.currentUser` + role extraction.
+     *
+     * If a custom `roleExtractor` is provided, uses it synchronously.
+     * Otherwise, fetches roles from `getIdTokenResult().claims['roles']`.
+     *
+     * Returns `null` if no user is signed in (`auth.currentUser === null`).
+     */
+    async getSession(): Promise<{ userId: string; roles: string[] } | null> {
+      const user = auth.currentUser;
+      if (!user) return null;
 
-            if (hasCustomExtractor) {
-                return { userId: user.uid, roles: roleExtractor(user) };
-            }
+      if (hasCustomExtractor) {
+        return { userId: user.uid, roles: roleExtractor(user) };
+      }
 
-            // Default: async role extraction from custom claims
-            const roles = await extractRolesFromClaims(user);
-            return { userId: user.uid, roles };
-        },
+      // Default: async role extraction from custom claims
+      const roles = await extractRolesFromClaims(user);
+      return { userId: user.uid, roles };
+    },
 
-        /**
-         * Maps to `getSession()` → checks `roles.includes(role)`.
-         *
-         * DRY pattern: re-uses session logic to avoid duplicating the
-         * user fetch and role extraction. Returns `false` if no user
-         * is signed in.
-         *
-         * @param role - The role to check (e.g., `'clinician'`, `'admin'`).
-         */
-        async hasRole(role: string): Promise<boolean> {
-            const user = auth.currentUser;
-            if (!user) return false;
+    /**
+     * Maps to `getSession()` → checks `roles.includes(role)`.
+     *
+     * DRY pattern: re-uses session logic to avoid duplicating the
+     * user fetch and role extraction. Returns `false` if no user
+     * is signed in.
+     *
+     * @param role - The role to check (e.g., `'clinician'`, `'admin'`).
+     */
+    async hasRole(role: string): Promise<boolean> {
+      const user = auth.currentUser;
+      if (!user) return false;
 
-            if (hasCustomExtractor) {
-                return roleExtractor(user).includes(role);
-            }
+      if (hasCustomExtractor) {
+        return roleExtractor(user).includes(role);
+      }
 
-            // Default: async role extraction from custom claims
-            const roles = await extractRolesFromClaims(user);
-            return roles.includes(role);
-        },
+      // Default: async role extraction from custom claims
+      const roles = await extractRolesFromClaims(user);
+      return roles.includes(role);
+    },
 
-        /**
-         * Maps to `onAuthStateChanged(auth, callback)`.
-         *
-         * Firebase's `onAuthStateChanged()` returns an `Unsubscribe` function
-         * directly — a 1:1 mapping to Enterstellar's `onAuthChange()` signature.
-         *
-         * **Role resolution in callbacks:**
-         * - With custom `roleExtractor`: roles are extracted synchronously
-         *   from the Firebase `User` object.
-         * - Without custom `roleExtractor`: roles default to `[]` in the
-         *   callback. Full role resolution happens via `getSession()`/`hasRole()`.
-         *   This is a pragmatic tradeoff — `getIdTokenResult()` is async and
-         *   cannot be awaited inside `onAuthStateChanged`.
-         *
-         * @param callback - Called with the new Enterstellar session or `null`.
-         */
-        onAuthChange(
-            callback: (session: { userId: string; roles: string[] } | null) => void,
-        ): () => void {
-            return onAuthStateChanged(auth, (user) => {
-                if (hasCustomExtractor) {
-                    callback(toEnterstellarSessionSync(user, roleExtractor));
-                } else {
-                    // No custom extractor — roles default to [] in sync context.
-                    // Full role resolution available via getSession()/hasRole().
-                    callback(user ? { userId: user.uid, roles: [] } : null);
-                }
-            });
-        },
-    });
+    /**
+     * Maps to `onAuthStateChanged(auth, callback)`.
+     *
+     * Firebase's `onAuthStateChanged()` returns an `Unsubscribe` function
+     * directly — a 1:1 mapping to Enterstellar's `onAuthChange()` signature.
+     *
+     * **Role resolution in callbacks:**
+     * - With custom `roleExtractor`: roles are extracted synchronously
+     *   from the Firebase `User` object.
+     * - Without custom `roleExtractor`: roles default to `[]` in the
+     *   callback. Full role resolution happens via `getSession()`/`hasRole()`.
+     *   This is a pragmatic tradeoff — `getIdTokenResult()` is async and
+     *   cannot be awaited inside `onAuthStateChanged`.
+     *
+     * @param callback - Called with the new Enterstellar session or `null`.
+     */
+    onAuthChange(
+      callback: (session: { userId: string; roles: string[] } | null) => void,
+    ): () => void {
+      return onAuthStateChanged(auth, (user) => {
+        if (hasCustomExtractor) {
+          callback(toEnterstellarSessionSync(user, roleExtractor));
+        } else {
+          // No custom extractor — roles default to [] in sync context.
+          // Full role resolution available via getSession()/hasRole().
+          callback(user ? { userId: user.uid, roles: [] } : null);
+        }
+      });
+    },
+  });
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler
+ * @module @enterstellar/compiler
  * @description Enterstellar UI Compiler — schema validation, design token enforcement,
  * accessibility auditing, and self-correction.
  *
@@ -10,8 +10,8 @@
  * ## Quick Start
  *
  * ```ts
- * import { createCompiler } from '@enterstellar-ai/compiler';
- * import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+ * import { createCompiler } from '@enterstellar/compiler';
+ * import { createRegistry, defineComponent } from '@enterstellar/registry';
  *
  * const registry = createRegistry({ components: [...] });
  * const compiler = createCompiler({ registry });
@@ -41,52 +41,49 @@ export type { CompilerConfigInput } from './create-compiler.js';
 // Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    EnterstellarCompiler,
-    CompilerConfig,
-    CompilationStep,
-    CompilationContext,
-    CompilationWarning,
-    CompileOptions,
-    CorrectionContext,
-    CorrectionCallback,
-    CorrectionResult,
-    LintResult,
-    ValidationFailureStrategy,
-    ValidationFailureConfig,
-    TelemetryRecordInput,
-    TelemetryRecorder,
-    // Self-correction types (SC-01, SC-04, SC-08, SC-11)
-    CorrectionStrategy,
-    CorrectionTraceEntry,
-    DeterministicCorrectionResult,
-    SelfCorrectionConfig,
+  EnterstellarCompiler,
+  CompilerConfig,
+  CompilationStep,
+  CompilationContext,
+  CompilationWarning,
+  CompileOptions,
+  CorrectionContext,
+  CorrectionCallback,
+  CorrectionResult,
+  LintResult,
+  ValidationFailureStrategy,
+  ValidationFailureConfig,
+  TelemetryRecordInput,
+  TelemetryRecorder,
+  // Self-correction types (SC-01, SC-04, SC-08, SC-11)
+  CorrectionStrategy,
+  CorrectionTraceEntry,
+  DeterministicCorrectionResult,
+  SelfCorrectionConfig,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Pipeline Types (for custom step authors)
 // ---------------------------------------------------------------------------
-export type {
-    PipelineStepName,
-    NamedStep,
-} from './pipeline/types.js';
+export type { PipelineStepName, NamedStep } from './pipeline/types.js';
 
 // ---------------------------------------------------------------------------
 // Error Factories (for custom step authors and testing)
 // ---------------------------------------------------------------------------
 export {
-    schemaParseError,
-    invalidTokenError,
-    missingAccessibilityError,
-    unknownComponentError,
-    selfCorrectionExhaustedError,
-    fallbackRenderedError,
-    tokenCoercionWarning,
-    propsStrippedWarning,
-    correctionCallbackError,
-    maxNestingDepthError,
-    // Self-correction info diagnostics (SC-17)
-    deterministicCorrectionInfo,
-    templateCorrectionInfo,
+  schemaParseError,
+  invalidTokenError,
+  missingAccessibilityError,
+  unknownComponentError,
+  selfCorrectionExhaustedError,
+  fallbackRenderedError,
+  tokenCoercionWarning,
+  propsStrippedWarning,
+  correctionCallbackError,
+  maxNestingDepthError,
+  // Self-correction info diagnostics (SC-17)
+  deterministicCorrectionInfo,
+  templateCorrectionInfo,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------

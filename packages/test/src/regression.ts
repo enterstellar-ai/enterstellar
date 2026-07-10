@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/test/regression
+ * @module @enterstellar/test/regression
  * @description Regression detection for Enterstellar GenUI test suites.
  *
  * Compares two sets of test results (baseline vs. current) and identifies
@@ -37,7 +37,7 @@ import type { RegressionEntry, TestResultRecord } from './types.js';
  *
  * @example
  * ```ts
- * import { detectRegressions } from '@enterstellar-ai/test';
+ * import { detectRegressions } from '@enterstellar/test';
  *
  * const regressions = detectRegressions(baselineResults, currentResults);
  * if (regressions.length > 0) {
@@ -49,37 +49,37 @@ import type { RegressionEntry, TestResultRecord } from './types.js';
  * ```
  */
 export function detectRegressions(
-    baseline: readonly TestResultRecord[],
-    current: readonly TestResultRecord[],
+  baseline: readonly TestResultRecord[],
+  current: readonly TestResultRecord[],
 ): readonly RegressionEntry[] {
-    // Build a lookup map from baseline: intent → resolvedComponent.
-    // If duplicate intents exist in the baseline, the last one wins.
-    const baselineMap = new Map<string, string>();
+  // Build a lookup map from baseline: intent → resolvedComponent.
+  // If duplicate intents exist in the baseline, the last one wins.
+  const baselineMap = new Map<string, string>();
 
-    for (const record of baseline) {
-        baselineMap.set(record.intent, record.resolvedComponent);
+  for (const record of baseline) {
+    baselineMap.set(record.intent, record.resolvedComponent);
+  }
+
+  // Compare each current result against the baseline.
+  const regressions: RegressionEntry[] = [];
+
+  for (const record of current) {
+    const baselineComponent = baselineMap.get(record.intent);
+
+    // Skip intents not present in the baseline (new tests, not regressions).
+    if (baselineComponent === undefined) {
+      continue;
     }
 
-    // Compare each current result against the baseline.
-    const regressions: RegressionEntry[] = [];
-
-    for (const record of current) {
-        const baselineComponent = baselineMap.get(record.intent);
-
-        // Skip intents not present in the baseline (new tests, not regressions).
-        if (baselineComponent === undefined) {
-            continue;
-        }
-
-        // Detect regression: same intent, different resolved component.
-        if (baselineComponent !== record.resolvedComponent) {
-            regressions.push({
-                intent: record.intent,
-                baselineComponent,
-                currentComponent: record.resolvedComponent,
-            });
-        }
+    // Detect regression: same intent, different resolved component.
+    if (baselineComponent !== record.resolvedComponent) {
+      regressions.push({
+        intent: record.intent,
+        baselineComponent,
+        currentComponent: record.resolvedComponent,
+      });
     }
+  }
 
-    return regressions;
+  return regressions;
 }

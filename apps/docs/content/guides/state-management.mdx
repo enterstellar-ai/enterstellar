@@ -20,7 +20,7 @@ The store is auto-created by `Provider` with `persistence: 'indexed-db'` and `ma
 ## Persistence Backends
 
 ```ts
-import { createEnterstellarStore } from '@enterstellar-ai/state';
+import { createEnterstellarStore } from '@enterstellar/state';
 
 // Production default: IndexedDB
 const store = await createEnterstellarStore({
@@ -144,8 +144,8 @@ const prefs = store.get<{ theme: string; language: string }>('preferences');
 ## Scenario: Encrypted Store with Session Restore
 
 ```ts
-import { createEnterstellarStore } from '@enterstellar-ai/state';
-import { Provider } from '@enterstellar-ai/react';
+import { createEnterstellarStore } from '@enterstellar/state';
+import { Provider } from '@enterstellar/react';
 
 // 1. Create an AES-GCM key (in production: derive from user credentials)
 const encKey = await crypto.subtle.generateKey(

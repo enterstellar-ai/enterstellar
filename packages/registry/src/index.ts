@@ -1,10 +1,10 @@
 /**
- * @module @enterstellar-ai/registry
+ * @module @enterstellar/registry
  * @description Enterstellar Component Registry — `defineComponent()`, `createRegistry()`,
  * `mergeRegistries()`, and supporting types.
  *
  * This barrel file re-exports the public API surface. Consumers import from
- * `@enterstellar-ai/registry`. Internal modules can import from specific files for
+ * `@enterstellar/registry`. Internal modules can import from specific files for
  * faster builds.
  *
  * @see Implementation Bible §4.1
@@ -34,14 +34,14 @@ export { validateContract } from './validators/contract-validator.js';
 // Types
 // ---------------------------------------------------------------------------
 export type {
-    EnterstellarRegistry,
-    RegistryConfig,
-    RegistryEvent,
-    RegistryEventHandler,
-    ValidationResult,
-    ValidationViolation,
-    PublishTarget,
-    PublishResult,
-    RemoteRegistryConfig,
-    ComponentContractInput,
+  EnterstellarRegistry,
+  RegistryConfig,
+  RegistryEvent,
+  RegistryEventHandler,
+  ValidationResult,
+  ValidationViolation,
+  PublishTarget,
+  PublishResult,
+  RemoteRegistryConfig,
+  ComponentContractInput,
 } from './types.js';

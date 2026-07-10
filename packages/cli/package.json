@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/cli",
+  "name": "@enterstellar/cli",
   "description": "Enterstellar CLI — project scaffolding (enterstellar init) and component generation.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -59,17 +59,17 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@enterstellar-ai/migration": "workspace:*",
+    "@enterstellar/migration": "workspace:*",
     "@clack/prompts": "^0.9.1",
     "fast-glob": "^3.3.3",
     "picocolors": "^1.1.1"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "@types/node": "^25.5.0"
   }
 }

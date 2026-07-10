@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/react/__tests__/hooks/use-enterstellar-store.test
+ * @module @enterstellar/react/__tests__/hooks/use-enterstellar-store.test
  * @description Unit tests for `useEnterstellarStore()`.
  *
  * Covers:
@@ -22,7 +22,7 @@ import { useEnterstellarStore } from '../../src/hooks/use-store.js';
 import { EnterstellarContext, EnterstellarAgentContext } from '../../src/provider.js';
 import { rendererRegistry } from '../../src/renderer-registry.js';
 import type { EnterstellarContextValue } from '../../src/types.js';
-import type { SerializedState } from '@enterstellar-ai/types';
+import type { SerializedState } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Mock Store with Subscription Support
@@ -33,76 +33,80 @@ import type { SerializedState } from '@enterstellar-ai/types';
  * `set` with subscriber notification — required for `useSyncExternalStore`.
  */
 function createMockStore(initialData: Record<string, unknown> = {}) {
-    let data = { ...initialData };
-    const subscribers = new Set<() => void>();
+  let data = { ...initialData };
+  const subscribers = new Set<() => void>();
 
-    /** Cached snapshot — recreated when data changes, same reference otherwise. */
-    let cachedSnapshot = {
-        schemaVersion: '1.0.0',
-        zones: {},
-        traceIds: [] as string[],
-        session: { id: 'test-session' },
-        extensions: { ...data },
+  /** Cached snapshot — recreated when data changes, same reference otherwise. */
+  let cachedSnapshot = {
+    schemaVersion: '1.0.0',
+    zones: {},
+    traceIds: [] as string[],
+    session: { id: 'test-session' },
+    extensions: { ...data },
+  };
+
+  function rebuildSnapshot() {
+    cachedSnapshot = {
+      schemaVersion: '1.0.0',
+      zones: {},
+      traceIds: [],
+      session: { id: 'test-session' },
+      extensions: { ...data },
     };
+  }
 
-    function rebuildSnapshot() {
-        cachedSnapshot = {
-            schemaVersion: '1.0.0',
-            zones: {},
-            traceIds: [],
-            session: { id: 'test-session' },
-            extensions: { ...data },
-        };
-    }
-
-    return {
-        get: vi.fn(<T = unknown>(key: string): T | undefined => data[key] as T | undefined),
-        set: vi.fn((key: string, value: unknown) => {
-            data = { ...data, [key]: value };
-            rebuildSnapshot();
-            subscribers.forEach((cb) => { cb(); });
-        }),
-        subscribe: vi.fn((cb: () => void): (() => void) => {
-            subscribers.add(cb);
-            return () => subscribers.delete(cb);
-        }),
-        extend: vi.fn(),
-        hasExtension: vi.fn(() => false),
-        snapshot: vi.fn(() => cachedSnapshot),
-        restore: vi.fn(),
-        registerMigration: vi.fn(),
-        getSnapshot: vi.fn(() => cachedSnapshot),
-        destroy: vi.fn(),
-        // Test helpers
-        _setData: (newData: Record<string, unknown>) => {
-            data = { ...newData };
-            rebuildSnapshot();
-            subscribers.forEach((cb) => { cb(); });
-        },
-        _getSubscriberCount: () => subscribers.size,
-    };
+  return {
+    get: vi.fn(<T = unknown,>(key: string): T | undefined => data[key] as T | undefined),
+    set: vi.fn((key: string, value: unknown) => {
+      data = { ...data, [key]: value };
+      rebuildSnapshot();
+      subscribers.forEach((cb) => {
+        cb();
+      });
+    }),
+    subscribe: vi.fn((cb: () => void): (() => void) => {
+      subscribers.add(cb);
+      return () => subscribers.delete(cb);
+    }),
+    extend: vi.fn(),
+    hasExtension: vi.fn(() => false),
+    snapshot: vi.fn(() => cachedSnapshot),
+    restore: vi.fn(),
+    registerMigration: vi.fn(),
+    getSnapshot: vi.fn(() => cachedSnapshot),
+    destroy: vi.fn(),
+    // Test helpers
+    _setData: (newData: Record<string, unknown>) => {
+      data = { ...newData };
+      rebuildSnapshot();
+      subscribers.forEach((cb) => {
+        cb();
+      });
+    },
+    _getSubscriberCount: () => subscribers.size,
+  };
 }
 
 function createWrapper(store: ReturnType<typeof createMockStore>) {
-    const ctx: EnterstellarContextValue = {
-        registry: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        compiler: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        store: store as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        telemetry: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        rendererRegistry,
-        cache: null,
-        adapters: {},
-    };
+  const ctx: EnterstellarContextValue = {
+    registry: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    compiler: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    store: store as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    telemetry: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    rendererRegistry,
+    cache: null,
+    adapters: {},
+  };
 
-    return function Wrapper({ children }: { children: ReactNode }) {
-        return (
-            <EnterstellarContext.Provider value={ctx}>
-                <EnterstellarAgentContext.Provider value={{ connection: null }}>
-                    {children}
-                </EnterstellarAgentContext.Provider>
-            </EnterstellarContext.Provider>
-        );
-    };
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <EnterstellarContext.Provider value={ctx}>
+        <EnterstellarAgentContext.Provider value={{ connection: null }}>
+          {children}
+        </EnterstellarAgentContext.Provider>
+      </EnterstellarContext.Provider>
+    );
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -110,141 +114,140 @@ function createWrapper(store: ReturnType<typeof createMockStore>) {
 // ---------------------------------------------------------------------------
 
 describe('useEnterstellarStore()', () => {
-    beforeEach(() => {
-        rendererRegistry.clear();
+  beforeEach(() => {
+    rendererRegistry.clear();
+  });
+
+  // -----------------------------------------------------------------------
+  // Error Handling
+  // -----------------------------------------------------------------------
+
+  it('throws when used outside Provider', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(() => {
+      renderHook(() => useEnterstellarStore());
+    }).toThrow('useEnterstellarStore() must be used within an <Provider>.');
+
+    spy.mockRestore();
+  });
+
+  // -----------------------------------------------------------------------
+  // Full State (no selector)
+  // -----------------------------------------------------------------------
+
+  describe('without selector (full state)', () => {
+    it('returns the full serialized state', () => {
+      const store = createMockStore({ counter: 0, name: 'test' });
+
+      const { result } = renderHook(() => useEnterstellarStore(), {
+        wrapper: createWrapper(store),
+      });
+
+      expect(result.current.schemaVersion).toBe('1.0.0');
+      expect(result.current.extensions).toEqual({ counter: 0, name: 'test' });
     });
 
-    // -----------------------------------------------------------------------
-    // Error Handling
-    // -----------------------------------------------------------------------
+    it('updates when store changes', () => {
+      const store = createMockStore({ counter: 0 });
 
-    it('throws when used outside Provider', () => {
-        const spy = vi.spyOn(console, 'error').mockImplementation(() => { });
+      const { result } = renderHook(() => useEnterstellarStore(), {
+        wrapper: createWrapper(store),
+      });
 
-        expect(() => {
-            renderHook(() => useEnterstellarStore());
-        }).toThrow(
-            'useEnterstellarStore() must be used within an <Provider>.',
-        );
+      expect(result.current.extensions?.['counter']).toBe(0);
 
-        spy.mockRestore();
+      act(() => {
+        store._setData({ counter: 42 });
+      });
+
+      expect(result.current.extensions?.['counter']).toBe(42);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // With Selector
+  // -----------------------------------------------------------------------
+
+  describe('with selector', () => {
+    it('returns the selected value', () => {
+      const store = createMockStore({ name: 'Alice', age: 30 });
+
+      const { result } = renderHook(
+        () =>
+          useEnterstellarStore((state: SerializedState) => state.extensions?.['name'] as string),
+        { wrapper: createWrapper(store) },
+      );
+
+      expect(result.current).toBe('Alice');
     });
 
-    // -----------------------------------------------------------------------
-    // Full State (no selector)
-    // -----------------------------------------------------------------------
+    it('re-renders when selected value changes', () => {
+      const store = createMockStore({ counter: 0 });
+      let renderCount = 0;
 
-    describe('without selector (full state)', () => {
-        it('returns the full serialized state', () => {
-            const store = createMockStore({ counter: 0, name: 'test' });
+      const { result } = renderHook(
+        () => {
+          renderCount++;
+          return useEnterstellarStore(
+            (state: SerializedState) => state.extensions?.['counter'] as number,
+          );
+        },
+        { wrapper: createWrapper(store) },
+      );
 
-            const { result } = renderHook(() => useEnterstellarStore(), {
-                wrapper: createWrapper(store),
-            });
+      const initialRenderCount = renderCount;
+      expect(result.current).toBe(0);
 
-            expect(result.current.schemaVersion).toBe('1.0.0');
-            expect(result.current.extensions).toEqual({ counter: 0, name: 'test' });
-        });
+      act(() => {
+        store._setData({ counter: 1 });
+      });
 
-        it('updates when store changes', () => {
-            const store = createMockStore({ counter: 0 });
-
-            const { result } = renderHook(() => useEnterstellarStore(), {
-                wrapper: createWrapper(store),
-            });
-
-            expect(result.current.extensions?.['counter']).toBe(0);
-
-            act(() => {
-                store._setData({ counter: 42 });
-            });
-
-            expect(result.current.extensions?.['counter']).toBe(42);
-        });
+      expect(result.current).toBe(1);
+      expect(renderCount).toBeGreaterThan(initialRenderCount);
     });
 
-    // -----------------------------------------------------------------------
-    // With Selector
-    // -----------------------------------------------------------------------
+    it('returns derived object from selector', () => {
+      const store = createMockStore({ firstName: 'Alice', lastName: 'Smith' });
 
-    describe('with selector', () => {
-        it('returns the selected value', () => {
-            const store = createMockStore({ name: 'Alice', age: 30 });
+      const { result } = renderHook(
+        () =>
+          useEnterstellarStore((state: SerializedState) => ({
+            full: `${state.extensions?.['firstName'] as string} ${state.extensions?.['lastName'] as string}`,
+          })),
+        { wrapper: createWrapper(store) },
+      );
 
-            const { result } = renderHook(
-                () => useEnterstellarStore((state: SerializedState) => state.extensions?.['name'] as string),
-                { wrapper: createWrapper(store) },
-            );
+      expect(result.current).toEqual({ full: 'Alice Smith' });
+    });
+  });
 
-            expect(result.current).toBe('Alice');
-        });
+  // -----------------------------------------------------------------------
+  // Subscription Management
+  // -----------------------------------------------------------------------
 
-        it('re-renders when selected value changes', () => {
-            const store = createMockStore({ counter: 0 });
-            let renderCount = 0;
+  describe('subscription management', () => {
+    it('subscribes to the store on mount', () => {
+      const store = createMockStore({ x: 1 });
 
-            const { result } = renderHook(
-                () => {
-                    renderCount++;
-                    return useEnterstellarStore(
-                        (state: SerializedState) => state.extensions?.['counter'] as number,
-                    );
-                },
-                { wrapper: createWrapper(store) },
-            );
+      renderHook(() => useEnterstellarStore(), {
+        wrapper: createWrapper(store),
+      });
 
-            const initialRenderCount = renderCount;
-            expect(result.current).toBe(0);
-
-            act(() => {
-                store._setData({ counter: 1 });
-            });
-
-            expect(result.current).toBe(1);
-            expect(renderCount).toBeGreaterThan(initialRenderCount);
-        });
-
-        it('returns derived object from selector', () => {
-            const store = createMockStore({ firstName: 'Alice', lastName: 'Smith' });
-
-            const { result } = renderHook(
-                () =>
-                    useEnterstellarStore((state: SerializedState) => ({
-                        full: `${state.extensions?.['firstName'] as string} ${state.extensions?.['lastName'] as string}`,
-                    })),
-                { wrapper: createWrapper(store) },
-            );
-
-            expect(result.current).toEqual({ full: 'Alice Smith' });
-        });
+      expect(store.subscribe).toHaveBeenCalled();
     });
 
-    // -----------------------------------------------------------------------
-    // Subscription Management
-    // -----------------------------------------------------------------------
+    it('unsubscribes from the store on unmount', () => {
+      const store = createMockStore({ x: 1 });
 
-    describe('subscription management', () => {
-        it('subscribes to the store on mount', () => {
-            const store = createMockStore({ x: 1 });
+      const { unmount } = renderHook(() => useEnterstellarStore(), {
+        wrapper: createWrapper(store),
+      });
 
-            renderHook(() => useEnterstellarStore(), {
-                wrapper: createWrapper(store),
-            });
+      const initialCount = store._getSubscriberCount();
+      unmount();
 
-            expect(store.subscribe).toHaveBeenCalled();
-        });
-
-        it('unsubscribes from the store on unmount', () => {
-            const store = createMockStore({ x: 1 });
-
-            const { unmount } = renderHook(() => useEnterstellarStore(), {
-                wrapper: createWrapper(store),
-            });
-
-            const initialCount = store._getSubscriberCount();
-            unmount();
-
-            expect(store._getSubscriberCount()).toBeLessThan(initialCount);
-        });
+      expect(store._getSubscriberCount()).toBeLessThan(initialCount);
     });
+  });
 });

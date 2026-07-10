@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/components/json-viewer
+ * @module @enterstellar/devtools/components/json-viewer
  * @description Collapsible JSON tree viewer for inspecting structured data.
  *
  * Recursively renders objects and arrays as expandable tree nodes.
@@ -36,7 +36,7 @@ import { jsonViewerStyles } from '../styles.js';
  * @internal
  */
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -48,7 +48,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * @internal
  */
 function isArray(value: unknown): value is readonly unknown[] {
-    return Array.isArray(value);
+  return Array.isArray(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -64,31 +64,35 @@ function isArray(value: unknown): value is readonly unknown[] {
  * @internal
  */
 function renderPrimitive(value: unknown): React.JSX.Element {
-    if (value === null) {
-        return <span style={jsonViewerStyles['null']}>null</span>;
-    }
+  if (value === null) {
+    return <span style={jsonViewerStyles['null']}>null</span>;
+  }
 
-    if (value === undefined) {
-        return <span style={jsonViewerStyles['null']}>undefined</span>;
-    }
+  if (value === undefined) {
+    return <span style={jsonViewerStyles['null']}>undefined</span>;
+  }
 
-    if (typeof value === 'string') {
-        return <span style={jsonViewerStyles['string']}>&quot;{value}&quot;</span>;
-    }
+  if (typeof value === 'string') {
+    return <span style={jsonViewerStyles['string']}>&quot;{value}&quot;</span>;
+  }
 
-    if (typeof value === 'number') {
-        return <span style={jsonViewerStyles['number']}>{String(value)}</span>;
-    }
+  if (typeof value === 'number') {
+    return <span style={jsonViewerStyles['number']}>{String(value)}</span>;
+  }
 
-    if (typeof value === 'boolean') {
-        return <span style={jsonViewerStyles['boolean']}>{String(value)}</span>;
-    }
+  if (typeof value === 'boolean') {
+    return <span style={jsonViewerStyles['boolean']}>{String(value)}</span>;
+  }
 
-    // Fallback for symbols, bigints, functions, etc.
-    // Cast to the union of types String() handles deterministically.
-    // Only symbol, bigint, and function values can reach this fallback branch.
-    const safeValue = value as string | number | boolean | symbol | bigint;
-    return <span style={jsonViewerStyles['null']}>{typeof safeValue === 'function' ? '[function]' : String(safeValue)}</span>;
+  // Fallback for symbols, bigints, functions, etc.
+  // Cast to the union of types String() handles deterministically.
+  // Only symbol, bigint, and function values can reach this fallback branch.
+  const safeValue = value as string | number | boolean | symbol | bigint;
+  return (
+    <span style={jsonViewerStyles['null']}>
+      {typeof safeValue === 'function' ? '[function]' : String(safeValue)}
+    </span>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -101,14 +105,14 @@ function renderPrimitive(value: unknown): React.JSX.Element {
  * @internal
  */
 type JsonNodeProps = {
-    /** The key name (for object properties) or index (for array items). */
-    readonly label: string;
-    /** The value to render. */
-    readonly data: unknown;
-    /** Whether this node starts expanded. */
-    readonly defaultExpanded: boolean;
-    /** Current nesting depth (for indentation). */
-    readonly depth: number;
+  /** The key name (for object properties) or index (for array items). */
+  readonly label: string;
+  /** The value to render. */
+  readonly data: unknown;
+  /** Whether this node starts expanded. */
+  readonly defaultExpanded: boolean;
+  /** Current nesting depth (for indentation). */
+  readonly depth: number;
 };
 
 /** Maximum render depth to prevent runaway recursion. */
@@ -129,82 +133,79 @@ const MAX_DEPTH = 10;
  * @internal
  */
 function JsonNode(props: JsonNodeProps): React.JSX.Element {
-    const { label, data, defaultExpanded, depth } = props;
+  const { label, data, defaultExpanded, depth } = props;
 
-    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
-    const toggle = useCallback(() => {
-        setIsExpanded((prev) => !prev);
-    }, []);
+  const toggle = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
 
-    // Depth guard: render truncation notice
-    if (depth > MAX_DEPTH) {
-        return (
-            <div style={jsonViewerStyles['indent']}>
-                <span style={jsonViewerStyles['key']}>{label}: </span>
-                <span style={jsonViewerStyles['null']}>[max depth reached]</span>
-            </div>
-        );
-    }
-
-    // Primitive value: render inline
-    if (!isPlainObject(data) && !isArray(data)) {
-        return (
-            <div>
-                <span style={jsonViewerStyles['key']}>{label}: </span>
-                {renderPrimitive(data)}
-            </div>
-        );
-    }
-
-    // Object or array: render collapsible
-    const entries = isArray(data)
-        ? data.map((item, i) => [String(i), item] as const)
-        : Object.entries(data);
-
-    const bracketOpen = isArray(data) ? '[' : '{';
-    const bracketClose = isArray(data) ? ']' : '}';
-    const itemCount = entries.length;
-
+  // Depth guard: render truncation notice
+  if (depth > MAX_DEPTH) {
     return (
-        <div>
-            <button
-                type="button"
-                onClick={toggle}
-                style={jsonViewerStyles['toggle']}
-                aria-expanded={isExpanded}
-                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
-            >
-                {isExpanded ? '▼' : '▶'}{' '}
-                <span style={jsonViewerStyles['key']}>{label}</span>{' '}
-                {bracketOpen}
-                {!isExpanded && (
-                    <span style={jsonViewerStyles['null']}>
-                        {' '}{itemCount} {itemCount === 1 ? 'item' : 'items'}{' '}
-                    </span>
-                )}
-                {!isExpanded && bracketClose}
-            </button>
-
-            {isExpanded && (
-                <div style={jsonViewerStyles['indent']}>
-                    {entries.map(([key, value]) => (
-                        <JsonNode
-                            key={key}
-                            label={key}
-                            data={value}
-                            defaultExpanded={false}
-                            depth={depth + 1}
-                        />
-                    ))}
-                </div>
-            )}
-
-            {isExpanded && (
-                <span style={jsonViewerStyles['toggle']}>{bracketClose}</span>
-            )}
-        </div>
+      <div style={jsonViewerStyles['indent']}>
+        <span style={jsonViewerStyles['key']}>{label}: </span>
+        <span style={jsonViewerStyles['null']}>[max depth reached]</span>
+      </div>
     );
+  }
+
+  // Primitive value: render inline
+  if (!isPlainObject(data) && !isArray(data)) {
+    return (
+      <div>
+        <span style={jsonViewerStyles['key']}>{label}: </span>
+        {renderPrimitive(data)}
+      </div>
+    );
+  }
+
+  // Object or array: render collapsible
+  const entries = isArray(data)
+    ? data.map((item, i) => [String(i), item] as const)
+    : Object.entries(data);
+
+  const bracketOpen = isArray(data) ? '[' : '{';
+  const bracketClose = isArray(data) ? ']' : '}';
+  const itemCount = entries.length;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={toggle}
+        style={jsonViewerStyles['toggle']}
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
+      >
+        {isExpanded ? '▼' : '▶'} <span style={jsonViewerStyles['key']}>{label}</span> {bracketOpen}
+        {!isExpanded && (
+          <span style={jsonViewerStyles['null']}>
+            {' '}
+            {itemCount} {itemCount === 1 ? 'item' : 'items'}{' '}
+          </span>
+        )}
+        {!isExpanded && bracketClose}
+      </button>
+
+      {isExpanded && (
+        <div style={jsonViewerStyles['indent']}>
+          {entries.map(([key, value]) => (
+            <JsonNode
+              key={key}
+              label={key}
+              data={value}
+              defaultExpanded={false}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+
+      {isExpanded && <span style={jsonViewerStyles['toggle']}>{bracketClose}</span>}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -232,21 +233,16 @@ function JsonNode(props: JsonNodeProps): React.JSX.Element {
  * @internal
  */
 export function JsonViewer(props: JsonViewerProps): React.JSX.Element {
-    const { data, label = 'root', defaultExpanded = false } = props;
+  const { data, label = 'root', defaultExpanded = false } = props;
 
-    return (
-        <div
-            style={jsonViewerStyles['container']}
-            role="tree"
-            aria-label={`JSON viewer: ${label}`}
-            data-enterstellar-devtools-json=""
-        >
-            <JsonNode
-                label={label}
-                data={data}
-                defaultExpanded={defaultExpanded}
-                depth={0}
-            />
-        </div>
-    );
+  return (
+    <div
+      style={jsonViewerStyles['container']}
+      role="tree"
+      aria-label={`JSON viewer: ${label}`}
+      data-enterstellar-devtools-json=""
+    >
+      <JsonNode label={label} data={data} defaultExpanded={defaultExpanded} depth={0} />
+    </div>
+  );
 }

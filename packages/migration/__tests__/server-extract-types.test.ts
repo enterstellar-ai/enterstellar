@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/__tests__/server-extract-types
+ * @module @enterstellar/migration/__tests__/server-extract-types
  * @description Tests for the Server-Side Extraction HTTP types and
  * Zod validation schema (Correction 4).
  *
@@ -16,10 +16,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import type {
-    ExtractResult,
-    ServerExtractResponse,
-} from '../src/types.js';
+import type { ExtractResult, ServerExtractResponse } from '../src/types.js';
 
 import { ServerExtractRequestSchema } from '../src/types.js';
 
@@ -28,64 +25,64 @@ import { ServerExtractRequestSchema } from '../src/types.js';
 // ---------------------------------------------------------------------------
 
 describe('ServerExtractRequestSchema', () => {
-    it('accepts a minimal valid request (source only)', () => {
-        const result = ServerExtractRequestSchema.safeParse({
-            source: 'const x = 1;',
-        });
-
-        expect(result.success).toBe(true);
-        if (result.success) {
-            expect(result.data.source).toBe('const x = 1;');
-            // filename is omitted — extractManifest() will default to 'component.tsx'
-            expect(result.data.filename).toBeUndefined();
-        }
+  it('accepts a minimal valid request (source only)', () => {
+    const result = ServerExtractRequestSchema.safeParse({
+      source: 'const x = 1;',
     });
 
-    it('accepts a request with both source and filename', () => {
-        const result = ServerExtractRequestSchema.safeParse({
-            source: 'export function Button(props: { label: string }) { return null; }',
-            filename: 'Button.tsx',
-        });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.source).toBe('const x = 1;');
+      // filename is omitted — extractManifest() will default to 'component.tsx'
+      expect(result.data.filename).toBeUndefined();
+    }
+  });
 
-        expect(result.success).toBe(true);
-        if (result.success) {
-            expect(result.data.source).toBe(
-                'export function Button(props: { label: string }) { return null; }',
-            );
-            expect(result.data.filename).toBe('Button.tsx');
-        }
+  it('accepts a request with both source and filename', () => {
+    const result = ServerExtractRequestSchema.safeParse({
+      source: 'export function Button(props: { label: string }) { return null; }',
+      filename: 'Button.tsx',
     });
 
-    it('rejects an empty source string (min(1) guard)', () => {
-        const result = ServerExtractRequestSchema.safeParse({
-            source: '',
-        });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.source).toBe(
+        'export function Button(props: { label: string }) { return null; }',
+      );
+      expect(result.data.filename).toBe('Button.tsx');
+    }
+  });
 
-        expect(result.success).toBe(false);
+  it('rejects an empty source string (min(1) guard)', () => {
+    const result = ServerExtractRequestSchema.safeParse({
+      source: '',
     });
 
-    it('rejects a missing source field', () => {
-        const result = ServerExtractRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
 
-        expect(result.success).toBe(false);
+  it('rejects a missing source field', () => {
+    const result = ServerExtractRequestSchema.safeParse({});
+
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a non-string source value', () => {
+    const result = ServerExtractRequestSchema.safeParse({
+      source: 123,
     });
 
-    it('rejects a non-string source value', () => {
-        const result = ServerExtractRequestSchema.safeParse({
-            source: 123,
-        });
+    expect(result.success).toBe(false);
+  });
 
-        expect(result.success).toBe(false);
+  it('rejects a non-string filename value', () => {
+    const result = ServerExtractRequestSchema.safeParse({
+      source: 'const x = 1;',
+      filename: 42,
     });
 
-    it('rejects a non-string filename value', () => {
-        const result = ServerExtractRequestSchema.safeParse({
-            source: 'const x = 1;',
-            filename: 42,
-        });
-
-        expect(result.success).toBe(false);
-    });
+    expect(result.success).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -93,37 +90,37 @@ describe('ServerExtractRequestSchema', () => {
 // ---------------------------------------------------------------------------
 
 describe('ServerExtractResponse', () => {
-    it('is structurally identical to ExtractResult', () => {
-        // This test verifies at compile time that ServerExtractResponse
-        // is assignable to/from ExtractResult. If the types diverge,
-        // TypeScript will produce a compilation error on these assignments.
-        //
-        // At runtime, we verify the assignment direction is correct by
-        // constructing a minimal ExtractResult and assigning it.
-        const extractResult: ExtractResult = {
-            manifest: {
-                name: 'TestComponent',
-                props: {} as ExtractResult['manifest']['props'],
-                defaultProps: {},
-                generics: [],
-                existingZodSchemas: [],
-                eventHandlers: [],
-                description: { value: 'Test', source: 'heuristic-fallback' },
-                tags: { value: [], source: 'heuristic-fallback' },
-                category: { value: 'utility', source: 'heuristic-fallback' },
-                intent: { value: 'Render TestComponent', source: 'heuristic-fallback' },
-                ariaAttributes: { value: {}, source: 'heuristic-fallback' },
-                designTokenRefs: { value: [], source: 'heuristic-fallback' },
-                lifecycleStates: { value: [], source: 'heuristic-fallback' },
-            },
-            diagnostics: [],
-        };
+  it('is structurally identical to ExtractResult', () => {
+    // This test verifies at compile time that ServerExtractResponse
+    // is assignable to/from ExtractResult. If the types diverge,
+    // TypeScript will produce a compilation error on these assignments.
+    //
+    // At runtime, we verify the assignment direction is correct by
+    // constructing a minimal ExtractResult and assigning it.
+    const extractResult: ExtractResult = {
+      manifest: {
+        name: 'TestComponent',
+        props: {} as ExtractResult['manifest']['props'],
+        defaultProps: {},
+        generics: [],
+        existingZodSchemas: [],
+        eventHandlers: [],
+        description: { value: 'Test', source: 'heuristic-fallback' },
+        tags: { value: [], source: 'heuristic-fallback' },
+        category: { value: 'utility', source: 'heuristic-fallback' },
+        intent: { value: 'Render TestComponent', source: 'heuristic-fallback' },
+        ariaAttributes: { value: {}, source: 'heuristic-fallback' },
+        designTokenRefs: { value: [], source: 'heuristic-fallback' },
+        lifecycleStates: { value: [], source: 'heuristic-fallback' },
+      },
+      diagnostics: [],
+    };
 
-        // Bidirectional assignment — both directions must compile.
-        const asResponse: ServerExtractResponse = extractResult;
-        const asExtract: ExtractResult = asResponse;
+    // Bidirectional assignment — both directions must compile.
+    const asResponse: ServerExtractResponse = extractResult;
+    const asExtract: ExtractResult = asResponse;
 
-        expect(asResponse).toBe(extractResult);
-        expect(asExtract).toBe(extractResult);
-    });
+    expect(asResponse).toBe(extractResult);
+    expect(asExtract).toBe(extractResult);
+  });
 });

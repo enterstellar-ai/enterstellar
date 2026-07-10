@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/transport/cloud-http
+ * @module @enterstellar/cloud/transport/cloud-http
  * @description Shared HTTP transport for all Enterstellar Cloud API calls.
  *
  * Provides a factory function that creates a typed HTTP client for
@@ -42,11 +42,7 @@
 import type { CloudErrorBody } from '../errors.js';
 import type { CloudRequestConfig, CloudResponse } from '../types.js';
 
-import {
-    CloudError,
-    createQuotaExceededError,
-    createRetriesExhaustedError,
-} from '../errors.js';
+import { CloudError, createQuotaExceededError, createRetriesExhaustedError } from '../errors.js';
 import { CLOUD_SDK_VERSION } from '../version.js';
 import { generateIdempotencyKey } from './idempotency.js';
 
@@ -88,20 +84,20 @@ const RETRY_BACKOFF_MS: readonly number[] = [1_000, 2_000, 4_000];
  * @see Audit Finding F21 — per-operation timeout defaults.
  */
 export const OPERATION_TIMEOUTS = Object.freeze({
-    /** Forge P99 = 10s (§8.9), 3× safety margin. */
-    forge: 30_000,
+  /** Forge P99 = 10s (§8.9), 3× safety margin. */
+  forge: 30_000,
 
-    /** CR5: max 60s runtime + network/queue overhead. */
-    certify: 90_000,
+  /** CR5: max 60s runtime + network/queue overhead. */
+  certify: 90_000,
 
-    /** OLAP queries can be slow depending on data volume. */
-    analytics: 30_000,
+  /** OLAP queries can be slow depending on data volume. */
+  analytics: 30_000,
 
-    /** Business analytics — same profile as trace analytics. */
-    businessAnalytics: 30_000,
+  /** Business analytics — same profile as trace analytics. */
+  businessAnalytics: 30_000,
 
-    /** Default for all other operations. */
-    default: 10_000,
+  /** Default for all other operations. */
+  default: 10_000,
 } as const);
 
 // ---------------------------------------------------------------------------
@@ -112,30 +108,30 @@ export const OPERATION_TIMEOUTS = Object.freeze({
  * Configuration for the cloud HTTP transport.
  *
  * Constructed by `createEnterstellarCloudClient()` from the public `CloudConfig`.
- * Not exported from the barrel — internal to `@enterstellar-ai/cloud`.
+ * Not exported from the barrel — internal to `@enterstellar/cloud`.
  *
  * @internal
  */
 export type CloudHttpConfig = {
-    /**
-     * Base URL of the Enterstellar Cloud API.
-     * Path segments (`/v1/forge`, etc.) are appended by proxy modules.
-     *
-     * @example 'https://api.enterstellar.dev'
-     */
-    readonly endpoint: string;
+  /**
+   * Base URL of the Enterstellar Cloud API.
+   * Path segments (`/v1/forge`, etc.) are appended by proxy modules.
+   *
+   * @example 'https://api.enterstellar.dev'
+   */
+  readonly endpoint: string;
 
-    /** Bearer token for `Authorization` header (CL4). */
-    readonly apiKey: string;
+  /** Bearer token for `Authorization` header (CL4). */
+  readonly apiKey: string;
 
-    /**
-     * Global HTTP request timeout in milliseconds.
-     * When set, overrides ALL per-operation timeout defaults.
-     * When `undefined`, each request uses its own `operationTimeout`.
-     *
-     * @see Audit Finding F21 — per-operation timeout defaults.
-     */
-    readonly timeoutMs?: number | undefined;
+  /**
+   * Global HTTP request timeout in milliseconds.
+   * When set, overrides ALL per-operation timeout defaults.
+   * When `undefined`, each request uses its own `operationTimeout`.
+   *
+   * @see Audit Finding F21 — per-operation timeout defaults.
+   */
+  readonly timeoutMs?: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -159,18 +155,18 @@ export type CloudHttpConfig = {
  * @internal — consumed by proxy modules, not exported publicly.
  */
 export interface CloudHttpTransport {
-    /**
-     * Execute an HTTP request against the Enterstellar Cloud API.
-     *
-     * @typeParam T - Expected JSON body type on success.
-     * @param config - Request configuration (method, path, body, ipuCost, operationTimeout).
-     * @returns Structured response with parsed headers on 2xx.
-     *
-     * @throws {CloudError} `ENS-C4290` on 429 (quota exceeded).
-     * @throws {CloudError} Parsed server error on 4xx (non-429).
-     * @throws {CloudError} `ENS-5005` after 3 failed retry attempts.
-     */
-    request<T>(config: CloudRequestConfig): Promise<CloudResponse<T>>;
+  /**
+   * Execute an HTTP request against the Enterstellar Cloud API.
+   *
+   * @typeParam T - Expected JSON body type on success.
+   * @param config - Request configuration (method, path, body, ipuCost, operationTimeout).
+   * @returns Structured response with parsed headers on 2xx.
+   *
+   * @throws {CloudError} `ENS-C4290` on 429 (quota exceeded).
+   * @throws {CloudError} Parsed server error on 4xx (non-429).
+   * @throws {CloudError} `ENS-5005` after 3 failed retry attempts.
+   */
+  request<T>(config: CloudRequestConfig): Promise<CloudResponse<T>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -188,17 +184,17 @@ export interface CloudHttpTransport {
  * @returns Parsed non-negative number, or `undefined` if absent/invalid.
  */
 function parseNumericHeader(headers: Headers, name: string): number | undefined {
-    const raw = headers.get(name);
-    if (raw === null || raw.trim().length === 0) {
-        return undefined;
-    }
-
-    const value = Number(raw);
-    if (Number.isFinite(value) && value >= 0) {
-        return value;
-    }
-
+  const raw = headers.get(name);
+  if (raw === null || raw.trim().length === 0) {
     return undefined;
+  }
+
+  const value = Number(raw);
+  if (Number.isFinite(value) && value >= 0) {
+    return value;
+  }
+
+  return undefined;
 }
 
 /**
@@ -212,12 +208,12 @@ function parseNumericHeader(headers: Headers, name: string): number | undefined 
  * @returns Parsed body as `T`, or `null` on failure.
  */
 async function safeParseJson<T>(response: Response): Promise<T | null> {
-    try {
-        const data: unknown = await response.json();
-        return data as T;
-    } catch {
-        return null;
-    }
+  try {
+    const data: unknown = await response.json();
+    return data as T;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -231,50 +227,42 @@ async function safeParseJson<T>(response: Response): Promise<T | null> {
  * @returns Parsed `CloudErrorBody`, or `null` if parsing fails.
  */
 async function parseErrorBody(response: Response): Promise<CloudErrorBody | null> {
-    try {
-        const raw: unknown = await response.json();
+  try {
+    const raw: unknown = await response.json();
 
-        // Validate the expected §9.4 shape: { error: { code, message, ... } }
-        if (
-            typeof raw === 'object' &&
-            raw !== null &&
-            'error' in raw
-        ) {
-            const envelope = raw;
-            const errorObj = envelope.error;
+    // Validate the expected §9.4 shape: { error: { code, message, ... } }
+    if (typeof raw === 'object' && raw !== null && 'error' in raw) {
+      const envelope = raw;
+      const errorObj = envelope.error;
 
-            if (
-                typeof errorObj === 'object' &&
-                errorObj !== null &&
-                'code' in errorObj &&
-                'message' in errorObj &&
-                typeof (errorObj as { code: unknown }).code === 'string' &&
-                typeof (errorObj as { message: unknown }).message === 'string'
-            ) {
-                const typed = errorObj as {
-                    code: string;
-                    message: string;
-                    retryAfterMs?: unknown;
-                    upgradeUrl?: unknown;
-                };
+      if (
+        typeof errorObj === 'object' &&
+        errorObj !== null &&
+        'code' in errorObj &&
+        'message' in errorObj &&
+        typeof (errorObj as { code: unknown }).code === 'string' &&
+        typeof (errorObj as { message: unknown }).message === 'string'
+      ) {
+        const typed = errorObj as {
+          code: string;
+          message: string;
+          retryAfterMs?: unknown;
+          upgradeUrl?: unknown;
+        };
 
-                return {
-                    code: typed.code,
-                    message: typed.message,
-                    retryAfterMs: typeof typed.retryAfterMs === 'number'
-                        ? typed.retryAfterMs
-                        : undefined,
-                    upgradeUrl: typeof typed.upgradeUrl === 'string'
-                        ? typed.upgradeUrl
-                        : undefined,
-                };
-            }
-        }
-
-        return null;
-    } catch {
-        return null;
+        return {
+          code: typed.code,
+          message: typed.message,
+          retryAfterMs: typeof typed.retryAfterMs === 'number' ? typed.retryAfterMs : undefined,
+          upgradeUrl: typeof typed.upgradeUrl === 'string' ? typed.upgradeUrl : undefined,
+        };
+      }
     }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -286,9 +274,9 @@ async function parseErrorBody(response: Response): Promise<CloudErrorBody | null
  * @returns A promise that resolves after the delay.
  */
 function sleep(ms: number): Promise<void> {
-    return new Promise<void>((resolve) => {
-        setTimeout(resolve, ms);
-    });
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 /**
@@ -301,10 +289,10 @@ function sleep(ms: number): Promise<void> {
  * @returns Effective timeout in milliseconds.
  */
 function resolveTimeout(
-    globalTimeout: number | undefined,
-    operationTimeout: number | undefined,
+  globalTimeout: number | undefined,
+  operationTimeout: number | undefined,
 ): number {
-    return globalTimeout ?? operationTimeout ?? DEFAULT_TIMEOUT_MS;
+  return globalTimeout ?? operationTimeout ?? DEFAULT_TIMEOUT_MS;
 }
 
 // ---------------------------------------------------------------------------
@@ -358,183 +346,176 @@ function resolveTimeout(
  * @internal — not part of the public API barrel.
  */
 export function createCloudHttpTransport(config: CloudHttpConfig): CloudHttpTransport {
-    const { endpoint, apiKey, timeoutMs: globalTimeoutMs } = config;
+  const { endpoint, apiKey, timeoutMs: globalTimeoutMs } = config;
 
-    return {
-        async request<T>(reqConfig: CloudRequestConfig): Promise<CloudResponse<T>> {
-            const effectiveTimeout = resolveTimeout(
-                globalTimeoutMs,
-                reqConfig.operationTimeout,
-            );
-            const url = `${endpoint}${reqConfig.path}`;
+  return {
+    async request<T>(reqConfig: CloudRequestConfig): Promise<CloudResponse<T>> {
+      const effectiveTimeout = resolveTimeout(globalTimeoutMs, reqConfig.operationTimeout);
+      const url = `${endpoint}${reqConfig.path}`;
 
-            // ---------------------------------------------------------------
-            // Step 1: Generate idempotency key (AM10, F8)
-            // Generated ONCE per request. All retry attempts reuse the same key.
-            // Only generated for IPU-consuming requests (ipuCost > 0).
-            // ---------------------------------------------------------------
-            const idempotencyKey = reqConfig.ipuCost > 0
-                ? generateIdempotencyKey()
-                : undefined;
+      // ---------------------------------------------------------------
+      // Step 1: Generate idempotency key (AM10, F8)
+      // Generated ONCE per request. All retry attempts reuse the same key.
+      // Only generated for IPU-consuming requests (ipuCost > 0).
+      // ---------------------------------------------------------------
+      const idempotencyKey = reqConfig.ipuCost > 0 ? generateIdempotencyKey() : undefined;
 
-            // ---------------------------------------------------------------
-            // Step 2: Build request headers
-            // These are the same for all retry attempts.
-            // ---------------------------------------------------------------
-            const headers: Record<string, string> = {
-                'Authorization': `Bearer ${apiKey}`,
-                'User-Agent': `enterstellar-cloud-sdk/${CLOUD_SDK_VERSION}`,
-                'Accept': 'application/json',
+      // ---------------------------------------------------------------
+      // Step 2: Build request headers
+      // These are the same for all retry attempts.
+      // ---------------------------------------------------------------
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${apiKey}`,
+        'User-Agent': `enterstellar-cloud-sdk/${CLOUD_SDK_VERSION}`,
+        Accept: 'application/json',
+      };
+
+      // Content-Type only for requests with a body (POST).
+      if (reqConfig.body !== undefined) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      // Idempotency key only when IPU > 0 (AM10/F8).
+      if (idempotencyKey !== undefined) {
+        headers['X-Idempotency-Key'] = idempotencyKey;
+      }
+
+      // ---------------------------------------------------------------
+      // Step 3: Attempt loop (max 3 attempts — SD5)
+      // ---------------------------------------------------------------
+      let lastStatusCode: number | undefined;
+      let lastRequestId: string | undefined;
+
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, effectiveTimeout);
+
+        try {
+          // -----------------------------------------------------------
+          // Execute fetch
+          // -----------------------------------------------------------
+          const response = await fetch(url, {
+            method: reqConfig.method,
+            headers,
+            ...(reqConfig.body !== undefined ? { body: JSON.stringify(reqConfig.body) } : {}),
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          // -----------------------------------------------------------
+          // Parse response headers (§9.3)
+          // -----------------------------------------------------------
+          const ipuUsed = parseNumericHeader(response.headers, 'X-IPU-Used');
+          const ipuRemaining = parseNumericHeader(response.headers, 'X-IPU-Remaining');
+          const ipuCost = parseNumericHeader(response.headers, 'X-IPU-Cost');
+          const requestId = response.headers.get('X-Request-Id') ?? undefined;
+
+          lastStatusCode = response.status;
+          lastRequestId = requestId;
+
+          // -----------------------------------------------------------
+          // 2xx — Success. Return structured response.
+          // -----------------------------------------------------------
+          if (response.ok) {
+            const data = await safeParseJson<T>(response);
+
+            return {
+              ok: true,
+              statusCode: response.status,
+              data,
+              ipuUsed,
+              ipuRemaining,
+              ipuCost,
+              requestId,
+              error: null,
+            };
+          }
+
+          // -----------------------------------------------------------
+          // 429 — Quota exceeded / rate limited (SD3).
+          // THROW immediately. Never retry 429.
+          // Parse error body for upgradeUrl and retryAfterMs.
+          // -----------------------------------------------------------
+          if (response.status === 429) {
+            const errorBody = await parseErrorBody(response);
+
+            // Use parsed body if available, otherwise build a fallback.
+            const body: CloudErrorBody = errorBody ?? {
+              code: 'ENS-C4290',
+              message: 'IPU quota exceeded',
             };
 
-            // Content-Type only for requests with a body (POST).
-            if (reqConfig.body !== undefined) {
-                headers['Content-Type'] = 'application/json';
+            throw createQuotaExceededError(body, requestId);
+          }
+
+          // -----------------------------------------------------------
+          // 5xx — Server error. Retry with backoff (SD5).
+          // Only retry — do NOT throw yet. Let the loop continue.
+          // -----------------------------------------------------------
+          if (response.status >= 500) {
+            // Consume the body to release the connection (prevents memory leak).
+            await response.text().catch(() => undefined);
+
+            // If this is NOT the last attempt, sleep before next retry.
+            if (attempt < MAX_ATTEMPTS - 1) {
+              // RETRY_BACKOFF_MS has 3 entries — index is always in bounds.
+              const backoffMs = RETRY_BACKOFF_MS[attempt] as number;
+              await sleep(backoffMs);
             }
 
-            // Idempotency key only when IPU > 0 (AM10/F8).
-            if (idempotencyKey !== undefined) {
-                headers['X-Idempotency-Key'] = idempotencyKey;
-            }
+            continue;
+          }
 
-            // ---------------------------------------------------------------
-            // Step 3: Attempt loop (max 3 attempts — SD5)
-            // ---------------------------------------------------------------
-            let lastStatusCode: number | undefined;
-            let lastRequestId: string | undefined;
+          // -----------------------------------------------------------
+          // 4xx (non-429) — Client error. THROW immediately, no retry.
+          // These indicate a permanent error (bad request, not found,
+          // unauthorized, etc.) — retrying won't help.
+          // -----------------------------------------------------------
+          const errorBody = await parseErrorBody(response);
 
-            for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => {
-                    controller.abort();
-                }, effectiveTimeout);
+          throw new CloudError(
+            'ENS-5003',
+            errorBody?.code ?? `HTTP-${String(response.status)}`,
+            `@enterstellar/cloud: Request failed — ${errorBody?.message ?? `HTTP ${String(response.status)}`}.`,
+            false,
+            { requestId },
+          );
+        } catch (error: unknown) {
+          clearTimeout(timeoutId);
 
-                try {
-                    // -----------------------------------------------------------
-                    // Execute fetch
-                    // -----------------------------------------------------------
-                    const response = await fetch(url, {
-                        method: reqConfig.method,
-                        headers,
-                        ...(reqConfig.body !== undefined
-                            ? { body: JSON.stringify(reqConfig.body) }
-                            : {}),
-                        signal: controller.signal,
-                    });
+          // -----------------------------------------------------------
+          // Re-throw CloudError (from 429 or 4xx handling above).
+          // These are intentional throws — not network errors.
+          // -----------------------------------------------------------
+          if (error instanceof CloudError) {
+            throw error;
+          }
 
-                    clearTimeout(timeoutId);
+          // -----------------------------------------------------------
+          // Network / timeout error — retry with backoff (SD5).
+          // AbortError (timeout), TypeError (DNS, TLS), etc.
+          // -----------------------------------------------------------
+          lastStatusCode = undefined;
+          lastRequestId = undefined;
 
-                    // -----------------------------------------------------------
-                    // Parse response headers (§9.3)
-                    // -----------------------------------------------------------
-                    const ipuUsed = parseNumericHeader(response.headers, 'X-IPU-Used');
-                    const ipuRemaining = parseNumericHeader(response.headers, 'X-IPU-Remaining');
-                    const ipuCost = parseNumericHeader(response.headers, 'X-IPU-Cost');
-                    const requestId = response.headers.get('X-Request-Id') ?? undefined;
+          // If this is NOT the last attempt, sleep before next retry.
+          if (attempt < MAX_ATTEMPTS - 1) {
+            // RETRY_BACKOFF_MS has 3 entries — index is always in bounds.
+            const backoffMs = RETRY_BACKOFF_MS[attempt] as number;
+            await sleep(backoffMs);
+          }
 
-                    lastStatusCode = response.status;
-                    lastRequestId = requestId;
+          // Let the loop continue to the next attempt.
+        }
+      }
 
-                    // -----------------------------------------------------------
-                    // 2xx — Success. Return structured response.
-                    // -----------------------------------------------------------
-                    if (response.ok) {
-                        const data = await safeParseJson<T>(response);
-
-                        return {
-                            ok: true,
-                            statusCode: response.status,
-                            data,
-                            ipuUsed,
-                            ipuRemaining,
-                            ipuCost,
-                            requestId,
-                            error: null,
-                        };
-                    }
-
-                    // -----------------------------------------------------------
-                    // 429 — Quota exceeded / rate limited (SD3).
-                    // THROW immediately. Never retry 429.
-                    // Parse error body for upgradeUrl and retryAfterMs.
-                    // -----------------------------------------------------------
-                    if (response.status === 429) {
-                        const errorBody = await parseErrorBody(response);
-
-                        // Use parsed body if available, otherwise build a fallback.
-                        const body: CloudErrorBody = errorBody ?? {
-                            code: 'ENS-C4290',
-                            message: 'IPU quota exceeded',
-                        };
-
-                        throw createQuotaExceededError(body, requestId);
-                    }
-
-                    // -----------------------------------------------------------
-                    // 5xx — Server error. Retry with backoff (SD5).
-                    // Only retry — do NOT throw yet. Let the loop continue.
-                    // -----------------------------------------------------------
-                    if (response.status >= 500) {
-                        // Consume the body to release the connection (prevents memory leak).
-                        await response.text().catch(() => undefined);
-
-                        // If this is NOT the last attempt, sleep before next retry.
-                        if (attempt < MAX_ATTEMPTS - 1) {
-                            // RETRY_BACKOFF_MS has 3 entries — index is always in bounds.
-                            const backoffMs = RETRY_BACKOFF_MS[attempt] as number;
-                            await sleep(backoffMs);
-                        }
-
-                        continue;
-                    }
-
-                    // -----------------------------------------------------------
-                    // 4xx (non-429) — Client error. THROW immediately, no retry.
-                    // These indicate a permanent error (bad request, not found,
-                    // unauthorized, etc.) — retrying won't help.
-                    // -----------------------------------------------------------
-                    const errorBody = await parseErrorBody(response);
-
-                    throw new CloudError(
-                        'ENS-5003',
-                        errorBody?.code ?? `HTTP-${String(response.status)}`,
-                        `@enterstellar-ai/cloud: Request failed — ${errorBody?.message ?? `HTTP ${String(response.status)}`}.`,
-                        false,
-                        { requestId },
-                    );
-                } catch (error: unknown) {
-                    clearTimeout(timeoutId);
-
-                    // -----------------------------------------------------------
-                    // Re-throw CloudError (from 429 or 4xx handling above).
-                    // These are intentional throws — not network errors.
-                    // -----------------------------------------------------------
-                    if (error instanceof CloudError) {
-                        throw error;
-                    }
-
-                    // -----------------------------------------------------------
-                    // Network / timeout error — retry with backoff (SD5).
-                    // AbortError (timeout), TypeError (DNS, TLS), etc.
-                    // -----------------------------------------------------------
-                    lastStatusCode = undefined;
-                    lastRequestId = undefined;
-
-                    // If this is NOT the last attempt, sleep before next retry.
-                    if (attempt < MAX_ATTEMPTS - 1) {
-                        // RETRY_BACKOFF_MS has 3 entries — index is always in bounds.
-                        const backoffMs = RETRY_BACKOFF_MS[attempt] as number;
-                        await sleep(backoffMs);
-                    }
-
-                    // Let the loop continue to the next attempt.
-                }
-            }
-
-            // ---------------------------------------------------------------
-            // All attempts exhausted — throw ENS-5005.
-            // ---------------------------------------------------------------
-            throw createRetriesExhaustedError(MAX_ATTEMPTS, lastStatusCode, lastRequestId);
-        },
-    };
+      // ---------------------------------------------------------------
+      // All attempts exhausted — throw ENS-5005.
+      // ---------------------------------------------------------------
+      throw createRetriesExhaustedError(MAX_ATTEMPTS, lastStatusCode, lastRequestId);
+    },
+  };
 }

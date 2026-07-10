@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/normalizer/create-normalizer
+ * @module @enterstellar/normalizer/create-normalizer
  * @description Factory function that composes protocol adapters into a single dispatch.
  *
  * `createNormalizer()` is the primary entry point for the normalizer module.
@@ -18,7 +18,7 @@
  *
  * @example
  * ```ts
- * import { createNormalizer, createAGUIAdapter, createCustomAdapter } from '@enterstellar-ai/normalizer';
+ * import { createNormalizer, createAGUIAdapter, createCustomAdapter } from '@enterstellar/normalizer';
  *
  * const normalize = createNormalizer({
  *   adapters: [
@@ -35,12 +35,12 @@
  * @see Design Choice N3 — explicit factory, no auto-detection
  */
 
-import { ComponentIntentSchema } from '@enterstellar-ai/types';
+import { ComponentIntentSchema } from '@enterstellar/types';
 import type { NormalizerConfig, NormalizerDispatch } from './types.js';
 import {
-    createUnknownProtocolError,
-    createNormalizationFailedError,
-    createInvalidIntentError,
+  createUnknownProtocolError,
+  createNormalizationFailedError,
+  createInvalidIntentError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------
@@ -84,64 +84,64 @@ import {
  * @see Design Choice N3
  */
 export function createNormalizer(config: NormalizerConfig): NormalizerDispatch {
-    const { adapters } = config;
+  const { adapters } = config;
 
-    return (event: unknown) => {
-        // -----------------------------------------------------------------
-        // Step 1: Find the first adapter that can handle this event.
-        // Adapters are checked in declaration order — first match wins.
-        // -----------------------------------------------------------------
-        for (const adapter of adapters) {
-            if (!adapter.canHandle(event)) {
-                continue;
-            }
+  return (event: unknown) => {
+    // -----------------------------------------------------------------
+    // Step 1: Find the first adapter that can handle this event.
+    // Adapters are checked in declaration order — first match wins.
+    // -----------------------------------------------------------------
+    for (const adapter of adapters) {
+      if (!adapter.canHandle(event)) {
+        continue;
+      }
 
-            // ---------------------------------------------------------------
-            // Step 2: Normalize the event via the matched adapter.
-            // Wrap in try/catch to produce ENS-6002 on adapter failures.
-            // catch(e) types e as `unknown` per useUnknownInCatchVariables.
-            // ---------------------------------------------------------------
-            let result;
-            try {
-                result = adapter.normalize(event);
-            } catch (cause: unknown) {
-                throw createNormalizationFailedError(adapter.protocol, cause);
-            }
+      // ---------------------------------------------------------------
+      // Step 2: Normalize the event via the matched adapter.
+      // Wrap in try/catch to produce ENS-6002 on adapter failures.
+      // catch(e) types e as `unknown` per useUnknownInCatchVariables.
+      // ---------------------------------------------------------------
+      let result;
+      try {
+        result = adapter.normalize(event);
+      } catch (cause: unknown) {
+        throw createNormalizationFailedError(adapter.protocol, cause);
+      }
 
-            // ---------------------------------------------------------------
-            // Step 3: Null propagation — event has no UI implication.
-            // This is a valid outcome (e.g., AG-UI lifecycle events).
-            // ---------------------------------------------------------------
-            if (result === null) {
-                return null;
-            }
+      // ---------------------------------------------------------------
+      // Step 3: Null propagation — event has no UI implication.
+      // This is a valid outcome (e.g., AG-UI lifecycle events).
+      // ---------------------------------------------------------------
+      if (result === null) {
+        return null;
+      }
 
-            // ---------------------------------------------------------------
-            // Step 4: Validate the assembled intent against ComponentIntentSchema.
-            // Uses safeParse() for controlled error formatting (not parse()).
-            // ---------------------------------------------------------------
-            const parseResult = ComponentIntentSchema.safeParse(result);
+      // ---------------------------------------------------------------
+      // Step 4: Validate the assembled intent against ComponentIntentSchema.
+      // Uses safeParse() for controlled error formatting (not parse()).
+      // ---------------------------------------------------------------
+      const parseResult = ComponentIntentSchema.safeParse(result);
 
-            if (!parseResult.success) {
-                // Format Zod errors into a human-readable string for the error message.
-                const formattedErrors = parseResult.error.issues
-                    .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-                    .join('; ');
-                throw createInvalidIntentError(formattedErrors);
-            }
+      if (!parseResult.success) {
+        // Format Zod errors into a human-readable string for the error message.
+        const formattedErrors = parseResult.error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join('; ');
+        throw createInvalidIntentError(formattedErrors);
+      }
 
-            // ---------------------------------------------------------------
-            // Step 5: Return the validated, typed ComponentIntent.
-            // We return the original result (not parseResult.data) to preserve
-            // readonly types and avoid Zod's potential type widening.
-            // The safeParse above guarantees structural correctness.
-            // ---------------------------------------------------------------
-            return result;
-        }
+      // ---------------------------------------------------------------
+      // Step 5: Return the validated, typed ComponentIntent.
+      // We return the original result (not parseResult.data) to preserve
+      // readonly types and avoid Zod's potential type widening.
+      // The safeParse above guarantees structural correctness.
+      // ---------------------------------------------------------------
+      return result;
+    }
 
-        // -----------------------------------------------------------------
-        // No adapter matched — developer misconfiguration.
-        // -----------------------------------------------------------------
-        throw createUnknownProtocolError(event);
-    };
+    // -----------------------------------------------------------------
+    // No adapter matched — developer misconfiguration.
+    // -----------------------------------------------------------------
+    throw createUnknownProtocolError(event);
+  };
 }

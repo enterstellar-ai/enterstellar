@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/enrichment/resolve-provider
+ * @module @enterstellar/migration/enrichment/resolve-provider
  * @description Factory: enrichment configuration → provider instance.
  *
  * Resolves the `EnrichmentProvider` from the enrichment configuration
@@ -27,7 +27,7 @@
  * **Package boundary note:** This function takes primitive config values
  * (not `MigrateFlags`). The CLI maps `MigrateFlags` → `EnrichmentConfig`
  * before calling this function. This avoids a dependency from
- * `@enterstellar-ai/migration` → `@enterstellar-ai/cli`.
+ * `@enterstellar/migration` → `@enterstellar/cli`.
  *
  * @see Correction 3 — Provider Resolution: CLI Flags → Provider Instance
  * @see Audit M2 — Anthropic removed (incompatible request format)
@@ -45,47 +45,47 @@ import { CloudEnrichmentProvider } from './cloud-provider.js';
 /**
  * Configuration for resolving an enrichment provider.
  *
- * Mapped from `MigrateFlags` by the CLI layer — keeps `@enterstellar-ai/migration`
+ * Mapped from `MigrateFlags` by the CLI layer — keeps `@enterstellar/migration`
  * independent of CLI-specific flag types.
  */
 export type EnrichmentConfig = {
-    /**
-     * LLM provider shortcut name.
-     *
-     * Currently supported shortcuts:
-     * - `'openai'` → `https://api.openai.com`
-     *
-     * For other providers (Groq, Together, Anthropic-via-proxy, local
-     * Ollama), pass the provider's OpenAI-compatible base URL directly
-     * via the `baseUrl` field instead.
-     *
-     * **Audit M2:** Anthropic is NOT a supported shortcut — its native
-     * API uses `/v1/messages` with an incompatible request/response shape.
-     */
-    readonly providerName?: string;
-    /** API key for BYO-key providers. */
-    readonly apiKey?: string;
-    /** Model identifier (e.g., `'gpt-4o'`, `'llama-3.1-70b-versatile'`). */
-    readonly model?: string;
-    /**
-     * Custom base URL for OpenAI-compatible endpoints.
-     *
-     * When provided, overrides the URL resolved from `providerName`.
-     * Use this for Groq (`https://api.groq.com/openai`), Together
-     * (`https://api.together.xyz`), local Ollama
-     * (`http://localhost:11434/v1`), or Anthropic-via-proxy endpoints.
-     *
-     * Must serve `POST /v1/chat/completions` with the standard
-     * OpenAI request/response shape.
-     */
-    readonly baseUrl?: string;
-    /** Session token from `enterstellar login` (for Enterstellar Cloud). */
-    readonly sessionToken?: string;
-    /**
-     * Optional callback for Cloud provider IPU tracking.
-     * Invoked with the `X-IPU-Remaining` value after successful enrichment.
-     */
-    readonly onIPU?: (remaining: number) => void;
+  /**
+   * LLM provider shortcut name.
+   *
+   * Currently supported shortcuts:
+   * - `'openai'` → `https://api.openai.com`
+   *
+   * For other providers (Groq, Together, Anthropic-via-proxy, local
+   * Ollama), pass the provider's OpenAI-compatible base URL directly
+   * via the `baseUrl` field instead.
+   *
+   * **Audit M2:** Anthropic is NOT a supported shortcut — its native
+   * API uses `/v1/messages` with an incompatible request/response shape.
+   */
+  readonly providerName?: string;
+  /** API key for BYO-key providers. */
+  readonly apiKey?: string;
+  /** Model identifier (e.g., `'gpt-4o'`, `'llama-3.1-70b-versatile'`). */
+  readonly model?: string;
+  /**
+   * Custom base URL for OpenAI-compatible endpoints.
+   *
+   * When provided, overrides the URL resolved from `providerName`.
+   * Use this for Groq (`https://api.groq.com/openai`), Together
+   * (`https://api.together.xyz`), local Ollama
+   * (`http://localhost:11434/v1`), or Anthropic-via-proxy endpoints.
+   *
+   * Must serve `POST /v1/chat/completions` with the standard
+   * OpenAI request/response shape.
+   */
+  readonly baseUrl?: string;
+  /** Session token from `enterstellar login` (for Enterstellar Cloud). */
+  readonly sessionToken?: string;
+  /**
+   * Optional callback for Cloud provider IPU tracking.
+   * Invoked with the `X-IPU-Remaining` value after successful enrichment.
+   */
+  readonly onIPU?: (remaining: number) => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -111,17 +111,17 @@ export type EnrichmentConfig = {
  * @throws {Error} If the provider name is not recognized.
  */
 function resolveBaseUrl(providerName: string): string {
-    switch (providerName) {
-        case 'openai':
-            return 'https://api.openai.com';
-        default:
-            throw new Error(
-                `Unknown enrichment provider shortcut: '${providerName}'. ` +
-                `Supported shortcuts: 'openai'. ` +
-                `For other OpenAI-compatible providers (Groq, Together, Ollama, ` +
-                `Anthropic-via-proxy), pass --base-url <url> instead.`,
-            );
-    }
+  switch (providerName) {
+    case 'openai':
+      return 'https://api.openai.com';
+    default:
+      throw new Error(
+        `Unknown enrichment provider shortcut: '${providerName}'. ` +
+          `Supported shortcuts: 'openai'. ` +
+          `For other OpenAI-compatible providers (Groq, Together, Ollama, ` +
+          `Anthropic-via-proxy), pass --base-url <url> instead.`,
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -167,40 +167,41 @@ function resolveBaseUrl(providerName: string): string {
  * @see Correction 3 — Provider Resolution
  */
 export function resolveProvider(config: EnrichmentConfig): EnrichmentProvider {
-    // Path 1: BYO-key provider (explicit provider name or custom base URL)
-    if (config.providerName !== undefined || config.baseUrl !== undefined) {
-        if (config.apiKey === undefined) {
-            const providerLabel = config.providerName ?? 'custom endpoint';
-            throw new Error(
-                `--provider ${providerLabel} requires --api-key. ` +
-                `Usage: enterstellar migrate <path> --enrich --provider ${providerLabel} --api-key <key>`,
-            );
-        }
-
-        // Custom baseUrl takes precedence over providerName shortcut.
-        // If baseUrl is absent, providerName is guaranteed defined by the
-        // enclosing `if` guard — but we avoid `!` assertion per lint rules.
-        const baseUrl = config.baseUrl
-            ?? (config.providerName !== undefined
-                ? resolveBaseUrl(config.providerName)
-                : 'https://api.openai.com');
-        return new BYOKeyEnrichmentProvider(config.apiKey, config.model, baseUrl);
+  // Path 1: BYO-key provider (explicit provider name or custom base URL)
+  if (config.providerName !== undefined || config.baseUrl !== undefined) {
+    if (config.apiKey === undefined) {
+      const providerLabel = config.providerName ?? 'custom endpoint';
+      throw new Error(
+        `--provider ${providerLabel} requires --api-key. ` +
+          `Usage: enterstellar migrate <path> --enrich --provider ${providerLabel} --api-key <key>`,
+      );
     }
 
-    // Path 2: Enterstellar Cloud provider
-    if (config.sessionToken !== undefined) {
-        return new CloudEnrichmentProvider(
-            config.sessionToken,
-            undefined, // default endpoint
-            config.onIPU,
-        );
-    }
+    // Custom baseUrl takes precedence over providerName shortcut.
+    // If baseUrl is absent, providerName is guaranteed defined by the
+    // enclosing `if` guard — but we avoid `!` assertion per lint rules.
+    const baseUrl =
+      config.baseUrl ??
+      (config.providerName !== undefined
+        ? resolveBaseUrl(config.providerName)
+        : 'https://api.openai.com');
+    return new BYOKeyEnrichmentProvider(config.apiKey, config.model, baseUrl);
+  }
 
-    // Path 3: No provider configured
-    throw new Error(
-        'No LLM provider configured for enrichment. Options:\n' +
-        "  • Run 'enterstellar login' for Enterstellar Cloud (recommended)\n" +
-        '  • Use --provider openai --api-key <key> for OpenAI\n' +
-        '  • Use --base-url <url> --api-key <key> for any OpenAI-compatible endpoint',
+  // Path 2: Enterstellar Cloud provider
+  if (config.sessionToken !== undefined) {
+    return new CloudEnrichmentProvider(
+      config.sessionToken,
+      undefined, // default endpoint
+      config.onIPU,
     );
+  }
+
+  // Path 3: No provider configured
+  throw new Error(
+    'No LLM provider configured for enrichment. Options:\n' +
+      "  • Run 'enterstellar login' for Enterstellar Cloud (recommended)\n" +
+      '  • Use --provider openai --api-key <key> for OpenAI\n' +
+      '  • Use --base-url <url> --api-key <key> for any OpenAI-compatible endpoint',
+  );
 }

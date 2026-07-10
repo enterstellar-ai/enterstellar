@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/global-index/errors
- * @description Error factory functions for `@enterstellar-ai/global-index`.
+ * @module @enterstellar/global-index/errors
+ * @description Error factory functions for `@enterstellar/global-index`.
  *
  * Every error follows the Enterstellar error taxonomy:
  * - `EnterstellarError` with machine-readable `code`, originating `module`, and `recoverable` flag.
@@ -21,7 +21,7 @@
  * @see Design Choice C14 — error code ranges.
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -50,12 +50,12 @@ const MODULE = 'global-index' as const;
  * ```
  */
 export function createConfigError(detail: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5030',
-        MODULE,
-        `Global Index configuration error: ${detail}`,
-        false, // not recoverable — dev error
-    );
+  return new EnterstellarError(
+    'ENS-5030',
+    MODULE,
+    `Global Index configuration error: ${detail}`,
+    false, // not recoverable — dev error
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -76,12 +76,12 @@ export function createConfigError(detail: string): EnterstellarError {
  * ```
  */
 export function createDisposedError(): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5031',
-        MODULE,
-        'Global Index client has been disposed. Create a new instance via createGlobalIndex().',
-        false, // not recoverable — dev error
-    );
+  return new EnterstellarError(
+    'ENS-5031',
+    MODULE,
+    'Global Index client has been disposed. Create a new instance via createGlobalIndex().',
+    false, // not recoverable — dev error
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -105,13 +105,13 @@ export function createDisposedError(): EnterstellarError {
  * ```
  */
 export function createSearchError(detail: string, cause?: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5032',
-        MODULE,
-        `Global Index search failed: ${detail}`,
-        true, // recoverable — infra/network error
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-5032',
+    MODULE,
+    `Global Index search failed: ${detail}`,
+    true, // recoverable — infra/network error
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -134,12 +134,12 @@ export function createSearchError(detail: string, cause?: unknown): Enterstellar
  * ```
  */
 export function createNotFoundError(name: string, registryUrl: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5033',
-        MODULE,
-        `Contract "${name}" not found in registry "${registryUrl}".`,
-        true, // recoverable — expected case
-    );
+  return new EnterstellarError(
+    'ENS-5033',
+    MODULE,
+    `Contract "${name}" not found in registry "${registryUrl}".`,
+    true, // recoverable — expected case
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -163,13 +163,13 @@ export function createNotFoundError(name: string, registryUrl: string): Enterste
  * ```
  */
 export function createRegistrationError(detail: string, cause?: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5034',
-        MODULE,
-        `Global Index registry operation failed: ${detail}`,
-        true, // recoverable — can retry
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-5034',
+    MODULE,
+    `Global Index registry operation failed: ${detail}`,
+    true, // recoverable — can retry
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -193,11 +193,11 @@ export function createRegistrationError(detail: string, cause?: unknown): Enters
  * ```
  */
 export function createValidationError(detail: string, cause?: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-5035',
-        MODULE,
-        `Global Index response validation failed: ${detail}`,
-        true, // recoverable — degrade gracefully
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-5035',
+    MODULE,
+    `Global Index response validation failed: ${detail}`,
+    true, // recoverable — degrade gracefully
+    cause,
+  );
 }

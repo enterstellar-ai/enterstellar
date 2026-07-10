@@ -45,8 +45,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import type { PlaygroundMode, SceneIntentResult } from '@/enterstellar/agent-connection';
 import type { PlaygroundScene } from '@/enterstellar/scenes/types';
-import type { ZoneTrace, CompilationProvenance, CompilationError } from '@enterstellar-ai/types';
-import { EnterstellarContext } from '@enterstellar-ai/react';
+import type { ZoneTrace, CompilationProvenance, CompilationError } from '@enterstellar/types';
+import { EnterstellarContext } from '@enterstellar/react';
 import { playgroundContracts } from '@/enterstellar/registry';
 import { sceneOpenCanvas } from '@/enterstellar/scenes/scene-open-canvas';
 

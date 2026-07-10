@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/hooks/use-enterstellar-adapters
+ * @module @enterstellar/react/hooks/use-enterstellar-adapters
  * @description Convenience hook for accessing Enterstellar adapters from context.
  *
  * Returns the `EnterstellarAdapters` object from the nearest `<Provider>`.
@@ -21,7 +21,7 @@
  *
  * @example
  * ```tsx
- * import { useEnterstellarAdapters } from '@enterstellar-ai/react';
+ * import { useEnterstellarAdapters } from '@enterstellar/react';
  *
  * function MyComponent() {
  *   const adapters = useEnterstellarAdapters();
@@ -66,5 +66,5 @@ import type { EnterstellarAdapters } from '../types.js';
  * @see Design Choice AD1 — adapter injection via context.
  */
 export function useEnterstellarAdapters(): EnterstellarAdapters {
-    return useEnterstellar().adapters;
+  return useEnterstellar().adapters;
 }

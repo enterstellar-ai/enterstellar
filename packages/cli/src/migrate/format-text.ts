@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/migrate/format-text
+ * @module @enterstellar/cli/migrate/format-text
  * @description Human-readable colored terminal output for migration results.
  *
  * Provides two formatters:
@@ -36,7 +36,7 @@
 
 import pc from 'picocolors';
 
-import type { MigrateBatchSummary, MigrationResult } from '@enterstellar-ai/migration';
+import type { MigrateBatchSummary, MigrationResult } from '@enterstellar/migration';
 
 // ---------------------------------------------------------------------------
 // Batch Summary Formatter
@@ -65,66 +65,59 @@ import type { MigrateBatchSummary, MigrationResult } from '@enterstellar-ai/migr
  * @see Correction 1 — Batch Summary: Terminal Output Format
  * @see Audit M1 — SKIP sub-count breakdown
  */
-export function formatBatchSummaryText(
-    summary: MigrateBatchSummary,
-    inputPath: string,
-): string {
-    const lines: string[] = [];
-    const durationSec = (summary.durationMs / 1000).toFixed(1);
+export function formatBatchSummaryText(summary: MigrateBatchSummary, inputPath: string): string {
+  const lines: string[] = [];
+  const durationSec = (summary.durationMs / 1000).toFixed(1);
 
-    // --- Header ---
+  // --- Header ---
+  lines.push(
+    `${pc.bold('enterstellar migrate')} ${inputPath} — ${pc.bold(String(summary.totalFiles))} files scanned (${durationSec}s)`,
+  );
+  lines.push('');
+
+  // --- Outcome counts (only non-zero lines) ---
+  if (summary.cleanCount > 0) {
     lines.push(
-        `${pc.bold('enterstellar migrate')} ${inputPath} — ${pc.bold(String(summary.totalFiles))} files scanned (${durationSec}s)`,
+      `  ${pc.green('✓')} ${String(summary.cleanCount)} contracts generated ${pc.dim('(clean)')}`,
     );
+  }
+
+  if (summary.warnCount > 0) {
+    lines.push(
+      `  ${pc.yellow('⚠')}  ${String(summary.warnCount)} contracts generated ${pc.dim('(warnings)')}`,
+    );
+  }
+
+  if (summary.reviewCount > 0) {
+    lines.push(
+      `  ${pc.cyan('~')} ${String(summary.reviewCount)} contracts generated ${pc.dim('(need review)')}`,
+    );
+  }
+
+  // --- SKIP section with sub-counts (Audit M1) ---
+  if (summary.skipCount > 0) {
+    lines.push(`  ${pc.dim('✗')} ${String(summary.skipCount)} files skipped:`);
+
+    // Group skip reasons from individual results.
+    const skipReasons = groupSkipReasons(summary.results);
+
+    for (const [reason, count] of skipReasons) {
+      lines.push(`      ${String(count)} ${reason}`);
+    }
+  }
+
+  // --- Output path hint ---
+  if (summary.cleanCount + summary.warnCount + summary.reviewCount > 0) {
     lines.push('');
+    lines.push(`Output: ${pc.dim(`${inputPath}/**/*.contract.ts`)}`);
+  }
 
-    // --- Outcome counts (only non-zero lines) ---
-    if (summary.cleanCount > 0) {
-        lines.push(
-            `  ${pc.green('✓')} ${String(summary.cleanCount)} contracts generated ${pc.dim('(clean)')}`,
-        );
-    }
+  // --- Review guidance ---
+  if (summary.reviewCount > 0) {
+    lines.push(`${pc.cyan('Next:')} review ${pc.bold('@enterstellar-review')} annotations.`);
+  }
 
-    if (summary.warnCount > 0) {
-        lines.push(
-            `  ${pc.yellow('⚠')}  ${String(summary.warnCount)} contracts generated ${pc.dim('(warnings)')}`,
-        );
-    }
-
-    if (summary.reviewCount > 0) {
-        lines.push(
-            `  ${pc.cyan('~')} ${String(summary.reviewCount)} contracts generated ${pc.dim('(need review)')}`,
-        );
-    }
-
-    // --- SKIP section with sub-counts (Audit M1) ---
-    if (summary.skipCount > 0) {
-        lines.push(
-            `  ${pc.dim('✗')} ${String(summary.skipCount)} files skipped:`,
-        );
-
-        // Group skip reasons from individual results.
-        const skipReasons = groupSkipReasons(summary.results);
-
-        for (const [reason, count] of skipReasons) {
-            lines.push(`      ${String(count)} ${reason}`);
-        }
-    }
-
-    // --- Output path hint ---
-    if (summary.cleanCount + summary.warnCount + summary.reviewCount > 0) {
-        lines.push('');
-        lines.push(`Output: ${pc.dim(`${inputPath}/**/*.contract.ts`)}`);
-    }
-
-    // --- Review guidance ---
-    if (summary.reviewCount > 0) {
-        lines.push(
-            `${pc.cyan('Next:')} review ${pc.bold('@enterstellar-review')} annotations.`,
-        );
-    }
-
-    return lines.join('\n');
+  return lines.join('\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -145,21 +138,21 @@ export function formatBatchSummaryText(
  * @returns A single-line string ready for `console.log()`.
  */
 export function formatResultText(result: MigrationResult): string {
-    const source = result.sourcePath;
+  const source = result.sourcePath;
 
-    switch (result.outcome) {
-        case 'clean':
-            return `  ${pc.green('✓')} ${source} → ${result.contractPath ?? 'unknown'} ${pc.dim('(clean)')}`;
+  switch (result.outcome) {
+    case 'clean':
+      return `  ${pc.green('✓')} ${source} → ${result.contractPath ?? 'unknown'} ${pc.dim('(clean)')}`;
 
-        case 'warn':
-            return `  ${pc.yellow('⚠')}  ${source} → ${result.contractPath ?? 'unknown'} ${pc.dim(`(${String(result.warnAnnotations.length)} warnings)`)}`;
+    case 'warn':
+      return `  ${pc.yellow('⚠')}  ${source} → ${result.contractPath ?? 'unknown'} ${pc.dim(`(${String(result.warnAnnotations.length)} warnings)`)}`;
 
-        case 'review':
-            return `  ${pc.cyan('~')} ${source} → ${result.contractPath ?? 'unknown'} ${pc.dim(`(${String(result.reviewAnnotations.length)} review items)`)}`;
+    case 'review':
+      return `  ${pc.cyan('~')} ${source} → ${result.contractPath ?? 'unknown'} ${pc.dim(`(${String(result.reviewAnnotations.length)} review items)`)}`;
 
-        case 'skip':
-            return `  ${pc.dim('✗')} ${source} — ${result.skipReason ?? 'skipped'}`;
-    }
+    case 'skip':
+      return `  ${pc.dim('✗')} ${source} — ${result.skipReason ?? 'skipped'}`;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -180,23 +173,23 @@ export function formatResultText(result: MigrationResult): string {
  * @returns An array of `[reason, count]` tuples sorted by count (descending).
  */
 function groupSkipReasons(
-    results: readonly MigrationResult[],
+  results: readonly MigrationResult[],
 ): ReadonlyArray<readonly [string, number]> {
-    const counts = new Map<string, number>();
+  const counts = new Map<string, number>();
 
-    for (const result of results) {
-        if (result.outcome !== 'skip') {
-            continue;
-        }
-
-        // exactOptionalPropertyTypes: skipReason is `string | undefined`
-        // when the field is absent. Use nullish coalescing.
-        const reason = result.skipReason ?? 'unknown reason';
-
-        const current = counts.get(reason) ?? 0;
-        counts.set(reason, current + 1);
+  for (const result of results) {
+    if (result.outcome !== 'skip') {
+      continue;
     }
 
-    // Sort by count descending for readability.
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    // exactOptionalPropertyTypes: skipReason is `string | undefined`
+    // when the field is absent. Use nullish coalescing.
+    const reason = result.skipReason ?? 'unknown reason';
+
+    const current = counts.get(reason) ?? 0;
+    counts.set(reason, current + 1);
+  }
+
+  // Sort by count descending for readability.
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
 }

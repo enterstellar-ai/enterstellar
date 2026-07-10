@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/create-agent-sdk
+ * @module @enterstellar/agent-sdk/create-agent-sdk
  * @description Factory function for the Enterstellar Agent SDK.
  *
  * `createAgentSDK(config)` is the primary public API entry point.
@@ -20,30 +20,30 @@
  * @see Design Choice AS4 — factory pattern.
  * @see Design Choice R1 — plain object with closures.
  * @see Design Choice R4 — `Object.freeze()`.
- * @see Bible §4.16 — `@enterstellar-ai/agent-sdk` module specification.
+ * @see Bible §4.16 — `@enterstellar/agent-sdk` module specification.
  */
 
-import type { CompilationResult, SemanticSearchResult, ForgeResult } from '@enterstellar-ai/types';
+import type { CompilationResult, SemanticSearchResult, ForgeResult } from '@enterstellar/types';
 
 import type {
-    AgentSDKConfig,
-    EnterstellarAgentSDK,
-    ZoneSpec,
-    UISpec,
-    TraceAnalysis,
-    BuildUIResult,
-    ComponentSchemaResult,
-    MCPToolDefinition,
+  AgentSDKConfig,
+  EnterstellarAgentSDK,
+  ZoneSpec,
+  UISpec,
+  TraceAnalysis,
+  BuildUIResult,
+  ComponentSchemaResult,
+  MCPToolDefinition,
 } from './types.js';
 import { sdkNotInitializedError } from './errors.js';
 import {
-    executeSearchComponents,
-    executeComposeUI,
-    executeValidateSpec,
-    executeAnalyzeTraces,
-    executeForgeComponent,
-    executeGetComponentSchema,
-    executeBuildUI,
+  executeSearchComponents,
+  executeComposeUI,
+  executeValidateSpec,
+  executeAnalyzeTraces,
+  executeForgeComponent,
+  executeGetComponentSchema,
+  executeBuildUI,
 } from './tools/index.js';
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ import {
  *
  * @example
  * ```ts
- * import { createAgentSDK } from '@enterstellar-ai/agent-sdk';
+ * import { createAgentSDK } from '@enterstellar/agent-sdk';
  *
  * const sdk = createAgentSDK({
  *   registry,
@@ -89,95 +89,83 @@ import {
  * ```
  */
 export function createAgentSDK(config: AgentSDKConfig): EnterstellarAgentSDK {
-    // -----------------------------------------------------------------------
-    // Validate required dependencies (fail-fast — ENS-8001)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Validate required dependencies (fail-fast — ENS-8001)
+  // -----------------------------------------------------------------------
 
-    validateRequiredDeps(config);
+  validateRequiredDeps(config);
 
-    // -----------------------------------------------------------------------
-    // Destructure for closure capture
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Destructure for closure capture
+  // -----------------------------------------------------------------------
 
-    const { registry, compiler, semanticIndex, forge, store } = config;
+  const { registry, compiler, semanticIndex, forge, store } = config;
 
-    // -----------------------------------------------------------------------
-    // Build tool method closures
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Build tool method closures
+  // -----------------------------------------------------------------------
 
-    const search = async (
-        query: string,
-        topK?: number,
-    ): Promise<readonly SemanticSearchResult[]> => {
-        return executeSearchComponents(semanticIndex, query, topK);
-    };
+  const search = async (query: string, topK?: number): Promise<readonly SemanticSearchResult[]> => {
+    return executeSearchComponents(semanticIndex, query, topK);
+  };
 
-    const compose = (
-        zones: readonly ZoneSpec[],
-        _layout?: string,
-    ): Promise<UISpec> => {
-        return Promise.resolve(executeComposeUI(registry, zones, _layout));
-    };
+  const compose = (zones: readonly ZoneSpec[], _layout?: string): Promise<UISpec> => {
+    return Promise.resolve(executeComposeUI(registry, zones, _layout));
+  };
 
-    const validate = async (spec: UISpec): Promise<CompilationResult> => {
-        return executeValidateSpec(compiler, spec);
-    };
+  const validate = async (spec: UISpec): Promise<CompilationResult> => {
+    return executeValidateSpec(compiler, spec);
+  };
 
-    const analyzeTraces = (
-        timeRange: string,
-        groupBy: string,
-    ): Promise<TraceAnalysis> => {
-        return Promise.resolve(executeAnalyzeTraces(store, timeRange, groupBy));
-    };
+  const analyzeTraces = (timeRange: string, groupBy: string): Promise<TraceAnalysis> => {
+    return Promise.resolve(executeAnalyzeTraces(store, timeRange, groupBy));
+  };
 
-    const forgeComponent = async (
-        intent: string,
-        constraints?: Readonly<Record<string, unknown>>,
-    ): Promise<ForgeResult> => {
-        return executeForgeComponent(forge, intent, constraints);
-    };
+  const forgeComponent = async (
+    intent: string,
+    constraints?: Readonly<Record<string, unknown>>,
+  ): Promise<ForgeResult> => {
+    return executeForgeComponent(forge, intent, constraints);
+  };
 
-    const getComponentSchema = (componentName: string): ComponentSchemaResult => {
-        return executeGetComponentSchema(registry, componentName);
-    };
+  const getComponentSchema = (componentName: string): ComponentSchemaResult => {
+    return executeGetComponentSchema(registry, componentName);
+  };
 
-    const buildUI = async (
-        query: string,
-        zones: readonly ZoneSpec[],
-    ): Promise<BuildUIResult> => {
-        return executeBuildUI(semanticIndex, registry, compiler, query, zones);
-    };
+  const buildUI = async (query: string, zones: readonly ZoneSpec[]): Promise<BuildUIResult> => {
+    return executeBuildUI(semanticIndex, registry, compiler, query, zones);
+  };
 
-    // -----------------------------------------------------------------------
-    // Build MCP tool definitions
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Build MCP tool definitions
+  // -----------------------------------------------------------------------
 
-    const tools: readonly MCPToolDefinition[] = buildToolDefinitions(
-        search,
-        compose,
-        validate,
-        analyzeTraces,
-        forgeComponent,
-        getComponentSchema,
-        buildUI,
-    );
+  const tools: readonly MCPToolDefinition[] = buildToolDefinitions(
+    search,
+    compose,
+    validate,
+    analyzeTraces,
+    forgeComponent,
+    getComponentSchema,
+    buildUI,
+  );
 
-    // -----------------------------------------------------------------------
-    // Assemble and freeze SDK (R4)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Assemble and freeze SDK (R4)
+  // -----------------------------------------------------------------------
 
-    const sdk: EnterstellarAgentSDK = {
-        search,
-        compose,
-        validate,
-        analyzeTraces,
-        forgeComponent,
-        getComponentSchema,
-        buildUI,
-        tools,
-    };
+  const sdk: EnterstellarAgentSDK = {
+    search,
+    compose,
+    validate,
+    analyzeTraces,
+    forgeComponent,
+    getComponentSchema,
+    buildUI,
+    tools,
+  };
 
-    return Object.freeze(sdk);
+  return Object.freeze(sdk);
 }
 
 // ---------------------------------------------------------------------------
@@ -195,18 +183,18 @@ export function createAgentSDK(config: AgentSDKConfig): EnterstellarAgentSDK {
  * @throws {EnterstellarError} Code `ENS-8001` for each missing required dependency.
  */
 function validateRequiredDeps(config: AgentSDKConfig): void {
-    // Cast to partial record for defensive runtime checks (JS consumers).
-    const raw = config as Partial<Record<string, unknown>>;
+  // Cast to partial record for defensive runtime checks (JS consumers).
+  const raw = config as Partial<Record<string, unknown>>;
 
-    if (!raw['registry']) {
-        throw sdkNotInitializedError('registry');
-    }
-    if (!raw['compiler']) {
-        throw sdkNotInitializedError('compiler');
-    }
-    if (!raw['semanticIndex']) {
-        throw sdkNotInitializedError('semanticIndex');
-    }
+  if (!raw['registry']) {
+    throw sdkNotInitializedError('registry');
+  }
+  if (!raw['compiler']) {
+    throw sdkNotInitializedError('compiler');
+  }
+  if (!raw['semanticIndex']) {
+    throw sdkNotInitializedError('semanticIndex');
+  }
 }
 
 /**
@@ -221,194 +209,223 @@ function validateRequiredDeps(config: AgentSDKConfig): void {
  * @returns Array of 7 MCP tool definitions (6 atomic + 1 composite).
  */
 function buildToolDefinitions(
-    search: EnterstellarAgentSDK['search'],
-    compose: EnterstellarAgentSDK['compose'],
-    validate: EnterstellarAgentSDK['validate'],
-    analyzeTraces: EnterstellarAgentSDK['analyzeTraces'],
-    forgeComponent: EnterstellarAgentSDK['forgeComponent'],
-    getComponentSchema: EnterstellarAgentSDK['getComponentSchema'],
-    buildUI: EnterstellarAgentSDK['buildUI'],
+  search: EnterstellarAgentSDK['search'],
+  compose: EnterstellarAgentSDK['compose'],
+  validate: EnterstellarAgentSDK['validate'],
+  analyzeTraces: EnterstellarAgentSDK['analyzeTraces'],
+  forgeComponent: EnterstellarAgentSDK['forgeComponent'],
+  getComponentSchema: EnterstellarAgentSDK['getComponentSchema'],
+  buildUI: EnterstellarAgentSDK['buildUI'],
 ): readonly MCPToolDefinition[] {
-    return Object.freeze([
-        // -----------------------------------------------------------------
-        // enterstellar_search_components
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_search_components',
-            description: 'Search the component registry using natural language. Returns the top-K most similar components with similarity scores.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    query: { type: 'string', description: 'Natural-language intent string.' },
-                    topK: { type: 'number', description: 'Max results (1–20, default 5).', minimum: 1, maximum: 20 },
-                },
-                required: ['query'],
-            },
-            handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const rawQuery = input['query'];
-                const query = typeof rawQuery === 'string' ? rawQuery : '';
-                const topK = typeof input['topK'] === 'number' ? input['topK'] : undefined;
-                return search(query, topK);
-            },
+  return Object.freeze([
+    // -----------------------------------------------------------------
+    // enterstellar_search_components
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_search_components',
+      description:
+        'Search the component registry using natural language. Returns the top-K most similar components with similarity scores.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Natural-language intent string.' },
+          topK: {
+            type: 'number',
+            description: 'Max results (1–20, default 5).',
+            minimum: 1,
+            maximum: 20,
+          },
         },
+        required: ['query'],
+      },
+      handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const rawQuery = input['query'];
+        const query = typeof rawQuery === 'string' ? rawQuery : '';
+        const topK = typeof input['topK'] === 'number' ? input['topK'] : undefined;
+        return search(query, topK);
+      },
+    },
 
-        // -----------------------------------------------------------------
-        // enterstellar_compose_ui
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_compose_ui',
-            description: 'Compose a UI specification from zone assignments. Each zone maps a component to a named region with props and determinism level.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    zones: {
-                        type: 'array',
-                        items: {
-                            type: 'object',
-                            properties: {
-                                name: { type: 'string' },
-                                component: { type: 'string' },
-                                props: { type: 'object' },
-                                determinism: { type: 'number', minimum: 0, maximum: 1 },
-                            },
-                            required: ['name', 'component', 'props', 'determinism'],
-                        },
-                    },
-                    layout: { type: 'string', description: 'Layout hint (e.g., grid, stack). Reserved for future use.' },
-                },
-                required: ['zones'],
+    // -----------------------------------------------------------------
+    // enterstellar_compose_ui
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_compose_ui',
+      description:
+        'Compose a UI specification from zone assignments. Each zone maps a component to a named region with props and determinism level.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          zones: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                component: { type: 'string' },
+                props: { type: 'object' },
+                determinism: { type: 'number', minimum: 0, maximum: 1 },
+              },
+              required: ['name', 'component', 'props', 'determinism'],
             },
-            handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const zones = (Array.isArray(input['zones']) ? input['zones'] : []) as readonly ZoneSpec[];
-                const layout = typeof input['layout'] === 'string' ? input['layout'] : undefined;
-                return compose(zones, layout);
-            },
+          },
+          layout: {
+            type: 'string',
+            description: 'Layout hint (e.g., grid, stack). Reserved for future use.',
+          },
         },
+        required: ['zones'],
+      },
+      handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const zones = (Array.isArray(input['zones']) ? input['zones'] : []) as readonly ZoneSpec[];
+        const layout = typeof input['layout'] === 'string' ? input['layout'] : undefined;
+        return compose(zones, layout);
+      },
+    },
 
-        // -----------------------------------------------------------------
-        // enterstellar_validate_spec
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_validate_spec',
-            description: 'Validate a UI specification through the Enterstellar compiler. Enforces schema validation, design token compliance, and accessibility requirements.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    spec: {
-                        type: 'object',
-                        properties: {
-                            zones: { type: 'array' },
-                        },
-                        required: ['zones'],
-                    },
-                },
-                required: ['spec'],
+    // -----------------------------------------------------------------
+    // enterstellar_validate_spec
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_validate_spec',
+      description:
+        'Validate a UI specification through the Enterstellar compiler. Enforces schema validation, design token compliance, and accessibility requirements.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          spec: {
+            type: 'object',
+            properties: {
+              zones: { type: 'array' },
             },
-            handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const spec = (input['spec'] ?? { zones: [] }) as UISpec;
-                return validate(spec);
-            },
+            required: ['zones'],
+          },
         },
+        required: ['spec'],
+      },
+      handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const spec = (input['spec'] ?? { zones: [] }) as UISpec;
+        return validate(spec);
+      },
+    },
 
-        // -----------------------------------------------------------------
-        // enterstellar_analyze_traces
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_analyze_traces',
-            description: 'Analyze agent traces from the current session. Groups traces by a specified dimension and returns aggregated metrics.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    timeRange: { type: 'string', description: "Time filter: 'last-hour', 'last-day', 'all', or ISO 8601 timestamp." },
-                    groupBy: { type: 'string', description: "Grouping dimension: 'component', 'zone', 'status', or 'strategy'.", enum: ['component', 'zone', 'status', 'strategy'] },
-                },
-                required: ['timeRange', 'groupBy'],
-            },
-            handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const rawTimeRange = input['timeRange'];
-                const timeRange = typeof rawTimeRange === 'string' ? rawTimeRange : 'all';
-                const rawGroupBy = input['groupBy'];
-                const groupBy = typeof rawGroupBy === 'string' ? rawGroupBy : 'component';
-                return analyzeTraces(timeRange, groupBy);
-            },
+    // -----------------------------------------------------------------
+    // enterstellar_analyze_traces
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_analyze_traces',
+      description:
+        'Analyze agent traces from the current session. Groups traces by a specified dimension and returns aggregated metrics.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          timeRange: {
+            type: 'string',
+            description: "Time filter: 'last-hour', 'last-day', 'all', or ISO 8601 timestamp.",
+          },
+          groupBy: {
+            type: 'string',
+            description: "Grouping dimension: 'component', 'zone', 'status', or 'strategy'.",
+            enum: ['component', 'zone', 'status', 'strategy'],
+          },
         },
+        required: ['timeRange', 'groupBy'],
+      },
+      handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const rawTimeRange = input['timeRange'];
+        const timeRange = typeof rawTimeRange === 'string' ? rawTimeRange : 'all';
+        const rawGroupBy = input['groupBy'];
+        const groupBy = typeof rawGroupBy === 'string' ? rawGroupBy : 'component';
+        return analyzeTraces(timeRange, groupBy);
+      },
+    },
 
-        // -----------------------------------------------------------------
-        // enterstellar_forge_component
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_forge_component',
-            description: 'Generate a runtime component when no registry match exists. Uses LocalForge (templates) or CloudForge (LLM) with compiler validation.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    intent: { type: 'string', description: 'Natural-language intent for the component to generate.' },
-                    constraints: { type: 'object', description: 'Optional constraints for generation.' },
-                },
-                required: ['intent'],
-            },
-            handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const rawIntent = input['intent'];
-                const intent = typeof rawIntent === 'string' ? rawIntent : '';
-                const constraints = typeof input['constraints'] === 'object' && input['constraints'] !== null
-                    ? input['constraints'] as Readonly<Record<string, unknown>>
-                    : undefined;
-                return forgeComponent(intent, constraints);
-            },
+    // -----------------------------------------------------------------
+    // enterstellar_forge_component
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_forge_component',
+      description:
+        'Generate a runtime component when no registry match exists. Uses LocalForge (templates) or CloudForge (LLM) with compiler validation.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          intent: {
+            type: 'string',
+            description: 'Natural-language intent for the component to generate.',
+          },
+          constraints: { type: 'object', description: 'Optional constraints for generation.' },
         },
+        required: ['intent'],
+      },
+      handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const rawIntent = input['intent'];
+        const intent = typeof rawIntent === 'string' ? rawIntent : '';
+        const constraints =
+          typeof input['constraints'] === 'object' && input['constraints'] !== null
+            ? (input['constraints'] as Readonly<Record<string, unknown>>)
+            : undefined;
+        return forgeComponent(intent, constraints);
+      },
+    },
 
-        // -----------------------------------------------------------------
-        // enterstellar_get_component_schema
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_get_component_schema',
-            description: 'Retrieve the JSON Schema for a registered component\'s props. Use to understand expected props before composing UI.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    componentName: { type: 'string', description: 'PascalCase component name.' },
-                },
-                required: ['componentName'],
-            },
-            handler: (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const rawName = input['componentName'];
-                const componentName = typeof rawName === 'string' ? rawName : '';
-                return Promise.resolve(getComponentSchema(componentName));
-            },
+    // -----------------------------------------------------------------
+    // enterstellar_get_component_schema
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_get_component_schema',
+      description:
+        "Retrieve the JSON Schema for a registered component's props. Use to understand expected props before composing UI.",
+      inputSchema: {
+        type: 'object',
+        properties: {
+          componentName: { type: 'string', description: 'PascalCase component name.' },
         },
+        required: ['componentName'],
+      },
+      handler: (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const rawName = input['componentName'];
+        const componentName = typeof rawName === 'string' ? rawName : '';
+        return Promise.resolve(getComponentSchema(componentName));
+      },
+    },
 
-        // -----------------------------------------------------------------
-        // enterstellar_build_ui (composite — AS2)
-        // -----------------------------------------------------------------
-        {
-            name: 'enterstellar_build_ui',
-            description: 'Composite tool: search → compose → validate in one call. Empty component fields in zones are auto-filled from search results.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    query: { type: 'string', description: 'Natural-language search query.' },
-                    zones: {
-                        type: 'array',
-                        items: {
-                            type: 'object',
-                            properties: {
-                                name: { type: 'string' },
-                                component: { type: 'string', description: "Leave empty ('') to auto-fill from search results." },
-                                props: { type: 'object' },
-                                determinism: { type: 'number', minimum: 0, maximum: 1 },
-                            },
-                            required: ['name', 'component', 'props', 'determinism'],
-                        },
-                    },
+    // -----------------------------------------------------------------
+    // enterstellar_build_ui (composite — AS2)
+    // -----------------------------------------------------------------
+    {
+      name: 'enterstellar_build_ui',
+      description:
+        'Composite tool: search → compose → validate in one call. Empty component fields in zones are auto-filled from search results.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Natural-language search query.' },
+          zones: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                component: {
+                  type: 'string',
+                  description: "Leave empty ('') to auto-fill from search results.",
                 },
-                required: ['query', 'zones'],
+                props: { type: 'object' },
+                determinism: { type: 'number', minimum: 0, maximum: 1 },
+              },
+              required: ['name', 'component', 'props', 'determinism'],
             },
-            handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
-                const rawQuery = input['query'];
-                const query = typeof rawQuery === 'string' ? rawQuery : '';
-                const zones = (Array.isArray(input['zones']) ? input['zones'] : []) as readonly ZoneSpec[];
-                return buildUI(query, zones);
-            },
+          },
         },
-    ]);
+        required: ['query', 'zones'],
+      },
+      handler: async (input: Readonly<Record<string, unknown>>): Promise<unknown> => {
+        const rawQuery = input['query'];
+        const query = typeof rawQuery === 'string' ? rawQuery : '';
+        const zones = (Array.isArray(input['zones']) ? input['zones'] : []) as readonly ZoneSpec[];
+        return buildUI(query, zones);
+      },
+    },
+  ]);
 }

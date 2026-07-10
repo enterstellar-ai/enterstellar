@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/pipeline/types
+ * @module @enterstellar/compiler/pipeline/types
  * @description Pipeline-specific type definitions.
  *
  * Re-exports the `CompilationStep` type and defines pipeline-internal types
@@ -26,13 +26,7 @@ import type { CompilationStep } from '../types.js';
  * Used for logging, tracing, and error attribution. Custom steps
  * registered via `compiler.use()` are identified as `'custom'`.
  */
-export type PipelineStepName =
-    | 'resolve'
-    | 'parse'
-    | 'token'
-    | 'accessibility'
-    | 'trace'
-    | 'custom';
+export type PipelineStepName = 'resolve' | 'parse' | 'token' | 'accessibility' | 'trace' | 'custom';
 
 // ---------------------------------------------------------------------------
 // Named Step
@@ -46,8 +40,8 @@ export type PipelineStepName =
  * are all labeled `'custom'`.
  */
 export type NamedStep = {
-    /** Human-readable step identifier for tracing. */
-    readonly name: PipelineStepName;
-    /** The step function itself. */
-    readonly execute: CompilationStep;
+  /** Human-readable step identifier for tracing. */
+  readonly name: PipelineStepName;
+  /** The step function itself. */
+  readonly execute: CompilationStep;
 };

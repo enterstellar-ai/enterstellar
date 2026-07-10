@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/types/brands
+ * @module @enterstellar/types/brands
  * @description Branded types for type-safe identifiers across the Enterstellar ecosystem.
  *
  * Branded types prevent accidentally passing a zone name where a component ID
@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { createComponentId, createZoneId, createTraceId } from '@enterstellar-ai/types';
+ * import { createComponentId, createZoneId, createTraceId } from '@enterstellar/types';
  *
  * const compId = createComponentId('PatientVitals');
  * const zoneId = createZoneId('main-content');
@@ -58,15 +58,15 @@ export type TraceId = string & { readonly __brand: 'TraceId' };
  * ```
  */
 export function createComponentId(name: string): ComponentId {
-    if (!name.trim()) {
-        throw new EnterstellarError(
-            'ENS-1009',
-            'types',
-            '[ENS-1009] ComponentId name must be a non-empty string.',
-            false,
-        );
-    }
-    return name as ComponentId;
+  if (!name.trim()) {
+    throw new EnterstellarError(
+      'ENS-1009',
+      'types',
+      '[ENS-1009] ComponentId name must be a non-empty string.',
+      false,
+    );
+  }
+  return name as ComponentId;
 }
 
 /**
@@ -82,15 +82,15 @@ export function createComponentId(name: string): ComponentId {
  * ```
  */
 export function createZoneId(name: string): ZoneId {
-    if (!name.trim()) {
-        throw new EnterstellarError(
-            'ENS-1009',
-            'types',
-            '[ENS-1009] ZoneId name must be a non-empty string.',
-            false,
-        );
-    }
-    return name as ZoneId;
+  if (!name.trim()) {
+    throw new EnterstellarError(
+      'ENS-1009',
+      'types',
+      '[ENS-1009] ZoneId name must be a non-empty string.',
+      false,
+    );
+  }
+  return name as ZoneId;
 }
 
 /**
@@ -105,5 +105,5 @@ export function createZoneId(name: string): ZoneId {
  * ```
  */
 export function createTraceId(): TraceId {
-    return globalThis.crypto.randomUUID() as TraceId;
+  return globalThis.crypto.randomUUID() as TraceId;
 }

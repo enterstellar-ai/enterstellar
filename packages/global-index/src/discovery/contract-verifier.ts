@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/global-index/discovery/contract-verifier
+ * @module @enterstellar/global-index/discovery/contract-verifier
  * @description Client-side contract verification for the Global Index.
  *
  * Provides a local, synchronous validation check against the canonical
- * `ComponentContractSchema` from `@enterstellar-ai/types`. Used as a **fail-fast
+ * `ComponentContractSchema` from `@enterstellar/types`. Used as a **fail-fast
  * guard** before publishing contracts to the Global Index service —
  * catches obvious schema violations (missing fields, invalid types)
  * without a network round-trip.
@@ -19,7 +19,7 @@
  * @internal
  */
 
-import { ComponentContractSchema } from '@enterstellar-ai/types';
+import { ComponentContractSchema } from '@enterstellar/types';
 
 import type { ContractVerification, ContractVerificationIssue } from '../types.js';
 
@@ -40,17 +40,15 @@ import type { ContractVerification, ContractVerificationIssue } from '../types.j
  * @internal
  */
 function mapZodIssue(issue: {
-    readonly path: readonly PropertyKey[];
-    readonly message: string;
+  readonly path: readonly PropertyKey[];
+  readonly message: string;
 }): ContractVerificationIssue {
-    const path = issue.path.length > 0
-        ? issue.path.map(String).join('.')
-        : '(root)';
+  const path = issue.path.length > 0 ? issue.path.map(String).join('.') : '(root)';
 
-    return Object.freeze({
-        path,
-        message: issue.message,
-    });
+  return Object.freeze({
+    path,
+    message: issue.message,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -88,24 +86,24 @@ function mapZodIssue(issue: {
  * ```
  */
 export function verifyContract(contract: unknown): ContractVerification {
-    const result = ComponentContractSchema.safeParse(contract);
+  const result = ComponentContractSchema.safeParse(contract);
 
-    if (result.success) {
-        return Object.freeze({
-            valid: true,
-            issues: Object.freeze([]),
-        });
-    }
-
-    // Map Zod issues to Enterstellar verification issues
-    const issues: readonly ContractVerificationIssue[] = Object.freeze(
-        result.error.issues.map(mapZodIssue),
-    );
-
+  if (result.success) {
     return Object.freeze({
-        valid: false,
-        issues,
+      valid: true,
+      issues: Object.freeze([]),
     });
+  }
+
+  // Map Zod issues to Enterstellar verification issues
+  const issues: readonly ContractVerificationIssue[] = Object.freeze(
+    result.error.issues.map(mapZodIssue),
+  );
+
+  return Object.freeze({
+    valid: false,
+    issues,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -132,5 +130,5 @@ export function verifyContract(contract: unknown): ContractVerification {
  * ```
  */
 export function isValidContract(value: unknown): boolean {
-    return verifyContract(value).valid;
+  return verifyContract(value).valid;
 }

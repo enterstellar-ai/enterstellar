@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters
+ * @module @enterstellar/adapters
  * @description Pluggable infrastructure adapters — auth, data, error handling, analytics.
  *
  * This package provides factory functions for creating validated adapter instances
@@ -14,7 +14,7 @@
  *   createDataAdapter,
  *   createErrorAdapter,
  *   createAnalyticsAdapter,
- * } from '@enterstellar-ai/adapters';
+ * } from '@enterstellar/adapters';
  *
  * // Create adapters with your implementations
  * const auth = createAuthAdapter({
@@ -35,7 +35,7 @@
  * <Provider adapters={{ auth, data }} ... />
  *
  * // For testing, use noop adapters
- * import { createNoopAuthAdapter, createNoopDataAdapter } from '@enterstellar-ai/adapters';
+ * import { createNoopAuthAdapter, createNoopDataAdapter } from '@enterstellar/adapters';
  * ```
  *
  * @see Implementation Bible §4.15
@@ -64,11 +64,11 @@ export { createNoopAnalyticsAdapter } from './create-analytics-adapter.js';
 // Error Factories (ENS-7001–7005)
 // ---------------------------------------------------------------------------
 export {
-    adapterValidationError,
-    adapterMethodError,
-    adapterQueryError,
-    adapterMutationError,
-    adapterAuthError,
+  adapterValidationError,
+  adapterMethodError,
+  adapterQueryError,
+  adapterMutationError,
+  adapterAuthError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------
@@ -80,22 +80,17 @@ export { validateAdapterConfig } from './validate-adapter.js';
 // Types (module-local config types)
 // ---------------------------------------------------------------------------
 export type {
-    AuthAdapterConfig,
-    DataAdapterConfig,
-    ErrorAdapterConfig,
-    AnalyticsAdapterConfig,
-    AdapterType,
+  AuthAdapterConfig,
+  DataAdapterConfig,
+  ErrorAdapterConfig,
+  AnalyticsAdapterConfig,
+  AdapterType,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
-// Re-exports from @enterstellar-ai/types (consumer convenience)
+// Re-exports from @enterstellar/types (consumer convenience)
 // ---------------------------------------------------------------------------
-export type {
-    AuthAdapter,
-    DataAdapter,
-    ErrorAdapter,
-    AnalyticsAdapter,
-} from '@enterstellar-ai/types';
+export type { AuthAdapter, DataAdapter, ErrorAdapter, AnalyticsAdapter } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Version

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/extract/ts-morph-helpers
+ * @module @enterstellar/migration/extract/ts-morph-helpers
  * @description AST traversal utilities for `ts-morph`.
  *
  * Provides focused helper functions for common AST operations used by
@@ -30,14 +30,14 @@
  */
 
 import {
-    type CallExpression,
-    type FunctionDeclaration,
-    type JSDoc,
-    type Node,
-    type SourceFile,
-    type Type,
-    type VariableDeclaration,
-    SyntaxKind,
+  type CallExpression,
+  type FunctionDeclaration,
+  type JSDoc,
+  type Node,
+  type SourceFile,
+  type Type,
+  type VariableDeclaration,
+  SyntaxKind,
 } from 'ts-morph';
 
 import type { GenericParam } from '../types.js';
@@ -56,17 +56,17 @@ import type { GenericParam } from '../types.js';
  * @see Correction 1 — SKIP Cases: returns `undefined` when no component found
  */
 export type ComponentExportInfo = {
-    /** PascalCase component name from the export declaration. */
-    readonly name: string;
-    /** The AST node of the component declaration. */
-    readonly declaration: FunctionDeclaration | VariableDeclaration | Node;
-    /**
-     * The resolved props `Type` for the component.
-     * `undefined` for zero-props components (e.g., `<Spacer />`).
-     */
-    readonly propsType: Type | undefined;
-    /** Generic type parameters, if the component is generic. */
-    readonly generics: readonly GenericParam[];
+  /** PascalCase component name from the export declaration. */
+  readonly name: string;
+  /** The AST node of the component declaration. */
+  readonly declaration: FunctionDeclaration | VariableDeclaration | Node;
+  /**
+   * The resolved props `Type` for the component.
+   * `undefined` for zero-props components (e.g., `<Spacer />`).
+   */
+  readonly propsType: Type | undefined;
+  /** Generic type parameters, if the component is generic. */
+  readonly generics: readonly GenericParam[];
 };
 
 /**
@@ -76,14 +76,14 @@ export type ComponentExportInfo = {
  * The caller uses this to decide `ast-determined` vs `heuristic-fallback`.
  */
 export type JsDocInfo = {
-    /** The `@description` tag text, or the first JSDoc paragraph. */
-    readonly description: string | undefined;
-    /** The `@tags` annotation values (custom JSDoc tag). */
-    readonly tags: readonly string[] | undefined;
-    /** The `@deprecated` annotation text. */
-    readonly deprecated: string | undefined;
-    /** 1-indexed line number of the JSDoc block, if found. */
-    readonly line: number | undefined;
+  /** The `@description` tag text, or the first JSDoc paragraph. */
+  readonly description: string | undefined;
+  /** The `@tags` annotation values (custom JSDoc tag). */
+  readonly tags: readonly string[] | undefined;
+  /** The `@deprecated` annotation text. */
+  readonly deprecated: string | undefined;
+  /** 1-indexed line number of the JSDoc block, if found. */
+  readonly line: number | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ export type JsDocInfo = {
  * React components must be PascalCase by convention.
  */
 function isPascalCase(name: string): boolean {
-    return name.length > 0 && name[0] === name[0]?.toUpperCase() && /^[A-Z]/.test(name);
+  return name.length > 0 && name[0] === name[0]?.toUpperCase() && /^[A-Z]/.test(name);
 }
 
 /**
@@ -114,38 +114,35 @@ function isPascalCase(name: string): boolean {
  *   the wrapping `CallExpression` node.
  * @returns The resolved props `Type`, or `undefined` for zero-props components.
  */
-function extractPropsType(
-    declaration: Node,
-    callExpr?: CallExpression,
-): Type | undefined {
-    // 1. forwardRef<Ref, Props> — extract Props (second type argument)
-    if (callExpr !== undefined) {
-        const typeArgs = callExpr.getTypeArguments();
-        const propsTypeNode = typeArgs[1];
-        if (propsTypeNode !== undefined) {
-            return propsTypeNode.getType();
-        }
+function extractPropsType(declaration: Node, callExpr?: CallExpression): Type | undefined {
+  // 1. forwardRef<Ref, Props> — extract Props (second type argument)
+  if (callExpr !== undefined) {
+    const typeArgs = callExpr.getTypeArguments();
+    const propsTypeNode = typeArgs[1];
+    if (propsTypeNode !== undefined) {
+      return propsTypeNode.getType();
     }
+  }
 
-    // 2. Function/arrow — first parameter's type
-    let params: Node[] = [];
-    if (declaration.isKind(SyntaxKind.FunctionDeclaration)) {
-        params = declaration.getParameters();
-    } else if (declaration.isKind(SyntaxKind.ArrowFunction)) {
-        params = declaration.getParameters();
+  // 2. Function/arrow — first parameter's type
+  let params: Node[] = [];
+  if (declaration.isKind(SyntaxKind.FunctionDeclaration)) {
+    params = declaration.getParameters();
+  } else if (declaration.isKind(SyntaxKind.ArrowFunction)) {
+    params = declaration.getParameters();
+  }
+
+  const firstParam = params[0];
+  if (firstParam?.isKind(SyntaxKind.Parameter)) {
+    const typeNode = firstParam.getTypeNode();
+    if (typeNode !== undefined) {
+      return typeNode.getType();
     }
+    // Destructured without explicit type — infer from the parameter type
+    return firstParam.getType();
+  }
 
-    const firstParam = params[0];
-    if (firstParam?.isKind(SyntaxKind.Parameter)) {
-        const typeNode = firstParam.getTypeNode();
-        if (typeNode !== undefined) {
-            return typeNode.getType();
-        }
-        // Destructured without explicit type — infer from the parameter type
-        return firstParam.getType();
-    }
-
-    return undefined;
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -176,38 +173,36 @@ function extractPropsType(
  *
  * @see Correction 1 — SKIP Cases: The Hard Boundary
  */
-export function findComponentExport(
-    sourceFile: SourceFile,
-): ComponentExportInfo | undefined {
-    const exportedDecls = sourceFile.getExportedDeclarations();
+export function findComponentExport(sourceFile: SourceFile): ComponentExportInfo | undefined {
+  const exportedDecls = sourceFile.getExportedDeclarations();
 
-    // 1. Check default export first (highest priority)
-    const defaultDecls = exportedDecls.get('default');
-    if (defaultDecls !== undefined) {
-        const defaultDecl = defaultDecls[0];
-        if (defaultDecl !== undefined) {
-            const result = tryResolveComponent(defaultDecl, 'default');
-            if (result !== undefined) {
-                return result;
-            }
-        }
+  // 1. Check default export first (highest priority)
+  const defaultDecls = exportedDecls.get('default');
+  if (defaultDecls !== undefined) {
+    const defaultDecl = defaultDecls[0];
+    if (defaultDecl !== undefined) {
+      const result = tryResolveComponent(defaultDecl, 'default');
+      if (result !== undefined) {
+        return result;
+      }
     }
+  }
 
-    // 2. Check named exports — first PascalCase match wins
-    for (const [name, decls] of exportedDecls) {
-        if (name === 'default') continue;
-        if (!isPascalCase(name)) continue;
+  // 2. Check named exports — first PascalCase match wins
+  for (const [name, decls] of exportedDecls) {
+    if (name === 'default') continue;
+    if (!isPascalCase(name)) continue;
 
-        const decl = decls[0];
-        if (decl === undefined) continue;
+    const decl = decls[0];
+    if (decl === undefined) continue;
 
-        const result = tryResolveComponent(decl, name);
-        if (result !== undefined) {
-            return result;
-        }
+    const result = tryResolveComponent(decl, name);
+    if (result !== undefined) {
+      return result;
     }
+  }
 
-    return undefined;
+  return undefined;
 }
 
 /**
@@ -216,96 +211,93 @@ export function findComponentExport(
  * Handles function declarations, variable declarations (arrow functions),
  * and call expression wrappers (`forwardRef`, `memo`).
  */
-function tryResolveComponent(
-    decl: Node,
-    name: string,
-): ComponentExportInfo | undefined {
-    // --- Function declaration ---
-    if (decl.isKind(SyntaxKind.FunctionDeclaration)) {
-        const resolvedName = decl.getName() ?? name;
-        if (!isPascalCase(resolvedName)) return undefined;
+function tryResolveComponent(decl: Node, name: string): ComponentExportInfo | undefined {
+  // --- Function declaration ---
+  if (decl.isKind(SyntaxKind.FunctionDeclaration)) {
+    const resolvedName = decl.getName() ?? name;
+    if (!isPascalCase(resolvedName)) return undefined;
 
-        return {
-            name: resolvedName,
-            declaration: decl,
-            propsType: extractPropsType(decl),
-            generics: extractGenerics(decl),
-        };
+    return {
+      name: resolvedName,
+      declaration: decl,
+      propsType: extractPropsType(decl),
+      generics: extractGenerics(decl),
+    };
+  }
+
+  // --- Variable declaration (arrow function or call expression) ---
+  if (decl.isKind(SyntaxKind.VariableDeclaration)) {
+    const varName = decl.getName();
+    if (!isPascalCase(varName)) return undefined;
+
+    const initializer = decl.getInitializer();
+    if (initializer === undefined) return undefined;
+
+    // Check for forwardRef/memo wrapper
+    if (initializer.isKind(SyntaxKind.CallExpression)) {
+      return tryResolveCallExpression(initializer, varName, decl);
     }
 
-    // --- Variable declaration (arrow function or call expression) ---
-    if (decl.isKind(SyntaxKind.VariableDeclaration)) {
-        const varName = decl.getName();
-        if (!isPascalCase(varName)) return undefined;
-
-        const initializer = decl.getInitializer();
-        if (initializer === undefined) return undefined;
-
-        // Check for forwardRef/memo wrapper
-        if (initializer.isKind(SyntaxKind.CallExpression)) {
-            return tryResolveCallExpression(initializer, varName, decl);
-        }
-
-        // Plain arrow function
-        if (initializer.isKind(SyntaxKind.ArrowFunction)) {
-            return {
-                name: varName,
-                declaration: decl,
-                propsType: extractPropsType(initializer),
-                generics: extractGenericParams(initializer),
-            };
-        }
+    // Plain arrow function
+    if (initializer.isKind(SyntaxKind.ArrowFunction)) {
+      return {
+        name: varName,
+        declaration: decl,
+        propsType: extractPropsType(initializer),
+        generics: extractGenericParams(initializer),
+      };
     }
+  }
 
-    return undefined;
+  return undefined;
 }
 
 /**
  * Resolves a `CallExpression` wrapper like `forwardRef(...)` or `memo(...)`.
  */
 function tryResolveCallExpression(
-    callExpr: CallExpression,
-    name: string,
-    parentDecl: VariableDeclaration,
+  callExpr: CallExpression,
+  name: string,
+  parentDecl: VariableDeclaration,
 ): ComponentExportInfo | undefined {
-    const exprText = callExpr.getExpression().getText();
-    const isForwardRef = exprText === 'forwardRef' || exprText === 'React.forwardRef';
-    const isMemo = exprText === 'memo' || exprText === 'React.memo';
+  const exprText = callExpr.getExpression().getText();
+  const isForwardRef = exprText === 'forwardRef' || exprText === 'React.forwardRef';
+  const isMemo = exprText === 'memo' || exprText === 'React.memo';
 
-    if (!isForwardRef && !isMemo) return undefined;
+  if (!isForwardRef && !isMemo) return undefined;
 
-    const args = callExpr.getArguments();
-    const innerArg = args[0];
-    if (innerArg === undefined) return undefined;
+  const args = callExpr.getArguments();
+  const innerArg = args[0];
+  if (innerArg === undefined) return undefined;
 
-    // memo(forwardRef(...)) — nested wrapping
-    if (isMemo && innerArg.isKind(SyntaxKind.CallExpression)) {
-        const innerText = innerArg.getExpression().getText();
-        if (innerText === 'forwardRef' || innerText === 'React.forwardRef') {
-            const innerInnerArgs = innerArg.getArguments();
-            const component = innerInnerArgs[0];
-            if (component !== undefined) {
-                return {
-                    name,
-                    declaration: parentDecl,
-                    propsType: extractPropsType(component, innerArg),
-                    generics: extractGenericParams(component),
-                };
-            }
-        }
-    }
-
-    // forwardRef(function/arrow) or memo(function/arrow)
-    if (innerArg.isKind(SyntaxKind.ArrowFunction) || innerArg.isKind(SyntaxKind.FunctionExpression)) {
+  // memo(forwardRef(...)) — nested wrapping
+  if (isMemo && innerArg.isKind(SyntaxKind.CallExpression)) {
+    const innerText = innerArg.getExpression().getText();
+    if (innerText === 'forwardRef' || innerText === 'React.forwardRef') {
+      const innerInnerArgs = innerArg.getArguments();
+      const component = innerInnerArgs[0];
+      if (component !== undefined) {
         return {
-            name,
-            declaration: parentDecl,
-            propsType: extractPropsType(innerArg, isForwardRef ? callExpr : undefined),
-            generics: extractGenericParams(innerArg),
+          name,
+          declaration: parentDecl,
+          propsType: extractPropsType(component, innerArg),
+          generics: extractGenericParams(component),
         };
+      }
     }
+  }
 
-    return undefined;
+  // forwardRef(function/arrow) or memo(function/arrow)
+  if (innerArg.isKind(SyntaxKind.ArrowFunction) || innerArg.isKind(SyntaxKind.FunctionExpression)) {
+    return {
+      name,
+      declaration: parentDecl,
+      propsType: extractPropsType(innerArg, isForwardRef ? callExpr : undefined),
+      generics: extractGenericParams(innerArg),
+    };
+  }
+
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -324,14 +316,14 @@ function tryResolveCallExpression(
  * @see Correction 1 — Generics: The Primary Source of REVIEW Annotations
  */
 export function extractGenerics(declaration: FunctionDeclaration): readonly GenericParam[] {
-    const typeParams = declaration.getTypeParameters();
-    return typeParams.map((tp): GenericParam => {
-        const constraint = tp.getConstraint();
-        return {
-            name: tp.getName(),
-            ...(constraint !== undefined ? { constraint: constraint.getText() } : {}),
-        };
-    });
+  const typeParams = declaration.getTypeParameters();
+  return typeParams.map((tp): GenericParam => {
+    const constraint = tp.getConstraint();
+    return {
+      name: tp.getName(),
+      ...(constraint !== undefined ? { constraint: constraint.getText() } : {}),
+    };
+  });
 }
 
 /**
@@ -344,20 +336,20 @@ export function extractGenerics(declaration: FunctionDeclaration): readonly Gene
  * @returns Array of `GenericParam` objects, or `[]`.
  */
 function extractGenericParams(node: Node): readonly GenericParam[] {
-    if (node.isKind(SyntaxKind.FunctionDeclaration)) {
-        return extractGenerics(node);
-    }
-    if (node.isKind(SyntaxKind.ArrowFunction) || node.isKind(SyntaxKind.FunctionExpression)) {
-        const typeParams = node.getTypeParameters();
-        return typeParams.map((tp): GenericParam => {
-            const constraint = tp.getConstraint();
-            return {
-                name: tp.getName(),
-                ...(constraint !== undefined ? { constraint: constraint.getText() } : {}),
-            };
-        });
-    }
-    return [];
+  if (node.isKind(SyntaxKind.FunctionDeclaration)) {
+    return extractGenerics(node);
+  }
+  if (node.isKind(SyntaxKind.ArrowFunction) || node.isKind(SyntaxKind.FunctionExpression)) {
+    const typeParams = node.getTypeParameters();
+    return typeParams.map((tp): GenericParam => {
+      const constraint = tp.getConstraint();
+      return {
+        name: tp.getName(),
+        ...(constraint !== undefined ? { constraint: constraint.getText() } : {}),
+      };
+    });
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -380,65 +372,65 @@ function extractGenericParams(node: Node): readonly GenericParam[] {
  * @returns A record of default prop values. Empty `{}` if none found.
  */
 export function extractDefaultProps(
-    sourceFile: SourceFile,
-    componentName: string,
+  sourceFile: SourceFile,
+  componentName: string,
 ): Readonly<Record<string, unknown>> {
-    const defaults: Record<string, unknown> = {};
+  const defaults: Record<string, unknown> = {};
 
-    // 1. Scan for destructured defaults in function parameters
-    const functions = sourceFile.getFunctions();
-    for (const fn of functions) {
-        if (fn.getName() !== componentName) continue;
-        const firstParam = fn.getParameters()[0];
-        if (firstParam === undefined) continue;
+  // 1. Scan for destructured defaults in function parameters
+  const functions = sourceFile.getFunctions();
+  for (const fn of functions) {
+    if (fn.getName() !== componentName) continue;
+    const firstParam = fn.getParameters()[0];
+    if (firstParam === undefined) continue;
 
-        // Check for object binding pattern: ({ size = 'md', disabled = false })
-        const bindingPattern = firstParam.getChildrenOfKind(SyntaxKind.ObjectBindingPattern)[0];
-        if (bindingPattern !== undefined) {
-            for (const element of bindingPattern.getElements()) {
-                const initializer = element.getInitializer();
-                if (initializer === undefined) continue;
+    // Check for object binding pattern: ({ size = 'md', disabled = false })
+    const bindingPattern = firstParam.getChildrenOfKind(SyntaxKind.ObjectBindingPattern)[0];
+    if (bindingPattern !== undefined) {
+      for (const element of bindingPattern.getElements()) {
+        const initializer = element.getInitializer();
+        if (initializer === undefined) continue;
 
-                const name = element.getName();
-                const literal = extractLiteralValue(initializer);
-                if (literal !== undefined) {
-                    defaults[name] = literal;
-                }
-            }
+        const name = element.getName();
+        const literal = extractLiteralValue(initializer);
+        if (literal !== undefined) {
+          defaults[name] = literal;
         }
+      }
     }
+  }
 
-    // 2. Scan for Foo.defaultProps = { ... }
-    const statements = sourceFile.getStatements();
-    for (const stmt of statements) {
-        if (!stmt.isKind(SyntaxKind.ExpressionStatement)) continue;
-        const expr = stmt.getExpression();
-        if (!expr.isKind(SyntaxKind.BinaryExpression)) continue;
+  // 2. Scan for Foo.defaultProps = { ... }
+  const statements = sourceFile.getStatements();
+  for (const stmt of statements) {
+    if (!stmt.isKind(SyntaxKind.ExpressionStatement)) continue;
+    const expr = stmt.getExpression();
+    if (!expr.isKind(SyntaxKind.BinaryExpression)) continue;
 
-        const left = expr.getLeft();
-        if (!left.isKind(SyntaxKind.PropertyAccessExpression)) continue;
+    const left = expr.getLeft();
+    if (!left.isKind(SyntaxKind.PropertyAccessExpression)) continue;
 
-        const obj = left.getExpression();
-        const prop = left.getName();
-        if (obj.getText() !== componentName || prop !== 'defaultProps') continue;
+    const obj = left.getExpression();
+    const prop = left.getName();
+    if (obj.getText() !== componentName || prop !== 'defaultProps') continue;
 
-        const right = expr.getRight();
-        if (!right.isKind(SyntaxKind.ObjectLiteralExpression)) continue;
+    const right = expr.getRight();
+    if (!right.isKind(SyntaxKind.ObjectLiteralExpression)) continue;
 
-        for (const property of right.getProperties()) {
-            if (!property.isKind(SyntaxKind.PropertyAssignment)) continue;
-            const initializer = property.getInitializer();
-            if (initializer === undefined) continue;
+    for (const property of right.getProperties()) {
+      if (!property.isKind(SyntaxKind.PropertyAssignment)) continue;
+      const initializer = property.getInitializer();
+      if (initializer === undefined) continue;
 
-            const name = property.getName();
-            const literal = extractLiteralValue(initializer);
-            if (literal !== undefined) {
-                defaults[name] = literal;
-            }
-        }
+      const name = property.getName();
+      const literal = extractLiteralValue(initializer);
+      if (literal !== undefined) {
+        defaults[name] = literal;
+      }
     }
+  }
 
-    return defaults;
+  return defaults;
 }
 
 /**
@@ -446,12 +438,12 @@ export function extractDefaultProps(
  * Returns `undefined` for non-literal (computed) values.
  */
 function extractLiteralValue(node: Node): string | number | boolean | null | undefined {
-    if (node.isKind(SyntaxKind.StringLiteral)) return node.getLiteralValue();
-    if (node.isKind(SyntaxKind.NumericLiteral)) return node.getLiteralValue();
-    if (node.isKind(SyntaxKind.TrueKeyword)) return true;
-    if (node.isKind(SyntaxKind.FalseKeyword)) return false;
-    if (node.isKind(SyntaxKind.NullKeyword)) return null;
-    return undefined;
+  if (node.isKind(SyntaxKind.StringLiteral)) return node.getLiteralValue();
+  if (node.isKind(SyntaxKind.NumericLiteral)) return node.getLiteralValue();
+  if (node.isKind(SyntaxKind.TrueKeyword)) return true;
+  if (node.isKind(SyntaxKind.FalseKeyword)) return false;
+  if (node.isKind(SyntaxKind.NullKeyword)) return null;
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -472,26 +464,26 @@ function extractLiteralValue(node: Node): string | number | boolean | null | und
  * @returns Array of schema variable names. Empty `[]` if no Zod usage found.
  */
 export function detectExistingZodSchemas(sourceFile: SourceFile): readonly string[] {
-    // 1. Check for zod import
-    const zodImport = sourceFile.getImportDeclarations().find(
-        (imp) => imp.getModuleSpecifierValue() === 'zod',
-    );
-    if (zodImport === undefined) return [];
+  // 1. Check for zod import
+  const zodImport = sourceFile
+    .getImportDeclarations()
+    .find((imp) => imp.getModuleSpecifierValue() === 'zod');
+  if (zodImport === undefined) return [];
 
-    // 2. Find variable declarations using z.*()
-    const schemas: string[] = [];
-    const variables = sourceFile.getVariableDeclarations();
-    for (const variable of variables) {
-        const initializer = variable.getInitializer();
-        if (initializer === undefined) continue;
+  // 2. Find variable declarations using z.*()
+  const schemas: string[] = [];
+  const variables = sourceFile.getVariableDeclarations();
+  for (const variable of variables) {
+    const initializer = variable.getInitializer();
+    if (initializer === undefined) continue;
 
-        const text = initializer.getText();
-        if (/\bz\.\w+\(/.test(text)) {
-            schemas.push(variable.getName());
-        }
+    const text = initializer.getText();
+    if (/\bz\.\w+\(/.test(text)) {
+      schemas.push(variable.getName());
     }
+  }
 
-    return schemas;
+  return schemas;
 }
 
 // ---------------------------------------------------------------------------
@@ -510,20 +502,20 @@ export function detectExistingZodSchemas(sourceFile: SourceFile): readonly strin
  *   Empty `[]` if no event handlers found.
  */
 export function detectEventHandlers(sourceFile: SourceFile): readonly string[] {
-    const events = new Set<string>();
+  const events = new Set<string>();
 
-    const jsxAttributes = sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute);
-    for (const attr of jsxAttributes) {
-        const name = attr.getNameNode().getText();
-        // Match on* pattern: onClick, onSubmit, onChange, etc.
-        if (/^on[A-Z]/.test(name)) {
-            // Strip 'on' prefix and lowercase: 'onClick' → 'click'
-            const eventName = name.slice(2, 3).toLowerCase() + name.slice(3);
-            events.add(eventName);
-        }
+  const jsxAttributes = sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute);
+  for (const attr of jsxAttributes) {
+    const name = attr.getNameNode().getText();
+    // Match on* pattern: onClick, onSubmit, onChange, etc.
+    if (/^on[A-Z]/.test(name)) {
+      // Strip 'on' prefix and lowercase: 'onClick' → 'click'
+      const eventName = name.slice(2, 3).toLowerCase() + name.slice(3);
+      events.add(eventName);
     }
+  }
 
-    return [...events];
+  return [...events];
 }
 
 // ---------------------------------------------------------------------------
@@ -543,77 +535,75 @@ export function detectEventHandlers(sourceFile: SourceFile): readonly string[] {
  * @returns A `JsDocInfo` object with parsed annotations.
  *   All fields are `undefined` when the annotation is absent.
  */
-export function extractJsDoc(
-    sourceFile: SourceFile,
-    componentName: string,
-): JsDocInfo {
-    const result: JsDocInfo = {
-        description: undefined,
-        tags: undefined,
-        deprecated: undefined,
-        line: undefined,
-    };
+export function extractJsDoc(sourceFile: SourceFile, componentName: string): JsDocInfo {
+  const result: JsDocInfo = {
+    description: undefined,
+    tags: undefined,
+    deprecated: undefined,
+    line: undefined,
+  };
 
-    // Find the function/variable declaration matching the component name
-    const fn = sourceFile.getFunction(componentName);
-    const jsDocs = fn !== undefined
-        ? fn.getJsDocs()
-        : findVariableJsDocs(sourceFile, componentName);
+  // Find the function/variable declaration matching the component name
+  const fn = sourceFile.getFunction(componentName);
+  const jsDocs = fn !== undefined ? fn.getJsDocs() : findVariableJsDocs(sourceFile, componentName);
 
-    if (jsDocs.length === 0) return result;
+  if (jsDocs.length === 0) return result;
 
-    const jsDoc = jsDocs[0];
-    if (jsDoc === undefined) return result;
+  const jsDoc = jsDocs[0];
+  if (jsDoc === undefined) return result;
 
-    // Description: @description tag or first paragraph
-    let description: string | undefined;
-    const descTag = jsDoc.getTags().find((t) => t.getTagName() === 'description');
-    if (descTag !== undefined) {
-        description = descTag.getCommentText()?.trim();
-    } else {
-        const mainComment = jsDoc.getCommentText()?.trim();
-        if (mainComment !== undefined && mainComment.length > 0) {
-            description = mainComment;
-        }
+  // Description: @description tag or first paragraph
+  let description: string | undefined;
+  const descTag = jsDoc.getTags().find((t) => t.getTagName() === 'description');
+  if (descTag !== undefined) {
+    description = descTag.getCommentText()?.trim();
+  } else {
+    const mainComment = jsDoc.getCommentText()?.trim();
+    if (mainComment !== undefined && mainComment.length > 0) {
+      description = mainComment;
     }
+  }
 
-    // Tags: @tags annotation (comma-separated)
-    let tags: readonly string[] | undefined;
-    const tagsTag = jsDoc.getTags().find((t) => t.getTagName() === 'tags');
-    if (tagsTag !== undefined) {
-        const tagText = tagsTag.getCommentText()?.trim();
-        if (tagText !== undefined && tagText.length > 0) {
-            tags = tagText.split(',').map((t) => t.trim()).filter((t) => t.length > 0);
-        }
+  // Tags: @tags annotation (comma-separated)
+  let tags: readonly string[] | undefined;
+  const tagsTag = jsDoc.getTags().find((t) => t.getTagName() === 'tags');
+  if (tagsTag !== undefined) {
+    const tagText = tagsTag.getCommentText()?.trim();
+    if (tagText !== undefined && tagText.length > 0) {
+      tags = tagText
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
     }
+  }
 
-    // Deprecated: @deprecated annotation
-    let deprecated: string | undefined;
-    const deprecatedTag = jsDoc.getTags().find((t) => t.getTagName() === 'deprecated');
-    if (deprecatedTag !== undefined) {
-        deprecated = deprecatedTag.getCommentText()?.trim() ?? '';
-    }
+  // Deprecated: @deprecated annotation
+  let deprecated: string | undefined;
+  const deprecatedTag = jsDoc.getTags().find((t) => t.getTagName() === 'deprecated');
+  if (deprecatedTag !== undefined) {
+    deprecated = deprecatedTag.getCommentText()?.trim() ?? '';
+  }
 
-    return {
-        description,
-        tags,
-        deprecated,
-        line: jsDoc.getStartLineNumber(),
-    };
+  return {
+    description,
+    tags,
+    deprecated,
+    line: jsDoc.getStartLineNumber(),
+  };
 }
 
 /**
  * Finds JSDoc blocks for a variable declaration (arrow function components).
  */
 function findVariableJsDocs(sourceFile: SourceFile, name: string): JSDoc[] {
-    const varStmts = sourceFile.getVariableStatements();
-    for (const stmt of varStmts) {
-        const decl = stmt.getDeclarations().find((d) => d.getName() === name);
-        if (decl !== undefined) {
-            return stmt.getJsDocs();
-        }
+  const varStmts = sourceFile.getVariableStatements();
+  for (const stmt of varStmts) {
+    const decl = stmt.getDeclarations().find((d) => d.getName() === name);
+    if (decl !== undefined) {
+      return stmt.getJsDocs();
     }
-    return [];
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -631,26 +621,27 @@ function findVariableJsDocs(sourceFile: SourceFile, name: string): JSDoc[] {
  * @returns An object with `attrs` (name → value record) and `firstLine`
  *   (1-indexed line of the first ARIA attribute, or `undefined` if none).
  */
-export function detectAriaAttributes(
-    sourceFile: SourceFile,
-): { readonly attrs: Readonly<Record<string, string>>; readonly firstLine: number | undefined } {
-    const attrs: Record<string, string> = {};
-    let firstLine: number | undefined;
+export function detectAriaAttributes(sourceFile: SourceFile): {
+  readonly attrs: Readonly<Record<string, string>>;
+  readonly firstLine: number | undefined;
+} {
+  const attrs: Record<string, string> = {};
+  let firstLine: number | undefined;
 
-    const jsxAttributes = sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute);
-    for (const attr of jsxAttributes) {
-        const name = attr.getNameNode().getText();
-        if (name !== 'role' && !name.startsWith('aria-')) continue;
+  const jsxAttributes = sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute);
+  for (const attr of jsxAttributes) {
+    const name = attr.getNameNode().getText();
+    if (name !== 'role' && !name.startsWith('aria-')) continue;
 
-        // Extract static string value only
-        const initializer = attr.getInitializer();
-        if (initializer?.isKind(SyntaxKind.StringLiteral)) {
-            attrs[name] = initializer.getLiteralValue();
-            firstLine ??= attr.getStartLineNumber();
-        }
+    // Extract static string value only
+    const initializer = attr.getInitializer();
+    if (initializer?.isKind(SyntaxKind.StringLiteral)) {
+      attrs[name] = initializer.getLiteralValue();
+      firstLine ??= attr.getStartLineNumber();
     }
+  }
 
-    return { attrs, firstLine };
+  return { attrs, firstLine };
 }
 
 // ---------------------------------------------------------------------------
@@ -672,42 +663,43 @@ export function detectAriaAttributes(
  * @returns An object with `tokens` (deduplicated array) and `firstLine`
  *   (1-indexed line of the first token reference, or `undefined` if none).
  */
-export function detectDesignTokenRefs(
-    sourceFile: SourceFile,
-): { readonly tokens: readonly string[]; readonly firstLine: number | undefined } {
-    const tokenSet = new Set<string>();
-    let firstLine: number | undefined;
+export function detectDesignTokenRefs(sourceFile: SourceFile): {
+  readonly tokens: readonly string[];
+  readonly firstLine: number | undefined;
+} {
+  const tokenSet = new Set<string>();
+  let firstLine: number | undefined;
 
-    // Pattern: var(--anything) or bare --enterstellar-anything
-    const cssVarPattern = /var\(--[\w-]+\)|--enterstellar-[\w-]+/g;
+  // Pattern: var(--anything) or bare --enterstellar-anything
+  const cssVarPattern = /var\(--[\w-]+\)|--enterstellar-[\w-]+/g;
 
-    // Scan string literals
-    const strings = sourceFile.getDescendantsOfKind(SyntaxKind.StringLiteral);
-    for (const str of strings) {
-        const value = str.getLiteralValue();
-        const matches = value.match(cssVarPattern);
-        if (matches !== null) {
-            for (const match of matches) {
-                tokenSet.add(match);
-            }
-            firstLine ??= str.getStartLineNumber();
-        }
+  // Scan string literals
+  const strings = sourceFile.getDescendantsOfKind(SyntaxKind.StringLiteral);
+  for (const str of strings) {
+    const value = str.getLiteralValue();
+    const matches = value.match(cssVarPattern);
+    if (matches !== null) {
+      for (const match of matches) {
+        tokenSet.add(match);
+      }
+      firstLine ??= str.getStartLineNumber();
     }
+  }
 
-    // Scan template literal spans
-    const templates = sourceFile.getDescendantsOfKind(SyntaxKind.NoSubstitutionTemplateLiteral);
-    for (const tmpl of templates) {
-        const value = tmpl.getLiteralValue();
-        const matches = value.match(cssVarPattern);
-        if (matches !== null) {
-            for (const match of matches) {
-                tokenSet.add(match);
-            }
-            firstLine ??= tmpl.getStartLineNumber();
-        }
+  // Scan template literal spans
+  const templates = sourceFile.getDescendantsOfKind(SyntaxKind.NoSubstitutionTemplateLiteral);
+  for (const tmpl of templates) {
+    const value = tmpl.getLiteralValue();
+    const matches = value.match(cssVarPattern);
+    if (matches !== null) {
+      for (const match of matches) {
+        tokenSet.add(match);
+      }
+      firstLine ??= tmpl.getStartLineNumber();
     }
+  }
 
-    return { tokens: [...tokenSet], firstLine };
+  return { tokens: [...tokenSet], firstLine };
 }
 
 // ---------------------------------------------------------------------------
@@ -732,65 +724,66 @@ export function detectDesignTokenRefs(
  * @returns An object with `states` (lifecycle state names) and `firstLine`
  *   (1-indexed line of the first matching conditional, or `undefined`).
  */
-export function detectLifecycleStates(
-    sourceFile: SourceFile,
-): { readonly states: readonly string[]; readonly firstLine: number | undefined } {
-    const stateSet = new Set<string>();
-    let firstLine: number | undefined;
+export function detectLifecycleStates(sourceFile: SourceFile): {
+  readonly states: readonly string[];
+  readonly firstLine: number | undefined;
+} {
+  const stateSet = new Set<string>();
+  let firstLine: number | undefined;
 
-    /**
-     * Map of identifier text → lifecycle state name.
-     * Only identifiers in this map trigger detection.
-     */
-    const identifierMap: Readonly<Record<string, string>> = {
-        loading: 'loading',
-        isLoading: 'loading',
-        error: 'error',
-        isError: 'error',
-        isEmpty: 'empty',
-        empty: 'empty',
-    };
+  /**
+   * Map of identifier text → lifecycle state name.
+   * Only identifiers in this map trigger detection.
+   */
+  const identifierMap: Readonly<Record<string, string>> = {
+    loading: 'loading',
+    isLoading: 'loading',
+    error: 'error',
+    isError: 'error',
+    isEmpty: 'empty',
+    empty: 'empty',
+  };
 
-    /**
-     * Checks all identifiers within a given AST node against the
-     * lifecycle identifier map. Tracks line of first match.
-     */
-    function scanNodeForLifecycleIdentifiers(node: Node): void {
-        // getDescendantsOfKind excludes the node itself — check it manually
-        // when the expression is a bare identifier (e.g., `if (loading)`)
-        const candidates = node.isKind(SyntaxKind.Identifier)
-            ? [node, ...node.getDescendantsOfKind(SyntaxKind.Identifier)]
-            : node.getDescendantsOfKind(SyntaxKind.Identifier);
-        for (const id of candidates) {
-            const text = id.getText();
-            const mapped = identifierMap[text];
-            if (mapped !== undefined) {
-                stateSet.add(mapped);
-                firstLine ??= id.getStartLineNumber();
-            }
-        }
+  /**
+   * Checks all identifiers within a given AST node against the
+   * lifecycle identifier map. Tracks line of first match.
+   */
+  function scanNodeForLifecycleIdentifiers(node: Node): void {
+    // getDescendantsOfKind excludes the node itself — check it manually
+    // when the expression is a bare identifier (e.g., `if (loading)`)
+    const candidates = node.isKind(SyntaxKind.Identifier)
+      ? [node, ...node.getDescendantsOfKind(SyntaxKind.Identifier)]
+      : node.getDescendantsOfKind(SyntaxKind.Identifier);
+    for (const id of candidates) {
+      const text = id.getText();
+      const mapped = identifierMap[text];
+      if (mapped !== undefined) {
+        stateSet.add(mapped);
+        firstLine ??= id.getStartLineNumber();
+      }
     }
+  }
 
-    // Scan 1: IfStatement conditions — `if (loading) return <Spinner />;`
-    const ifStatements = sourceFile.getDescendantsOfKind(SyntaxKind.IfStatement);
-    for (const ifStmt of ifStatements) {
-        scanNodeForLifecycleIdentifiers(ifStmt.getExpression());
+  // Scan 1: IfStatement conditions — `if (loading) return <Spinner />;`
+  const ifStatements = sourceFile.getDescendantsOfKind(SyntaxKind.IfStatement);
+  for (const ifStmt of ifStatements) {
+    scanNodeForLifecycleIdentifiers(ifStmt.getExpression());
+  }
+
+  // Scan 2: ConditionalExpression conditions — `loading ? <Spinner /> : <Content />`
+  const ternaries = sourceFile.getDescendantsOfKind(SyntaxKind.ConditionalExpression);
+  for (const ternary of ternaries) {
+    scanNodeForLifecycleIdentifiers(ternary.getCondition());
+  }
+
+  // Scan 3: BinaryExpression with && — `loading && <Spinner />`
+  const binaryExprs = sourceFile.getDescendantsOfKind(SyntaxKind.BinaryExpression);
+  for (const binExpr of binaryExprs) {
+    const opToken = binExpr.getOperatorToken();
+    if (opToken.isKind(SyntaxKind.AmpersandAmpersandToken)) {
+      scanNodeForLifecycleIdentifiers(binExpr.getLeft());
     }
+  }
 
-    // Scan 2: ConditionalExpression conditions — `loading ? <Spinner /> : <Content />`
-    const ternaries = sourceFile.getDescendantsOfKind(SyntaxKind.ConditionalExpression);
-    for (const ternary of ternaries) {
-        scanNodeForLifecycleIdentifiers(ternary.getCondition());
-    }
-
-    // Scan 3: BinaryExpression with && — `loading && <Spinner />`
-    const binaryExprs = sourceFile.getDescendantsOfKind(SyntaxKind.BinaryExpression);
-    for (const binExpr of binaryExprs) {
-        const opToken = binExpr.getOperatorToken();
-        if (opToken.isKind(SyntaxKind.AmpersandAmpersandToken)) {
-            scanNodeForLifecycleIdentifiers(binExpr.getLeft());
-        }
-    }
-
-    return { states: [...stateSet], firstLine };
+  return { states: [...stateSet], firstLine };
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/traces/trace-submitter
+ * @module @enterstellar/cloud/traces/trace-submitter
  * @description Submits `AgentTrace` objects to Enterstellar Cloud for aggregation.
  *
  * Sends full `AgentTrace` payloads to `POST /v1/traces` for cloud-side
@@ -34,7 +34,7 @@
  * @see Bible §9.1 — `POST /v1/traces` (0 IPU).
  */
 
-import type { AgentTrace } from '@enterstellar-ai/types';
+import type { AgentTrace } from '@enterstellar/types';
 
 import type { IPUTracker } from '../metering/ipu-tracker.js';
 import type { CloudHttpTransport } from '../transport/cloud-http.js';
@@ -55,8 +55,8 @@ import { IPU_COSTS } from '../metering/ipu-costs.js';
  * Frozen to prevent accidental mutation.
  */
 const CONSENT_DENIED_RESULT: CloudResult<{ readonly accepted: boolean }> = Object.freeze({
-    data: Object.freeze({ accepted: false }),
-    ipu: null,
+  data: Object.freeze({ accepted: false }),
+  ipu: null,
 });
 
 // ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ const CONSENT_DENIED_RESULT: CloudResult<{ readonly accepted: boolean }> = Objec
  * @internal — used only for typing the transport response.
  */
 type TraceSubmitResponse = {
-    readonly accepted: boolean;
+  readonly accepted: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -82,25 +82,23 @@ type TraceSubmitResponse = {
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface TraceSubmitter {
-    /**
-     * Submit an `AgentTrace` for cloud aggregation.
-     *
-     * **Triple consent gate (TA2, F13):**
-     * 1. `CloudConfig.traceConsent` must be `true`.
-     * 2. `trace.consent.anonymizedAggregation` must be `true`.
-     * 3. Server checks `projects.trace_consent` (not our concern).
-     *
-     * If either client-side check fails, returns immediately with
-     * `{ data: { accepted: false }, ipu: null }`.
-     *
-     * @param trace - The full `AgentTrace` to submit. Must have consent fields.
-     * @returns Submission result wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    submitTrace(
-        trace: AgentTrace,
-    ): Promise<CloudResult<{ readonly accepted: boolean }>>;
+  /**
+   * Submit an `AgentTrace` for cloud aggregation.
+   *
+   * **Triple consent gate (TA2, F13):**
+   * 1. `CloudConfig.traceConsent` must be `true`.
+   * 2. `trace.consent.anonymizedAggregation` must be `true`.
+   * 3. Server checks `projects.trace_consent` (not our concern).
+   *
+   * If either client-side check fails, returns immediately with
+   * `{ data: { accepted: false }, ipu: null }`.
+   *
+   * @param trace - The full `AgentTrace` to submit. Must have consent fields.
+   * @returns Submission result wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  submitTrace(trace: AgentTrace): Promise<CloudResult<{ readonly accepted: boolean }>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,20 +115,20 @@ export interface TraceSubmitter {
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -163,75 +161,68 @@ function buildIPU(
  * @internal
  */
 export function createTraceSubmitter(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
-    traceConsent: boolean,
-    sessionType: string,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
+  traceConsent: boolean,
+  sessionType: string,
 ): TraceSubmitter {
-    return {
-        async submitTrace(
-            trace: AgentTrace,
-        ): Promise<CloudResult<{ readonly accepted: boolean }>> {
-            // ---------------------------------------------------------------
-            // Consent gate 1: CloudConfig.traceConsent (TA2, F13).
-            //
-            // If the client SDK flag is false, skip immediately.
-            // This is the first line of defense — no data leaves the device.
-            // ---------------------------------------------------------------
-            if (!traceConsent) {
-                return CONSENT_DENIED_RESULT;
-            }
+  return {
+    async submitTrace(trace: AgentTrace): Promise<CloudResult<{ readonly accepted: boolean }>> {
+      // ---------------------------------------------------------------
+      // Consent gate 1: CloudConfig.traceConsent (TA2, F13).
+      //
+      // If the client SDK flag is false, skip immediately.
+      // This is the first line of defense — no data leaves the device.
+      // ---------------------------------------------------------------
+      if (!traceConsent) {
+        return CONSENT_DENIED_RESULT;
+      }
 
-            // ---------------------------------------------------------------
-            // Consent gate 2: per-trace consent field (L12/TL10).
-            //
-            // Each AgentTrace carries its own consent. The application
-            // sets this based on user preference. If false, skip.
-            // ---------------------------------------------------------------
-            if (!trace.consent.anonymizedAggregation) {
-                return CONSENT_DENIED_RESULT;
-            }
+      // ---------------------------------------------------------------
+      // Consent gate 2: per-trace consent field (L12/TL10).
+      //
+      // Each AgentTrace carries its own consent. The application
+      // sets this based on user preference. If false, skip.
+      // ---------------------------------------------------------------
+      if (!trace.consent.anonymizedAggregation) {
+        return CONSENT_DENIED_RESULT;
+      }
 
-            // ---------------------------------------------------------------
-            // No pre-flight quota check — traces are free (0 IPU).
-            // ---------------------------------------------------------------
+      // ---------------------------------------------------------------
+      // No pre-flight quota check — traces are free (0 IPU).
+      // ---------------------------------------------------------------
 
-            // ---------------------------------------------------------------
-            // Execute the cloud API call.
-            // ipuCost: 0 → no X-Idempotency-Key sent (AM10/F8).
-            // Transport errors propagate as CloudError (SD3).
-            // ---------------------------------------------------------------
-            const response = await transport.request<TraceSubmitResponse>({
-                method: 'POST',
-                path: '/v1/traces',
-                body: { trace, sessionType },
-                ipuCost: IPU_COSTS.TRACE_SUBMIT,
-            });
+      // ---------------------------------------------------------------
+      // Execute the cloud API call.
+      // ipuCost: 0 → no X-Idempotency-Key sent (AM10/F8).
+      // Transport errors propagate as CloudError (SD3).
+      // ---------------------------------------------------------------
+      const response = await transport.request<TraceSubmitResponse>({
+        method: 'POST',
+        path: '/v1/traces',
+        body: { trace, sessionType },
+        ipuCost: IPU_COSTS.TRACE_SUBMIT,
+      });
 
-            // ---------------------------------------------------------------
-            // Reconcile IPU tracker if server provides headers.
-            // For 0-IPU endpoints the server may omit these (AG8).
-            // ---------------------------------------------------------------
-            if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-                tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-            }
+      // ---------------------------------------------------------------
+      // Reconcile IPU tracker if server provides headers.
+      // For 0-IPU endpoints the server may omit these (AG8).
+      // ---------------------------------------------------------------
+      if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+        tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+      }
 
-            // No local cost recording — traces are free.
+      // No local cost recording — traces are free.
 
-            // ---------------------------------------------------------------
-            // Build CloudResult<{ accepted: boolean }> (SD7).
-            // ---------------------------------------------------------------
-            const ipu = buildIPU(
-                response.ipuUsed,
-                response.ipuRemaining,
-                response.ipuCost,
-                isAnonymous,
-            );
+      // ---------------------------------------------------------------
+      // Build CloudResult<{ accepted: boolean }> (SD7).
+      // ---------------------------------------------------------------
+      const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
 
-            const accepted = response.data?.accepted ?? true;
+      const accepted = response.data?.accepted ?? true;
 
-            return { data: { accepted }, ipu };
-        },
-    };
+      return { data: { accepted }, ipu };
+    },
+  };
 }

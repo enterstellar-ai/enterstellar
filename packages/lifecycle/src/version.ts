@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/lifecycle/version
+ * @module @enterstellar/lifecycle/version
  * @description Lifecycle module version constant.
  *
  * Exported for runtime compatibility checks and DevTools version display.
@@ -9,7 +9,7 @@
  */
 
 /**
- * Semantic version of the `@enterstellar-ai/lifecycle` package.
+ * Semantic version of the `@enterstellar/lifecycle` package.
  * Updated via Changesets on every release.
  */
 export const LIFECYCLE_VERSION = '0.0.0';

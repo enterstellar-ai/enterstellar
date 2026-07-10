@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/validate-spec
+ * @module @enterstellar/agent-sdk/tools/validate-spec
  * @description Implements the `enterstellar_validate_spec` MCP tool.
  *
  * Validates a `UISpec` by running each zone through the Enterstellar compiler.
@@ -23,7 +23,7 @@
  * @see Design Choice C12 — agent parameter passed explicitly.
  */
 
-import type { CompilationResult, CompilationError } from '@enterstellar-ai/types';
+import type { CompilationResult, CompilationError } from '@enterstellar/types';
 
 import type { UISpec, AgentSDKCompiler } from '../types.js';
 
@@ -60,36 +60,36 @@ const SDK_AGENT_IDENTIFIER = 'agent-sdk';
  * ```
  */
 export async function executeValidateSpec(
-    compiler: AgentSDKCompiler,
-    spec: UISpec,
+  compiler: AgentSDKCompiler,
+  spec: UISpec,
 ): Promise<CompilationResult> {
-    // Empty spec → synthetic pass (nothing to validate)
-    if (spec.zones.length === 0) {
-        return createEmptyPassResult();
-    }
+  // Empty spec → synthetic pass (nothing to validate)
+  if (spec.zones.length === 0) {
+    return createEmptyPassResult();
+  }
 
-    // -----------------------------------------------------------------------
-    // Compile each zone independently (C20 — no layout compilation at v1)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Compile each zone independently (C20 — no layout compilation at v1)
+  // -----------------------------------------------------------------------
 
-    const results: CompilationResult[] = [];
+  const results: CompilationResult[] = [];
 
-    for (const zone of spec.zones) {
-        const intent = {
-            component: zone.component,
-            props: zone.props,
-            confidence: 1.0,
-        };
+  for (const zone of spec.zones) {
+    const intent = {
+      component: zone.component,
+      props: zone.props,
+      confidence: 1.0,
+    };
 
-        const result = await compiler.compile(intent, { agent: SDK_AGENT_IDENTIFIER });
-        results.push(result);
-    }
+    const result = await compiler.compile(intent, { agent: SDK_AGENT_IDENTIFIER });
+    results.push(result);
+  }
 
-    // -----------------------------------------------------------------------
-    // Aggregate results across zones
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Aggregate results across zones
+  // -----------------------------------------------------------------------
 
-    return aggregateResults(results, spec);
+  return aggregateResults(results, spec);
 }
 
 // ---------------------------------------------------------------------------
@@ -103,19 +103,19 @@ export async function executeValidateSpec(
  * result is trivially valid.
  */
 function createEmptyPassResult(): CompilationResult {
-    return {
-        componentName: '',
-        props: {},
-        status: 'pass',
-        provenance: {
-            agent: SDK_AGENT_IDENTIFIER,
-            registry: 'default',
-            compiledAt: new Date().toISOString(),
-            compilerVersion: '0.0.0',
-        },
-        errors: [],
-        selfCorrectionAttempts: 0,
-    };
+  return {
+    componentName: '',
+    props: {},
+    status: 'pass',
+    provenance: {
+      agent: SDK_AGENT_IDENTIFIER,
+      registry: 'default',
+      compiledAt: new Date().toISOString(),
+      compilerVersion: '0.0.0',
+    },
+    errors: [],
+    selfCorrectionAttempts: 0,
+  };
 }
 
 /**
@@ -133,55 +133,52 @@ function createEmptyPassResult(): CompilationResult {
  * @param spec - The original UI specification (for metadata).
  * @returns A single aggregated `CompilationResult`.
  */
-function aggregateResults(
-    results: readonly CompilationResult[],
-    spec: UISpec,
-): CompilationResult {
-    // Guaranteed: results.length > 0 (caller checks empty spec)
-    // Safe to access index 0 — caller ensures non-empty
-    const firstResult = results[0];
+function aggregateResults(results: readonly CompilationResult[], spec: UISpec): CompilationResult {
+  // Guaranteed: results.length > 0 (caller checks empty spec)
+  // Safe to access index 0 — caller ensures non-empty
+  const firstResult = results[0];
 
-    // Collect all errors across zones
-    const allErrors: CompilationError[] = [];
-    let totalSelfCorrectionAttempts = 0;
-    let hasFail = false;
-    let hasCorrected = false;
+  // Collect all errors across zones
+  const allErrors: CompilationError[] = [];
+  let totalSelfCorrectionAttempts = 0;
+  let hasFail = false;
+  let hasCorrected = false;
 
-    for (const result of results) {
-        allErrors.push(...result.errors);
-        totalSelfCorrectionAttempts += result.selfCorrectionAttempts;
+  for (const result of results) {
+    allErrors.push(...result.errors);
+    totalSelfCorrectionAttempts += result.selfCorrectionAttempts;
 
-        if (result.status === 'fail') {
-            hasFail = true;
-        } else if (result.status === 'corrected') {
-            hasCorrected = true;
-        }
+    if (result.status === 'fail') {
+      hasFail = true;
+    } else if (result.status === 'corrected') {
+      hasCorrected = true;
     }
+  }
 
-    // Determine aggregate status
-    let aggregateStatus: 'pass' | 'fail' | 'corrected';
-    if (hasFail) {
-        aggregateStatus = 'fail';
-    } else if (hasCorrected) {
-        aggregateStatus = 'corrected';
-    } else {
-        aggregateStatus = 'pass';
-    }
+  // Determine aggregate status
+  let aggregateStatus: 'pass' | 'fail' | 'corrected';
+  if (hasFail) {
+    aggregateStatus = 'fail';
+  } else if (hasCorrected) {
+    aggregateStatus = 'corrected';
+  } else {
+    aggregateStatus = 'pass';
+  }
 
-    // Use first zone as representative (safe — results guaranteed non-empty)
-    const firstZone = spec.zones[0];
+  // Use first zone as representative (safe — results guaranteed non-empty)
+  const firstZone = spec.zones[0];
 
-    return {
-        componentName: firstResult?.componentName ?? firstZone?.name ?? '',
-        props: firstResult?.props ?? {},
-        status: aggregateStatus,
-        provenance: firstResult?.provenance ?? {
-            agent: SDK_AGENT_IDENTIFIER,
-            registry: 'default',
-            compiledAt: new Date().toISOString(),
-            compilerVersion: '0.0.0',
-        },
-        errors: allErrors,
-        selfCorrectionAttempts: totalSelfCorrectionAttempts,
-    };
+  return {
+    componentName: firstResult?.componentName ?? firstZone?.name ?? '',
+    props: firstResult?.props ?? {},
+    status: aggregateStatus,
+    provenance: firstResult?.provenance ?? {
+      agent: SDK_AGENT_IDENTIFIER,
+      registry: 'default',
+      compiledAt: new Date().toISOString(),
+      compilerVersion: '0.0.0',
+    },
+    errors: allErrors,
+    selfCorrectionAttempts: totalSelfCorrectionAttempts,
+  };
 }

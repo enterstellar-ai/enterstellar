@@ -1,4 +1,4 @@
-# @enterstellar-ai/registry
+# @enterstellar/registry
 
 > Component Contract Registry — `defineComponent()`, `createRegistry()`, `mergeRegistries()`, and the full registration-time validation pipeline.
 
@@ -7,7 +7,7 @@ This is the "deck of cards" the LLM is allowed to play. Every component that Ent
 ## Quick Start
 
 ```ts
-import { defineComponent, createRegistry, mergeRegistries } from '@enterstellar-ai/registry';
+import { defineComponent, createRegistry, mergeRegistries } from '@enterstellar/registry';
 import { z } from 'zod';
 
 // 1. Define a contract — validates immediately (R5), freezes output (R4)
@@ -107,8 +107,8 @@ registry.getSchema('PatientVitals'); // z.ZodType (for runtime validation)
 10 clinical-domain example components are available in `examples/components.ts`:
 
 ```ts
-import { allExampleComponents } from '@enterstellar-ai/registry/examples/components';
-import { createRegistry } from '@enterstellar-ai/registry';
+import { allExampleComponents } from '@enterstellar/registry/examples/components';
+import { createRegistry } from '@enterstellar/registry';
 
 const registry = createRegistry({ components: [...allExampleComponents] });
 registry.list();
@@ -135,7 +135,7 @@ registry.list();
 | `tsup.config.ts`   | Builds ESM + CJS + DTS. Overrides `composite: false` for DTS. |
 | `vitest.config.ts` | Test runner configuration.                                    |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `zod ^4.3.6`
 
 ## See Also
 

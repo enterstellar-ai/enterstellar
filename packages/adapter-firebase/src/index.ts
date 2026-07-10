@@ -1,10 +1,10 @@
 /**
- * @module @enterstellar-ai/adapter-firebase
+ * @module @enterstellar/adapter-firebase
  * @description Firebase adapter — Auth + Data adapters for Firebase.
  *
  * This package provides factory functions that map Firebase Auth and Firestore
  * SDK calls to Enterstellar adapter interfaces. Each factory delegates to
- * `createAuthAdapter()` or `createDataAdapter()` from `@enterstellar-ai/adapters`
+ * `createAuthAdapter()` or `createDataAdapter()` from `@enterstellar/adapters`
  * for validation and AD5 error wrapping.
  *
  * ## Quick Start
@@ -16,7 +16,7 @@
  * import {
  *   createFirebaseAuthAdapter,
  *   createFirebaseDataAdapter,
- * } from '@enterstellar-ai/adapter-firebase';
+ * } from '@enterstellar/adapter-firebase';
  *
  * const app = initializeApp({ projectId: 'my-project', ... });
  *

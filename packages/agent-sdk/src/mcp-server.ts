@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/mcp-server
+ * @module @enterstellar/agent-sdk/mcp-server
  * @description Embedded MCP server wrapper for the Enterstellar Agent SDK.
  *
  * Exposes the `EnterstellarAgentSDK` as an MCP-compatible server that can be
@@ -24,7 +24,7 @@
  * @see Bible §4.16 — MCP tool definitions.
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import type { EnterstellarAgentSDK, MCPToolDefinition } from './types.js';
 
@@ -36,22 +36,22 @@ import type { EnterstellarAgentSDK, MCPToolDefinition } from './types.js';
  * Successful MCP tool call response.
  */
 export type MCPToolResponse = {
-    /** Whether the tool call succeeded. */
-    readonly success: true;
-    /** The tool's output data. */
-    readonly data: unknown;
+  /** Whether the tool call succeeded. */
+  readonly success: true;
+  /** The tool's output data. */
+  readonly data: unknown;
 };
 
 /**
  * Failed MCP tool call response.
  */
 export type MCPToolErrorResponse = {
-    /** Whether the tool call succeeded. */
-    readonly success: false;
-    /** Machine-readable error code (if available). */
-    readonly code: string;
-    /** Human-readable error message. */
-    readonly message: string;
+  /** Whether the tool call succeeded. */
+  readonly success: false;
+  /** Machine-readable error code (if available). */
+  readonly code: string;
+  /** Human-readable error message. */
+  readonly message: string;
 };
 
 /**
@@ -71,32 +71,29 @@ export type MCPCallResult = MCPToolResponse | MCPToolErrorResponse;
  * Enterstellar capabilities.
  */
 export interface EnterstellarMCPServer {
-    /**
-     * Returns the list of available MCP tool definitions.
-     *
-     * Each definition includes the tool's name, description, and input
-     * schema in JSON Schema format. Agents use this for introspection —
-     * discovering what tools are available and how to call them.
-     *
-     * @returns Array of MCP tool definitions.
-     */
-    listTools(): readonly MCPToolDefinition[];
+  /**
+   * Returns the list of available MCP tool definitions.
+   *
+   * Each definition includes the tool's name, description, and input
+   * schema in JSON Schema format. Agents use this for introspection —
+   * discovering what tools are available and how to call them.
+   *
+   * @returns Array of MCP tool definitions.
+   */
+  listTools(): readonly MCPToolDefinition[];
 
-    /**
-     * Dispatches a tool call to the correct handler.
-     *
-     * Looks up the tool by name, validates that it exists, and invokes
-     * its handler with the provided arguments. Returns a result object
-     * indicating success or failure.
-     *
-     * @param name - MCP tool name (e.g., `'enterstellar_search_components'`).
-     * @param args - Tool input arguments as a JSON-compatible record.
-     * @returns A `MCPCallResult` — either `{ success: true, data }` or `{ success: false, code, message }`.
-     */
-    handleToolCall(
-        name: string,
-        args: Readonly<Record<string, unknown>>,
-    ): Promise<MCPCallResult>;
+  /**
+   * Dispatches a tool call to the correct handler.
+   *
+   * Looks up the tool by name, validates that it exists, and invokes
+   * its handler with the provided arguments. Returns a result object
+   * indicating success or failure.
+   *
+   * @param name - MCP tool name (e.g., `'enterstellar_search_components'`).
+   * @param args - Tool input arguments as a JSON-compatible record.
+   * @returns A `MCPCallResult` — either `{ success: true, data }` or `{ success: false, code, message }`.
+   */
+  handleToolCall(name: string, args: Readonly<Record<string, unknown>>): Promise<MCPCallResult>;
 }
 
 // ---------------------------------------------------------------------------
@@ -115,8 +112,8 @@ export interface EnterstellarMCPServer {
  *
  * @example
  * ```ts
- * import { createAgentSDK } from '@enterstellar-ai/agent-sdk';
- * import { createMCPServer } from '@enterstellar-ai/agent-sdk';
+ * import { createAgentSDK } from '@enterstellar/agent-sdk';
+ * import { createMCPServer } from '@enterstellar/agent-sdk';
  *
  * const sdk = createAgentSDK({ registry, compiler, semanticIndex });
  * const server = createMCPServer(sdk);
@@ -132,54 +129,54 @@ export interface EnterstellarMCPServer {
  * ```
  */
 export function createMCPServer(sdk: EnterstellarAgentSDK): EnterstellarMCPServer {
-    // Build a lookup map from tool name → handler for O(1) dispatch
-    const toolMap = new Map<string, MCPToolDefinition>();
+  // Build a lookup map from tool name → handler for O(1) dispatch
+  const toolMap = new Map<string, MCPToolDefinition>();
 
-    for (const tool of sdk.tools) {
-        toolMap.set(tool.name, tool);
-    }
+  for (const tool of sdk.tools) {
+    toolMap.set(tool.name, tool);
+  }
 
-    // Freeze the tools array reference for listTools()
-    const frozenTools = sdk.tools;
+  // Freeze the tools array reference for listTools()
+  const frozenTools = sdk.tools;
 
-    const server: EnterstellarMCPServer = {
-        listTools(): readonly MCPToolDefinition[] {
-            return frozenTools;
-        },
+  const server: EnterstellarMCPServer = {
+    listTools(): readonly MCPToolDefinition[] {
+      return frozenTools;
+    },
 
-        async handleToolCall(
-            name: string,
-            args: Readonly<Record<string, unknown>>,
-        ): Promise<MCPCallResult> {
-            // ---------------------------------------------------------------
-            // Look up tool by name
-            // ---------------------------------------------------------------
+    async handleToolCall(
+      name: string,
+      args: Readonly<Record<string, unknown>>,
+    ): Promise<MCPCallResult> {
+      // ---------------------------------------------------------------
+      // Look up tool by name
+      // ---------------------------------------------------------------
 
-            const tool = toolMap.get(name);
+      const tool = toolMap.get(name);
 
-            if (tool === undefined) {
-                const availableTools = Array.from(toolMap.keys()).join(', ');
-                return {
-                    success: false,
-                    code: 'UNKNOWN_TOOL',
-                    message: `Unknown tool '${name}'. Available tools: ${availableTools}.`,
-                };
-            }
+      if (tool === undefined) {
+        const availableTools = Array.from(toolMap.keys()).join(', ');
+        return {
+          success: false,
+          code: 'UNKNOWN_TOOL',
+          message: `Unknown tool '${name}'. Available tools: ${availableTools}.`,
+        };
+      }
 
-            // ---------------------------------------------------------------
-            // Execute handler with error wrapping
-            // ---------------------------------------------------------------
+      // ---------------------------------------------------------------
+      // Execute handler with error wrapping
+      // ---------------------------------------------------------------
 
-            try {
-                const data = await tool.handler(args);
-                return { success: true, data };
-            } catch (error: unknown) {
-                return formatError(error);
-            }
-        },
-    };
+      try {
+        const data = await tool.handler(args);
+        return { success: true, data };
+      } catch (error: unknown) {
+        return formatError(error);
+      }
+    },
+  };
 
-    return Object.freeze(server);
+  return Object.freeze(server);
 }
 
 // ---------------------------------------------------------------------------
@@ -196,25 +193,25 @@ export function createMCPServer(sdk: EnterstellarAgentSDK): EnterstellarMCPServe
  * @returns An `MCPToolErrorResponse` with code and message.
  */
 function formatError(error: unknown): MCPToolErrorResponse {
-    if (error instanceof EnterstellarError) {
-        return {
-            success: false,
-            code: error.code,
-            message: error.message,
-        };
-    }
-
-    if (error instanceof Error) {
-        return {
-            success: false,
-            code: 'INTERNAL_ERROR',
-            message: error.message,
-        };
-    }
-
+  if (error instanceof EnterstellarError) {
     return {
-        success: false,
-        code: 'INTERNAL_ERROR',
-        message: String(error),
+      success: false,
+      code: error.code,
+      message: error.message,
     };
+  }
+
+  if (error instanceof Error) {
+    return {
+      success: false,
+      code: 'INTERNAL_ERROR',
+      message: error.message,
+    };
+  }
+
+  return {
+    success: false,
+    code: 'INTERNAL_ERROR',
+    message: String(error),
+  };
 }

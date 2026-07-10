@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge/templates/builtin
+ * @module @enterstellar/forge/templates/builtin
  * @description The 7 pre-approved LocalForge template schemas.
  *
  * Each template is a declarative JSON schema describing a layout pattern.
@@ -21,7 +21,7 @@
  * | `badge` | Status indicator or label |
  *
  * @see Design Choice F2 — 7 pre-approved patterns.
- * @see Design Choice F4 — shipped inside `@enterstellar-ai/forge`, not a separate package.
+ * @see Design Choice F4 — shipped inside `@enterstellar/forge`, not a separate package.
  */
 
 import type { ForgeTemplate } from '../types.js';
@@ -40,34 +40,44 @@ import type { ForgeTemplate } from '../types.js';
  * @see Design Choice F2 — decision tree routes `data-display` category here.
  */
 const CARD_TEMPLATE: ForgeTemplate = {
-    name: 'card',
-    categories: ['data-display', 'clinical'],
-    description: 'Single-entity summary card with title, subtitle, and content slots.',
-    slots: [
-        { name: 'title', type: 'string', required: true, description: 'Primary heading for the card.' },
-        { name: 'subtitle', type: 'string', required: false, description: 'Secondary heading or context line.' },
-        { name: 'content', type: 'record', required: false, description: 'Key-value pairs for card body.' },
-        { name: 'status', type: 'string', required: false, description: 'Status indicator text.' },
-        { name: 'actions', type: 'string[]', required: false, description: 'Action button labels.' },
-    ],
-    tokens: {
-        background: 'token:surface',
-        border: 'token:border',
-        shadow: 'token:shadow-sm',
-        titleColor: 'token:text-primary',
-        subtitleColor: 'token:text-secondary',
+  name: 'card',
+  categories: ['data-display', 'clinical'],
+  description: 'Single-entity summary card with title, subtitle, and content slots.',
+  slots: [
+    { name: 'title', type: 'string', required: true, description: 'Primary heading for the card.' },
+    {
+      name: 'subtitle',
+      type: 'string',
+      required: false,
+      description: 'Secondary heading or context line.',
     },
-    states: {
-        loading: 'CardSkeleton',
-        error: 'CardError',
-        empty: 'CardEmpty',
-        ready: 'Card',
+    {
+      name: 'content',
+      type: 'record',
+      required: false,
+      description: 'Key-value pairs for card body.',
     },
-    accessibility: {
-        role: 'article',
-        ariaLabel: '{name} card',
-        announceOnUpdate: false,
-    },
+    { name: 'status', type: 'string', required: false, description: 'Status indicator text.' },
+    { name: 'actions', type: 'string[]', required: false, description: 'Action button labels.' },
+  ],
+  tokens: {
+    background: 'token:surface',
+    border: 'token:border',
+    shadow: 'token:shadow-sm',
+    titleColor: 'token:text-primary',
+    subtitleColor: 'token:text-secondary',
+  },
+  states: {
+    loading: 'CardSkeleton',
+    error: 'CardError',
+    empty: 'CardEmpty',
+    ready: 'Card',
+  },
+  accessibility: {
+    role: 'article',
+    ariaLabel: '{name} card',
+    announceOnUpdate: false,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -81,32 +91,47 @@ const CARD_TEMPLATE: ForgeTemplate = {
  * Renders as a vertical stack of items with optional grouping.
  */
 const LIST_TEMPLATE: ForgeTemplate = {
-    name: 'list',
-    categories: ['data-display', 'navigation', 'layout'],
-    description: 'Ordered collection of items with optional grouping.',
-    slots: [
-        { name: 'items', type: 'string[]', required: true, description: 'Array of item labels or identifiers.' },
-        { name: 'heading', type: 'string', required: false, description: 'List heading.' },
-        { name: 'emptyMessage', type: 'string', required: false, description: 'Message shown when items array is empty.' },
-        { name: 'selectable', type: 'boolean', required: false, description: 'Whether items are selectable.' },
-    ],
-    tokens: {
-        background: 'token:surface',
-        itemBorder: 'token:border-subtle',
-        itemHover: 'token:surface-hover',
-        textColor: 'token:text-primary',
+  name: 'list',
+  categories: ['data-display', 'navigation', 'layout'],
+  description: 'Ordered collection of items with optional grouping.',
+  slots: [
+    {
+      name: 'items',
+      type: 'string[]',
+      required: true,
+      description: 'Array of item labels or identifiers.',
     },
-    states: {
-        loading: 'ListSkeleton',
-        error: 'ListError',
-        empty: 'ListEmpty',
-        ready: 'List',
+    { name: 'heading', type: 'string', required: false, description: 'List heading.' },
+    {
+      name: 'emptyMessage',
+      type: 'string',
+      required: false,
+      description: 'Message shown when items array is empty.',
     },
-    accessibility: {
-        role: 'list',
-        ariaLabel: '{name} list',
-        announceOnUpdate: true,
+    {
+      name: 'selectable',
+      type: 'boolean',
+      required: false,
+      description: 'Whether items are selectable.',
     },
+  ],
+  tokens: {
+    background: 'token:surface',
+    itemBorder: 'token:border-subtle',
+    itemHover: 'token:surface-hover',
+    textColor: 'token:text-primary',
+  },
+  states: {
+    loading: 'ListSkeleton',
+    error: 'ListError',
+    empty: 'ListEmpty',
+    ready: 'List',
+  },
+  accessibility: {
+    role: 'list',
+    ariaLabel: '{name} list',
+    announceOnUpdate: true,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -120,33 +145,48 @@ const LIST_TEMPLATE: ForgeTemplate = {
  * Renders as structured rows with defined columns.
  */
 const TABLE_TEMPLATE: ForgeTemplate = {
-    name: 'table',
-    categories: ['data-display', 'admin'],
-    description: 'Tabular data display with columns, rows, and optional sorting.',
-    slots: [
-        { name: 'columns', type: 'string[]', required: true, description: 'Column header labels.' },
-        { name: 'caption', type: 'string', required: false, description: 'Table caption for accessibility.' },
-        { name: 'sortable', type: 'boolean', required: false, description: 'Whether columns are sortable.' },
-        { name: 'striped', type: 'boolean', required: false, description: 'Whether to use alternating row colors.' },
-    ],
-    tokens: {
-        background: 'token:surface',
-        headerBackground: 'token:surface-elevated',
-        border: 'token:border',
-        textColor: 'token:text-primary',
-        headerTextColor: 'token:text-secondary',
+  name: 'table',
+  categories: ['data-display', 'admin'],
+  description: 'Tabular data display with columns, rows, and optional sorting.',
+  slots: [
+    { name: 'columns', type: 'string[]', required: true, description: 'Column header labels.' },
+    {
+      name: 'caption',
+      type: 'string',
+      required: false,
+      description: 'Table caption for accessibility.',
     },
-    states: {
-        loading: 'TableSkeleton',
-        error: 'TableError',
-        empty: 'TableEmpty',
-        ready: 'Table',
+    {
+      name: 'sortable',
+      type: 'boolean',
+      required: false,
+      description: 'Whether columns are sortable.',
     },
-    accessibility: {
-        role: 'table',
-        ariaLabel: '{name} table',
-        announceOnUpdate: false,
+    {
+      name: 'striped',
+      type: 'boolean',
+      required: false,
+      description: 'Whether to use alternating row colors.',
     },
+  ],
+  tokens: {
+    background: 'token:surface',
+    headerBackground: 'token:surface-elevated',
+    border: 'token:border',
+    textColor: 'token:text-primary',
+    headerTextColor: 'token:text-secondary',
+  },
+  states: {
+    loading: 'TableSkeleton',
+    error: 'TableError',
+    empty: 'TableEmpty',
+    ready: 'Table',
+  },
+  accessibility: {
+    role: 'table',
+    ariaLabel: '{name} table',
+    announceOnUpdate: false,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -161,34 +201,44 @@ const TABLE_TEMPLATE: ForgeTemplate = {
  * this template only declares the data contract.
  */
 const CHART_TEMPLATE: ForgeTemplate = {
-    name: 'chart',
-    categories: ['data-display', 'clinical'],
-    description: 'Data visualization chart with configurable type and data slots.',
-    slots: [
-        { name: 'chartType', type: 'string', required: true, description: 'Chart type: bar, line, pie, area, scatter.' },
-        { name: 'title', type: 'string', required: false, description: 'Chart title.' },
-        { name: 'xLabel', type: 'string', required: false, description: 'X-axis label.' },
-        { name: 'yLabel', type: 'string', required: false, description: 'Y-axis label.' },
-        { name: 'showLegend', type: 'boolean', required: false, description: 'Whether to display the legend.' },
-    ],
-    tokens: {
-        background: 'token:surface',
-        axisColor: 'token:text-secondary',
-        gridColor: 'token:border-subtle',
-        primaryColor: 'token:accent',
-        secondaryColor: 'token:accent-secondary',
+  name: 'chart',
+  categories: ['data-display', 'clinical'],
+  description: 'Data visualization chart with configurable type and data slots.',
+  slots: [
+    {
+      name: 'chartType',
+      type: 'string',
+      required: true,
+      description: 'Chart type: bar, line, pie, area, scatter.',
     },
-    states: {
-        loading: 'ChartSkeleton',
-        error: 'ChartError',
-        empty: 'ChartEmpty',
-        ready: 'Chart',
+    { name: 'title', type: 'string', required: false, description: 'Chart title.' },
+    { name: 'xLabel', type: 'string', required: false, description: 'X-axis label.' },
+    { name: 'yLabel', type: 'string', required: false, description: 'Y-axis label.' },
+    {
+      name: 'showLegend',
+      type: 'boolean',
+      required: false,
+      description: 'Whether to display the legend.',
     },
-    accessibility: {
-        role: 'img',
-        ariaLabel: '{name} chart',
-        announceOnUpdate: false,
-    },
+  ],
+  tokens: {
+    background: 'token:surface',
+    axisColor: 'token:text-secondary',
+    gridColor: 'token:border-subtle',
+    primaryColor: 'token:accent',
+    secondaryColor: 'token:accent-secondary',
+  },
+  states: {
+    loading: 'ChartSkeleton',
+    error: 'ChartError',
+    empty: 'ChartEmpty',
+    ready: 'Chart',
+  },
+  accessibility: {
+    role: 'img',
+    ariaLabel: '{name} chart',
+    announceOnUpdate: false,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -202,34 +252,39 @@ const CHART_TEMPLATE: ForgeTemplate = {
  * Generates contracts with field-level slots for dynamic form construction.
  */
 const FORM_TEMPLATE: ForgeTemplate = {
-    name: 'form',
-    categories: ['form', 'admin'],
-    description: 'Input collection form with configurable fields and validation.',
-    slots: [
-        { name: 'fields', type: 'string[]', required: true, description: 'Field names for the form.' },
-        { name: 'title', type: 'string', required: false, description: 'Form title.' },
-        { name: 'submitLabel', type: 'string', required: false, description: 'Submit button label.' },
-        { name: 'cancelLabel', type: 'string', required: false, description: 'Cancel button label.' },
-        { name: 'readonly', type: 'boolean', required: false, description: 'Whether the form is read-only.' },
-    ],
-    tokens: {
-        background: 'token:surface',
-        inputBorder: 'token:border',
-        inputFocus: 'token:accent',
-        labelColor: 'token:text-secondary',
-        errorColor: 'token:danger',
+  name: 'form',
+  categories: ['form', 'admin'],
+  description: 'Input collection form with configurable fields and validation.',
+  slots: [
+    { name: 'fields', type: 'string[]', required: true, description: 'Field names for the form.' },
+    { name: 'title', type: 'string', required: false, description: 'Form title.' },
+    { name: 'submitLabel', type: 'string', required: false, description: 'Submit button label.' },
+    { name: 'cancelLabel', type: 'string', required: false, description: 'Cancel button label.' },
+    {
+      name: 'readonly',
+      type: 'boolean',
+      required: false,
+      description: 'Whether the form is read-only.',
     },
-    states: {
-        loading: 'FormSkeleton',
-        error: 'FormError',
-        empty: 'FormEmpty',
-        ready: 'Form',
-    },
-    accessibility: {
-        role: 'form',
-        ariaLabel: '{name} form',
-        announceOnUpdate: false,
-    },
+  ],
+  tokens: {
+    background: 'token:surface',
+    inputBorder: 'token:border',
+    inputFocus: 'token:accent',
+    labelColor: 'token:text-secondary',
+    errorColor: 'token:danger',
+  },
+  states: {
+    loading: 'FormSkeleton',
+    error: 'FormError',
+    empty: 'FormEmpty',
+    ready: 'Form',
+  },
+  accessibility: {
+    role: 'form',
+    ariaLabel: '{name} form',
+    announceOnUpdate: false,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -243,34 +298,54 @@ const FORM_TEMPLATE: ForgeTemplate = {
  * full-page or full-panel entity display with multiple sections.
  */
 const DETAIL_TEMPLATE: ForgeTemplate = {
-    name: 'detail',
-    categories: ['data-display', 'clinical', 'admin'],
-    description: 'Full entity detail view with sections and metadata.',
-    slots: [
-        { name: 'title', type: 'string', required: true, description: 'Entity name or primary identifier.' },
-        { name: 'subtitle', type: 'string', required: false, description: 'Secondary identifier or context.' },
-        { name: 'sections', type: 'string[]', required: false, description: 'Section names for the detail view.' },
-        { name: 'metadata', type: 'record', required: false, description: 'Key-value metadata pairs.' },
-        { name: 'editable', type: 'boolean', required: false, description: 'Whether inline editing is enabled.' },
-    ],
-    tokens: {
-        background: 'token:surface',
-        sectionBorder: 'token:border-subtle',
-        titleColor: 'token:text-primary',
-        metadataColor: 'token:text-secondary',
-        accentColor: 'token:accent',
+  name: 'detail',
+  categories: ['data-display', 'clinical', 'admin'],
+  description: 'Full entity detail view with sections and metadata.',
+  slots: [
+    {
+      name: 'title',
+      type: 'string',
+      required: true,
+      description: 'Entity name or primary identifier.',
     },
-    states: {
-        loading: 'DetailSkeleton',
-        error: 'DetailError',
-        empty: 'DetailEmpty',
-        ready: 'Detail',
+    {
+      name: 'subtitle',
+      type: 'string',
+      required: false,
+      description: 'Secondary identifier or context.',
     },
-    accessibility: {
-        role: 'article',
-        ariaLabel: '{name} detail view',
-        announceOnUpdate: true,
+    {
+      name: 'sections',
+      type: 'string[]',
+      required: false,
+      description: 'Section names for the detail view.',
     },
+    { name: 'metadata', type: 'record', required: false, description: 'Key-value metadata pairs.' },
+    {
+      name: 'editable',
+      type: 'boolean',
+      required: false,
+      description: 'Whether inline editing is enabled.',
+    },
+  ],
+  tokens: {
+    background: 'token:surface',
+    sectionBorder: 'token:border-subtle',
+    titleColor: 'token:text-primary',
+    metadataColor: 'token:text-secondary',
+    accentColor: 'token:accent',
+  },
+  states: {
+    loading: 'DetailSkeleton',
+    error: 'DetailError',
+    empty: 'DetailEmpty',
+    ready: 'Detail',
+  },
+  accessibility: {
+    role: 'article',
+    ariaLabel: '{name} detail view',
+    announceOnUpdate: true,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -284,34 +359,44 @@ const DETAIL_TEMPLATE: ForgeTemplate = {
  * The simplest template — few slots, minimal surface area.
  */
 const BADGE_TEMPLATE: ForgeTemplate = {
-    name: 'badge',
-    categories: ['feedback', 'utility'],
-    description: 'Status indicator badge with label and variant.',
-    slots: [
-        { name: 'label', type: 'string', required: true, description: 'Badge display text.' },
-        { name: 'variant', type: 'string', required: false, description: 'Visual variant: info, success, warning, danger, neutral.' },
-        { name: 'icon', type: 'string', required: false, description: 'Optional icon name or identifier.' },
-    ],
-    tokens: {
-        background: 'token:surface-elevated',
-        textColor: 'token:text-primary',
-        borderRadius: 'token:radius-full',
-        infoColor: 'token:info',
-        successColor: 'token:success',
-        warningColor: 'token:warning',
-        dangerColor: 'token:danger',
+  name: 'badge',
+  categories: ['feedback', 'utility'],
+  description: 'Status indicator badge with label and variant.',
+  slots: [
+    { name: 'label', type: 'string', required: true, description: 'Badge display text.' },
+    {
+      name: 'variant',
+      type: 'string',
+      required: false,
+      description: 'Visual variant: info, success, warning, danger, neutral.',
     },
-    states: {
-        loading: 'BadgeSkeleton',
-        error: 'BadgeError',
-        empty: 'BadgeEmpty',
-        ready: 'Badge',
+    {
+      name: 'icon',
+      type: 'string',
+      required: false,
+      description: 'Optional icon name or identifier.',
     },
-    accessibility: {
-        role: 'status',
-        ariaLabel: '{name} badge',
-        announceOnUpdate: true,
-    },
+  ],
+  tokens: {
+    background: 'token:surface-elevated',
+    textColor: 'token:text-primary',
+    borderRadius: 'token:radius-full',
+    infoColor: 'token:info',
+    successColor: 'token:success',
+    warningColor: 'token:warning',
+    dangerColor: 'token:danger',
+  },
+  states: {
+    loading: 'BadgeSkeleton',
+    error: 'BadgeError',
+    empty: 'BadgeEmpty',
+    ready: 'Badge',
+  },
+  accessibility: {
+    role: 'status',
+    ariaLabel: '{name} badge',
+    announceOnUpdate: true,
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -326,16 +411,16 @@ const BADGE_TEMPLATE: ForgeTemplate = {
  * these at initialization time.
  *
  * @see Design Choice F2 — 7 pre-approved patterns.
- * @see Design Choice F4 — shipped inside `@enterstellar-ai/forge`.
+ * @see Design Choice F4 — shipped inside `@enterstellar/forge`.
  */
 export const BUILTIN_TEMPLATES: readonly ForgeTemplate[] = [
-    CARD_TEMPLATE,
-    LIST_TEMPLATE,
-    TABLE_TEMPLATE,
-    CHART_TEMPLATE,
-    FORM_TEMPLATE,
-    DETAIL_TEMPLATE,
-    BADGE_TEMPLATE,
+  CARD_TEMPLATE,
+  LIST_TEMPLATE,
+  TABLE_TEMPLATE,
+  CHART_TEMPLATE,
+  FORM_TEMPLATE,
+  DETAIL_TEMPLATE,
+  BADGE_TEMPLATE,
 ] as const;
 
 /**
@@ -348,5 +433,5 @@ export const BUILTIN_TEMPLATES: readonly ForgeTemplate[] = [
  * ```
  */
 export const BUILTIN_TEMPLATE_NAMES: ReadonlySet<string> = new Set(
-    BUILTIN_TEMPLATES.map((t) => t.name),
+  BUILTIN_TEMPLATES.map((t) => t.name),
 );

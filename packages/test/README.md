@@ -1,14 +1,14 @@
-# @enterstellar-ai/test
+# @enterstellar/test
 
 > Intent-based testing framework for Enterstellar GenUI — deterministic harness, assertion helpers, Vitest matchers, VCR fixtures, coverage analysis, and regression detection.
 
-The Enterstellar test harness replaces real LLM calls with deterministic mock responses while keeping the **compiler validation pipeline completely real**. Zod schema validation, design token enforcement, and accessibility auditing all run against the actual `@enterstellar-ai/compiler` — only the intent resolution step is mocked. This means tests catch every category of production bug except LLM misbehavior.
+The Enterstellar test harness replaces real LLM calls with deterministic mock responses while keeping the **compiler validation pipeline completely real**. Zod schema validation, design token enforcement, and accessibility auditing all run against the actual `@enterstellar/compiler` — only the intent resolution step is mocked. This means tests catch every category of production bug except LLM misbehavior.
 
 ## Quick Start
 
 ```ts
-import { createTestHarness } from '@enterstellar-ai/test';
-import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+import { createTestHarness } from '@enterstellar/test';
+import { createRegistry, defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 // 1. Define a component
@@ -55,7 +55,7 @@ harness.expect.compilationToPass(result);
 ### With Vitest Matchers
 
 ```ts
-import { createTestHarness, enterstellarMatchers } from '@enterstellar-ai/test';
+import { createTestHarness, enterstellarMatchers } from '@enterstellar/test';
 import { expect } from 'vitest';
 
 expect.extend(enterstellarMatchers);
@@ -76,7 +76,7 @@ const trace = await harness.resolve('show patient vitals');
 ### VCR Fixtures
 
 ```ts
-import { saveFixtures, loadFixtures } from '@enterstellar-ai/test';
+import { saveFixtures, loadFixtures } from '@enterstellar/test';
 
 // Record mode — save current results
 await saveFixtures(entries, '.enterstellar-fixtures');
@@ -176,7 +176,7 @@ const fixtures = await loadFixtures('.enterstellar-fixtures');
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags. Overrides `composite: false` for tsup DTS. |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. Single entry: `src/index.ts`.                                      |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `@enterstellar-ai/registry`, `@enterstellar-ai/compiler`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `@enterstellar/registry`, `@enterstellar/compiler`, `zod ^4.3.6`
 
 ### Design Choices Applied
 

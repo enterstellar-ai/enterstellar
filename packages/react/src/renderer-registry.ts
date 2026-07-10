@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/react/renderer-registry
+ * @module @enterstellar/react/renderer-registry
  * @description Module-level singleton registry for React component renderers.
  *
  * **Architecture (R6/RE13/L15):**
- * The `EnterstellarRegistry` from `@enterstellar-ai/registry` stores pure data contracts
+ * The `EnterstellarRegistry` from `@enterstellar/registry` stores pure data contracts
  * (`ComponentContract`) with zero framework imports. The `RendererRegistry`
  * here is the React-specific counterpart: it maps component names to their
  * React `ComponentType` implementations.
@@ -23,19 +23,19 @@
  *
  * @example
  * ```ts
- * import { rendererRegistry, registerRenderer } from '@enterstellar-ai/react';
+ * import { rendererRegistry, registerRenderer } from '@enterstellar/react';
  * import { PatientVitals } from './components/patient-vitals';
  *
  * registerRenderer('PatientVitals', PatientVitals);
  *
  * // Or via defineComponent() convenience wrapper:
- * import { defineComponent } from '@enterstellar-ai/react';
+ * import { defineComponent } from '@enterstellar/react';
  * defineComponent({ contract: vitalsContract, render: PatientVitals });
  * ```
  */
 
 import type { EnterstellarComponentRenderer } from './types.js';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // RendererRegistry Interface
@@ -45,54 +45,54 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * A registry mapping component names to their React component implementations.
  *
  * This is the React-specific complement to `EnterstellarRegistry` (which holds
- * pure data contracts). The split ensures `@enterstellar-ai/registry` has zero
+ * pure data contracts). The split ensures `@enterstellar/registry` has zero
  * framework imports (L15).
  *
  * @see Design Choice R6, RE13
  */
 export interface RendererRegistry {
-    /**
-     * Registers a React component renderer for a named component.
-     *
-     * @param name - PascalCase component name (must match `ComponentContract.name`).
-     * @param component - The React component to render for this contract.
-     * @throws {EnterstellarError} `ENS-3001` if `name` is empty.
-     */
-    register(name: string, component: EnterstellarComponentRenderer): void;
+  /**
+   * Registers a React component renderer for a named component.
+   *
+   * @param name - PascalCase component name (must match `ComponentContract.name`).
+   * @param component - The React component to render for this contract.
+   * @throws {EnterstellarError} `ENS-3001` if `name` is empty.
+   */
+  register(name: string, component: EnterstellarComponentRenderer): void;
 
-    /**
-     * Retrieves the React component for a named component.
-     *
-     * @param name - PascalCase component name.
-     * @returns The React component, or `undefined` if not registered.
-     */
-    get(name: string): EnterstellarComponentRenderer | undefined;
+  /**
+   * Retrieves the React component for a named component.
+   *
+   * @param name - PascalCase component name.
+   * @returns The React component, or `undefined` if not registered.
+   */
+  get(name: string): EnterstellarComponentRenderer | undefined;
 
-    /**
-     * Checks if a renderer is registered for the given name.
-     *
-     * @param name - PascalCase component name.
-     * @returns `true` if a renderer is registered, `false` otherwise.
-     */
-    has(name: string): boolean;
+  /**
+   * Checks if a renderer is registered for the given name.
+   *
+   * @param name - PascalCase component name.
+   * @returns `true` if a renderer is registered, `false` otherwise.
+   */
+  has(name: string): boolean;
 
-    /**
-     * Removes a registered renderer by name.
-     *
-     * @param name - PascalCase component name.
-     * @returns `true` if the renderer was removed, `false` if not found.
-     */
-    unregister(name: string): boolean;
+  /**
+   * Removes a registered renderer by name.
+   *
+   * @param name - PascalCase component name.
+   * @returns `true` if the renderer was removed, `false` if not found.
+   */
+  unregister(name: string): boolean;
 
-    /**
-     * Returns the total number of registered renderers.
-     */
-    readonly size: number;
+  /**
+   * Returns the total number of registered renderers.
+   */
+  readonly size: number;
 
-    /**
-     * Removes all registered renderers. Useful for test teardown.
-     */
-    clear(): void;
+  /**
+   * Removes all registered renderers. Useful for test teardown.
+   */
+  clear(): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -109,41 +109,41 @@ export interface RendererRegistry {
  * @returns A new `RendererRegistry` backed by a `Map`.
  */
 export function createRendererRegistry(): RendererRegistry {
-    const renderers = new Map<string, EnterstellarComponentRenderer>();
+  const renderers = new Map<string, EnterstellarComponentRenderer>();
 
-    return {
-        register(name: string, component: EnterstellarComponentRenderer): void {
-            if (!name) {
-                throw new EnterstellarError(
-                    'ENS-3001',
-                    'react',
-                    'Renderer name must be a non-empty string.',
-                    false,
-                );
-            }
-            renderers.set(name, component);
-        },
+  return {
+    register(name: string, component: EnterstellarComponentRenderer): void {
+      if (!name) {
+        throw new EnterstellarError(
+          'ENS-3001',
+          'react',
+          'Renderer name must be a non-empty string.',
+          false,
+        );
+      }
+      renderers.set(name, component);
+    },
 
-        get(name: string): EnterstellarComponentRenderer | undefined {
-            return renderers.get(name);
-        },
+    get(name: string): EnterstellarComponentRenderer | undefined {
+      return renderers.get(name);
+    },
 
-        has(name: string): boolean {
-            return renderers.has(name);
-        },
+    has(name: string): boolean {
+      return renderers.has(name);
+    },
 
-        unregister(name: string): boolean {
-            return renderers.delete(name);
-        },
+    unregister(name: string): boolean {
+      return renderers.delete(name);
+    },
 
-        get size(): number {
-            return renderers.size;
-        },
+    get size(): number {
+      return renderers.size;
+    },
 
-        clear(): void {
-            renderers.clear();
-        },
-    };
+    clear(): void {
+      renderers.clear();
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +151,7 @@ export function createRendererRegistry(): RendererRegistry {
 // ---------------------------------------------------------------------------
 
 /**
- * The global renderer registry singleton for `@enterstellar-ai/react`.
+ * The global renderer registry singleton for `@enterstellar/react`.
  *
  * Components are registered here at module scope and resolved by
  * `Zone` during the render phase. This singleton is the
@@ -159,7 +159,7 @@ export function createRendererRegistry(): RendererRegistry {
  *
  * @example
  * ```ts
- * import { rendererRegistry } from '@enterstellar-ai/react';
+ * import { rendererRegistry } from '@enterstellar/react';
  *
  * console.log(rendererRegistry.size); // 0
  * rendererRegistry.register('PatientVitals', PatientVitalsComponent);
@@ -182,15 +182,12 @@ export const rendererRegistry: RendererRegistry = createRendererRegistry();
  *
  * @example
  * ```ts
- * import { registerRenderer } from '@enterstellar-ai/react';
+ * import { registerRenderer } from '@enterstellar/react';
  * import { PatientVitals } from './components/patient-vitals';
  *
  * registerRenderer('PatientVitals', PatientVitals);
  * ```
  */
-export function registerRenderer(
-    name: string,
-    component: EnterstellarComponentRenderer,
-): void {
-    rendererRegistry.register(name, component);
+export function registerRenderer(name: string, component: EnterstellarComponentRenderer): void {
+  rendererRegistry.register(name, component);
 }

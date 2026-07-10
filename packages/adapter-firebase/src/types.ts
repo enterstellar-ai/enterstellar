@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapter-firebase/types
+ * @module @enterstellar/adapter-firebase/types
  * @description Configuration types for Firebase adapter factories.
  *
  * These types define the input shapes consumers pass to
@@ -26,42 +26,42 @@ import type { Firestore } from 'firebase/firestore';
  * @example
  * ```ts
  * import { getAuth } from 'firebase/auth';
- * import { createFirebaseAuthAdapter } from '@enterstellar-ai/adapter-firebase';
+ * import { createFirebaseAuthAdapter } from '@enterstellar/adapter-firebase';
  *
  * const auth = getAuth(app);
  * const adapter = createFirebaseAuthAdapter({ auth });
  * ```
  */
 export type FirebaseAuthConfig = {
-    /**
-     * The Firebase Auth instance.
-     * Must be initialized with `getAuth()` from `firebase/auth`.
-     */
-    readonly auth: Auth;
+  /**
+   * The Firebase Auth instance.
+   * Must be initialized with `getAuth()` from `firebase/auth`.
+   */
+  readonly auth: Auth;
 
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     * @default `'firebase-auth'`
-     */
-    readonly name?: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   * @default `'firebase-auth'`
+   */
+  readonly name?: string;
 
-    /**
-     * Custom role extraction function.
-     *
-     * Called with the raw Firebase `User` object after a successful auth check.
-     * Returns an array of role strings for RBAC zone gating.
-     *
-     * @default Extracts from `getIdTokenResult().claims.roles` (falls back to `[]`).
-     * @param user - The raw Firebase user object.
-     * @returns Array of role strings (e.g., `['clinician', 'admin']`).
-     *
-     * @example
-     * ```ts
-     * // Extract roles from custom claims
-     * roleExtractor: (user) => (user as any).customClaims?.roles ?? []
-     * ```
-     */
-    readonly roleExtractor?: (user: unknown) => string[];
+  /**
+   * Custom role extraction function.
+   *
+   * Called with the raw Firebase `User` object after a successful auth check.
+   * Returns an array of role strings for RBAC zone gating.
+   *
+   * @default Extracts from `getIdTokenResult().claims.roles` (falls back to `[]`).
+   * @param user - The raw Firebase user object.
+   * @returns Array of role strings (e.g., `['clinician', 'admin']`).
+   *
+   * @example
+   * ```ts
+   * // Extract roles from custom claims
+   * roleExtractor: (user) => (user as any).customClaims?.roles ?? []
+   * ```
+   */
+  readonly roleExtractor?: (user: unknown) => string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -77,22 +77,22 @@ export type FirebaseAuthConfig = {
  * @example
  * ```ts
  * import { getFirestore } from 'firebase/firestore';
- * import { createFirebaseDataAdapter } from '@enterstellar-ai/adapter-firebase';
+ * import { createFirebaseDataAdapter } from '@enterstellar/adapter-firebase';
  *
  * const firestore = getFirestore(app);
  * const data = createFirebaseDataAdapter({ firestore });
  * ```
  */
 export type FirebaseDataConfig = {
-    /**
-     * The Firestore instance.
-     * Must be initialized with `getFirestore()` from `firebase/firestore`.
-     */
-    readonly firestore: Firestore;
+  /**
+   * The Firestore instance.
+   * Must be initialized with `getFirestore()` from `firebase/firestore`.
+   */
+  readonly firestore: Firestore;
 
-    /**
-     * Human-readable adapter name for error messages and DevTools display.
-     * @default `'firebase-data'`
-     */
-    readonly name?: string;
+  /**
+   * Human-readable adapter name for error messages and DevTools display.
+   * @default `'firebase-data'`
+   */
+  readonly name?: string;
 };

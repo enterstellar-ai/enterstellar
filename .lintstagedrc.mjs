@@ -4,9 +4,24 @@
  * Runs ESLint + Prettier on staged TypeScript files only.
  * Triggered by Husky pre-commit hook for fast, focused commits.
  *
+ * Test files and legacy proxy shims are excluded from ESLint here — they are
+ * validated by per-package `turbo run test` / `typecheck` instead.
+ *
  * @see agent/06-enterstellar-setup.md — DX Tooling Chain
  */
 export default {
-    '*.{ts,tsx}': ['eslint --fix --max-warnings=0 --no-warn-ignored', 'prettier --write'],
+    '*.{ts,tsx}': (files) => {
+        const lintable = files.filter(
+            (file) => !file.includes('/__tests__/') && !file.startsWith('legacy/'),
+        );
+        const commands = ['prettier --write ' + files.map((f) => `"${f}"`).join(' ')];
+        if (lintable.length > 0) {
+            commands.unshift(
+                'eslint --fix --max-warnings=0 --no-warn-ignored ' +
+                    lintable.map((f) => `"${f}"`).join(' '),
+            );
+        }
+        return commands;
+    },
     '*.{json,md,yaml,yml}': ['prettier --write'],
 };

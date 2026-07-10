@@ -1,19 +1,19 @@
 ---
-title: "@enterstellar-ai/registry"
+title: "@enterstellar/registry"
 description: Component Contract Registry — defineComponent(), createRegistry(), mergeRegistries(), and the EnterstellarRegistry interface.
 icon: Library
 ---
 
 ## Purpose
 
-`@enterstellar-ai/registry` is the Component Contract layer — M3 moat. It validates and stores `ComponentContract` definitions, generates the compact Agent Manifest injected into LLM system prompts, and exposes the runtime registry API (`get`, `list`, `getSchema`, `register`).
+`@enterstellar/registry` is the Component Contract layer — M3 moat. It validates and stores `ComponentContract` definitions, generates the compact Agent Manifest injected into LLM system prompts, and exposes the runtime registry API (`get`, `list`, `getSchema`, `register`).
 
 No framework imports. Pure TypeScript (L15).
 
 ## Installation
 
 ```bash
-npm install @enterstellar-ai/registry @enterstellar-ai/types zod
+npm install @enterstellar/registry @enterstellar/types zod
 ```
 
 ## Factories
@@ -23,7 +23,7 @@ npm install @enterstellar-ai/registry @enterstellar-ai/types zod
 Validates and returns a `ComponentContract`. The validator runs at module load time — invalid contracts throw immediately.
 
 ```ts
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 export const StatusCard = defineComponent({
@@ -85,8 +85,8 @@ export const StatusCard = defineComponent({
 Creates an `EnterstellarRegistry` instance. Validates all contracts at creation time. Throws `EnterstellarError` on the first invalid contract.
 
 ```ts
-import { createRegistry } from '@enterstellar-ai/registry';
-import type { DesignTokenSet } from '@enterstellar-ai/types';
+import { createRegistry } from '@enterstellar/registry';
+import type { DesignTokenSet } from '@enterstellar/types';
 import { StatusCard, DataTable, MetricChart } from './contracts';
 
 const tokens: DesignTokenSet = {
@@ -117,7 +117,7 @@ const registry = createRegistry({
 Merges two or more `EnterstellarRegistry` instances. Throws on duplicate component names.
 
 ```ts
-import { mergeRegistries } from '@enterstellar-ai/registry';
+import { mergeRegistries } from '@enterstellar/registry';
 import { coreRegistry } from './enterstellar/registry-core';
 import { analyticsRegistry } from './enterstellar/registry-analytics';
 
@@ -131,7 +131,7 @@ const registry = mergeRegistries(coreRegistry, analyticsRegistry);
 Validates a single contract without registering it. Returns `{ valid, violations }`.
 
 ```ts
-import { validateContract } from '@enterstellar-ai/registry';
+import { validateContract } from '@enterstellar/registry';
 
 const result = validateContract(StatusCard);
 if (!result.valid) {
@@ -147,7 +147,7 @@ if (!result.valid) {
 Generates the compact Agent Manifest string for injection into an LLM system prompt. The manifest contains only `name`, `description`, and `keyProps` for each contract — not the full Zod schema (~200 tokens for a 50-component registry vs. ~50,000 for the full registry).
 
 ```ts
-import { generateManifest } from '@enterstellar-ai/registry';
+import { generateManifest } from '@enterstellar/registry';
 
 const manifest = generateManifest(registry);
 // Inject into your LLM system prompt:
@@ -179,7 +179,7 @@ const manifest = generateManifest(registry);
 | `ComponentContractInput` | Input type for `defineComponent()` (before normalization) |
 | `ValidationResult` | Return type of `validateContract()` |
 | `ValidationViolation` | Single violation from contract validation |
-| `CompactManifestEntry` | Entry in the Agent Manifest (from `@enterstellar-ai/types`) |
+| `CompactManifestEntry` | Entry in the Agent Manifest (from `@enterstellar/types`) |
 
 ---
 

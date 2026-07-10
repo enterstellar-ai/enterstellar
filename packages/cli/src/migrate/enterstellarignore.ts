@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/migrate/enterstellarignore
+ * @module @enterstellar/cli/migrate/enterstellarignore
  * @description `.enterstellarignore` file loader for the `enterstellar migrate` command.
  *
  * Provides two utilities:
@@ -57,26 +57,26 @@ import { dirname, join, resolve } from 'node:path';
  * ```
  */
 export function findProjectRoot(startDir: string): string | undefined {
-    let current = resolve(startDir);
+  let current = resolve(startDir);
 
-    // Walk upward until we find package.json or hit the filesystem root.
-    // The loop terminates because dirname('/') === '/' (or 'C:\' on Windows),
-    // so `current === parent` will always eventually be true.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- loop guard
-    while (true) {
-        if (existsSync(join(current, 'package.json'))) {
-            return current;
-        }
-
-        const parent = dirname(current);
-
-        // Reached filesystem root — no package.json found anywhere.
-        if (parent === current) {
-            return undefined;
-        }
-
-        current = parent;
+  // Walk upward until we find package.json or hit the filesystem root.
+  // The loop terminates because dirname('/') === '/' (or 'C:\' on Windows),
+  // so `current === parent` will always eventually be true.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- loop guard
+  while (true) {
+    if (existsSync(join(current, 'package.json'))) {
+      return current;
     }
+
+    const parent = dirname(current);
+
+    // Reached filesystem root — no package.json found anywhere.
+    if (parent === current) {
+      return undefined;
+    }
+
+    current = parent;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -122,29 +122,29 @@ export function findProjectRoot(startDir: string): string | undefined {
  * @see Correction 6 — `.enterstellarignore` resolution: walk upward to `package.json`
  */
 export function loadEnterstellarIgnorePatterns(searchDir: string): readonly string[] {
-    // Step 1: Find the project root by walking up to nearest package.json.
-    const projectRoot = findProjectRoot(searchDir);
+  // Step 1: Find the project root by walking up to nearest package.json.
+  const projectRoot = findProjectRoot(searchDir);
 
-    if (projectRoot === undefined) {
-        return [];
-    }
+  if (projectRoot === undefined) {
+    return [];
+  }
 
-    // Step 2: Check if .enterstellarignore exists at the project root.
-    const enterstellarignorePath = join(projectRoot, '.enterstellarignore');
+  // Step 2: Check if .enterstellarignore exists at the project root.
+  const enterstellarignorePath = join(projectRoot, '.enterstellarignore');
 
-    if (!existsSync(enterstellarignorePath)) {
-        return [];
-    }
+  if (!existsSync(enterstellarignorePath)) {
+    return [];
+  }
 
-    // Step 3: Read and parse the .enterstellarignore file.
-    try {
-        const content = readFileSync(enterstellarignorePath, 'utf-8');
-        return parseIgnorePatterns(content);
-    } catch {
-        // Graceful degradation — unreadable ignore file should not
-        // halt the migration pipeline. Return empty patterns.
-        return [];
-    }
+  // Step 3: Read and parse the .enterstellarignore file.
+  try {
+    const content = readFileSync(enterstellarignorePath, 'utf-8');
+    return parseIgnorePatterns(content);
+  } catch {
+    // Graceful degradation — unreadable ignore file should not
+    // halt the migration pipeline. Return empty patterns.
+    return [];
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -165,20 +165,20 @@ export function loadEnterstellarIgnorePatterns(searchDir: string): readonly stri
  * @returns Array of exclusion pattern strings.
  */
 function parseIgnorePatterns(content: string): readonly string[] {
-    return content
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter((line) => {
-            // Skip empty lines.
-            if (line.length === 0) {
-                return false;
-            }
+  return content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => {
+      // Skip empty lines.
+      if (line.length === 0) {
+        return false;
+      }
 
-            // Skip comment lines.
-            if (line.startsWith('#')) {
-                return false;
-            }
+      // Skip comment lines.
+      if (line.startsWith('#')) {
+        return false;
+      }
 
-            return true;
-        });
+      return true;
+    });
 }

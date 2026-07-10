@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/types/__tests__/types.test-d
+ * @module @enterstellar/types/__tests__/types.test-d
  * @description Type-level tests using expect-type (T16).
  *
  * Verifies type assignability, branded type constraints, and interface
@@ -11,37 +11,37 @@
 
 import { expectTypeOf } from 'expect-type';
 import type {
-    ComponentId,
-    ZoneId,
-    TraceId,
-    ComponentContract,
-    ComponentIntent,
-    CompilationResult,
-    AgentTrace,
-    ForgeSignal,
-    UserSignal,
-    ZoneConfig,
-    SerializedState,
-    EnterstellarStore,
-    EnterstellarAgentConnection,
-    TokenResolver,
-    AuthAdapter,
-    DataAdapter,
-    ErrorAdapter,
-    AnalyticsAdapter,
-    CompactManifestEntry,
-    IntentCategory,
-    IntentInteraction,
-    CompilationStatus,
-    ForgeResult,
-    SpatialContext,
-    SpatialContextSnapshot,
+  ComponentId,
+  ZoneId,
+  TraceId,
+  ComponentContract,
+  ComponentIntent,
+  CompilationResult,
+  AgentTrace,
+  ForgeSignal,
+  UserSignal,
+  ZoneConfig,
+  SerializedState,
+  EnterstellarStore,
+  EnterstellarAgentConnection,
+  TokenResolver,
+  AuthAdapter,
+  DataAdapter,
+  ErrorAdapter,
+  AnalyticsAdapter,
+  CompactManifestEntry,
+  IntentCategory,
+  IntentInteraction,
+  CompilationStatus,
+  ForgeResult,
+  SpatialContext,
+  SpatialContextSnapshot,
 } from '../src/index.js';
 import {
-    createComponentId,
-    createZoneId,
-    createTraceId,
-    ENTERSTELLAR_TYPES_VERSION,
+  createComponentId,
+  createZoneId,
+  createTraceId,
+  ENTERSTELLAR_TYPES_VERSION,
 } from '../src/index.js';
 
 // ---------------------------------------------------------------------------

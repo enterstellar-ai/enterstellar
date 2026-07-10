@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/connection/transports/transport
+ * @module @enterstellar/connection/transports/transport
  * @description Internal transport interface — the abstraction over WebSocket, SSE,
  * and any future transport implementations.
  *
@@ -56,54 +56,54 @@ export type TransportCloseHandler = () => void;
  * **Invariant:** `send()` MUST throw if called when `connected === false`.
  */
 export interface Transport {
-    /**
-     * Establishes the transport connection.
-     * Resolves when the transport is ready to send/receive.
-     * Rejects on connection failure or timeout.
-     *
-     * @throws {EnterstellarError} On connection failure with code `ENS-3003`.
-     */
-    connect(): Promise<void>;
+  /**
+   * Establishes the transport connection.
+   * Resolves when the transport is ready to send/receive.
+   * Rejects on connection failure or timeout.
+   *
+   * @throws {EnterstellarError} On connection failure with code `ENS-3003`.
+   */
+  connect(): Promise<void>;
 
-    /**
-     * Sends a serialized message through the transport.
-     *
-     * @param data - JSON-serialized string to send.
-     * @throws {EnterstellarError} If `connected === false`, with code `ENS-3004`.
-     */
-    send(data: string): void;
+  /**
+   * Sends a serialized message through the transport.
+   *
+   * @param data - JSON-serialized string to send.
+   * @throws {EnterstellarError} If `connected === false`, with code `ENS-3004`.
+   */
+  send(data: string): void;
 
-    /**
-     * Registers a handler for inbound messages.
-     * The transport deserializes JSON before calling the handler.
-     *
-     * @param handler - Called for each inbound message with the parsed data.
-     */
-    onMessage(handler: TransportMessageHandler): void;
+  /**
+   * Registers a handler for inbound messages.
+   * The transport deserializes JSON before calling the handler.
+   *
+   * @param handler - Called for each inbound message with the parsed data.
+   */
+  onMessage(handler: TransportMessageHandler): void;
 
-    /**
-     * Registers a handler for transport-level errors.
-     *
-     * @param handler - Called on transport errors.
-     */
-    onError(handler: TransportErrorHandler): void;
+  /**
+   * Registers a handler for transport-level errors.
+   *
+   * @param handler - Called on transport errors.
+   */
+  onError(handler: TransportErrorHandler): void;
 
-    /**
-     * Registers a handler for transport close events.
-     * Fired when the connection is lost (network failure, server close).
-     * NOT fired on intentional `disconnect()`.
-     *
-     * @param handler - Called when the transport closes unexpectedly.
-     */
-    onClose(handler: TransportCloseHandler): void;
+  /**
+   * Registers a handler for transport close events.
+   * Fired when the connection is lost (network failure, server close).
+   * NOT fired on intentional `disconnect()`.
+   *
+   * @param handler - Called when the transport closes unexpectedly.
+   */
+  onClose(handler: TransportCloseHandler): void;
 
-    /**
-     * Disconnects the transport and releases all resources.
-     * After this call, `connected` is `false` and `send()` will throw.
-     * Does NOT fire the `onClose` handler (intentional teardown).
-     */
-    disconnect(): void;
+  /**
+   * Disconnects the transport and releases all resources.
+   * After this call, `connected` is `false` and `send()` will throw.
+   * Does NOT fire the `onClose` handler (intentional teardown).
+   */
+  disconnect(): void;
 
-    /** Whether the transport is currently connected and ready to send/receive. */
-    readonly connected: boolean;
+  /** Whether the transport is currently connected and ready to send/receive. */
+  readonly connected: boolean;
 }

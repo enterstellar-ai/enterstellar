@@ -1,17 +1,17 @@
 ---
-title: "@enterstellar-ai/adapters"
+title: "@enterstellar/adapters"
 description: Pluggable infrastructure adapters — auth, data, error handling, analytics. Factory functions that bridge Enterstellar components to your external services.
 icon: Plug
 ---
 
 ## Purpose
 
-`@enterstellar-ai/adapters` provides factory functions for creating validated adapter instances. Every adapter method is wrapped in error handling (AD5) — raw vendor errors never leak to consumers. This package defines the adapter contract; concrete implementations live in provider-specific packages (`@enterstellar-ai/adapter-supabase`, etc.).
+`@enterstellar/adapters` provides factory functions for creating validated adapter instances. Every adapter method is wrapped in error handling (AD5) — raw vendor errors never leak to consumers. This package defines the adapter contract; concrete implementations live in provider-specific packages (`@enterstellar/adapter-supabase`, etc.).
 
 No framework imports. Pure TypeScript (L15).
 
 ```bash
-npm install @enterstellar-ai/adapters @enterstellar-ai/types
+npm install @enterstellar/adapters @enterstellar/types
 ```
 
 ---
@@ -50,7 +50,7 @@ Creates a validated `AuthAdapter` instance. All methods are async. Errors from y
 | `onAuthChange` | `(cb) => () => void` | ✅ | Reactive auth state subscription; returns unsubscribe |
 
 ```ts
-import { createAuthAdapter } from '@enterstellar-ai/adapters';
+import { createAuthAdapter } from '@enterstellar/adapters';
 import { supabase } from './supabase';
 
 const auth = createAuthAdapter({
@@ -91,7 +91,7 @@ Creates a validated `DataAdapter` instance. Resolves abstract `dataSource.source
 | `subscribe` | `(resource, callback) => () => void` | ✅ | Real-time subscription; returns unsubscribe |
 
 ```ts
-import { createDataAdapter } from '@enterstellar-ai/adapters';
+import { createDataAdapter } from '@enterstellar/adapters';
 
 const data = createDataAdapter({
   name: 'supabase-data',
@@ -136,7 +136,7 @@ Creates a validated `ErrorAdapter` instance. All methods are async (AD2) — `sh
 | `sanitize` | `(error) => Promise<Error>` | ✅ | Strip PII before logging (HIPAA/GDPR compliance) |
 
 ```ts
-import { createErrorAdapter } from '@enterstellar-ai/adapters';
+import { createErrorAdapter } from '@enterstellar/adapters';
 import * as Sentry from '@sentry/browser';
 
 const errors = createErrorAdapter({
@@ -170,7 +170,7 @@ Creates a validated `AnalyticsAdapter` instance. Both methods are fire-and-forge
 | `identify` | `(userId: string, traits?) => void` | ✅ | Identify user for attribution |
 
 ```ts
-import { createAnalyticsAdapter } from '@enterstellar-ai/adapters';
+import { createAnalyticsAdapter } from '@enterstellar/adapters';
 
 const analytics = createAnalyticsAdapter({
   name: 'mixpanel-analytics',
@@ -196,7 +196,7 @@ import {
   createNoopDataAdapter,
   createNoopErrorAdapter,
   createNoopAnalyticsAdapter,
-} from '@enterstellar-ai/adapters';
+} from '@enterstellar/adapters';
 
 const auth = createNoopAuthAdapter();     // getSession → null, hasRole → false
 const data = createNoopDataAdapter();     // query → [], mutate → null
@@ -209,7 +209,7 @@ const analytics = createNoopAnalyticsAdapter(); // track/identify → void
 ## Passing Adapters to `<Provider>`
 
 ```tsx
-import { Provider } from '@enterstellar-ai/react';
+import { Provider } from '@enterstellar/react';
 
 <Provider
   registry={registry}
@@ -221,11 +221,11 @@ import { Provider } from '@enterstellar-ai/react';
 
 ---
 
-## Adapter Interfaces (from `@enterstellar-ai/types`)
+## Adapter Interfaces (from `@enterstellar/types`)
 
-The runtime interfaces (what the engine calls) are defined in `@enterstellar-ai/types` and re-exported here for convenience:
+The runtime interfaces (what the engine calls) are defined in `@enterstellar/types` and re-exported here for convenience:
 
-| Interface | Re-exported from `@enterstellar-ai/types` | Used by |
+| Interface | Re-exported from `@enterstellar/types` | Used by |
 |:---|:---:|:---|
 | `AuthAdapter` | ✅ | Zone auth gating |
 | `DataAdapter` | ✅ | `dataSource` resolution |
@@ -262,5 +262,5 @@ The runtime interfaces (what the engine calls) are defined in `@enterstellar-ai/
 
 - [Package Map](../architecture/package-map) — adapters module specification and ecosystem
 - [Design Principles](../architecture/design-principles) — architectural guidelines driving the adapters package
-- [`@enterstellar-ai/adapter-supabase` →](/api/adapter-supabase) — concrete Supabase implementation
+- [`@enterstellar/adapter-supabase` →](/api/adapter-supabase) — concrete Supabase implementation
 - [Custom Adapters Guide →](/guides/custom-adapters) — building your own adapter

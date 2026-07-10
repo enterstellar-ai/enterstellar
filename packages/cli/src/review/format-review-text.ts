@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/review/format-review-text
+ * @module @enterstellar/cli/review/format-review-text
  * @description Human-readable colored terminal output for `enterstellar review` results.
  *
  * Formats parsed annotation results matching the bible's output spec at
@@ -62,42 +62,39 @@ import type { FileAnnotations, ParsedAnnotation } from './parse-annotations.js';
  *
  * @see Correction 1 — `enterstellar review` output format
  */
-export function formatReviewText(
-    files: readonly FileAnnotations[],
-): string {
-    // Count total annotations across all files.
-    const totalAnnotations = files.reduce(
-        (sum, f) => sum + f.annotations.length,
-        0,
-    );
+export function formatReviewText(files: readonly FileAnnotations[]): string {
+  // Count total annotations across all files.
+  const totalAnnotations = files.reduce((sum, f) => sum + f.annotations.length, 0);
 
-    // No annotations found — informational message.
-    if (totalAnnotations === 0) {
-        return pc.green('No @enterstellar-review or @enterstellar-warn annotations found. All contracts are clean.');
+  // No annotations found — informational message.
+  if (totalAnnotations === 0) {
+    return pc.green(
+      'No @enterstellar-review or @enterstellar-warn annotations found. All contracts are clean.',
+    );
+  }
+
+  const lines: string[] = [];
+
+  // --- Header ---
+  lines.push(
+    `Found ${pc.bold(String(totalAnnotations))} annotations across ${pc.bold(String(files.length))} files:`,
+  );
+  lines.push('');
+
+  // --- Per-file annotation listing ---
+  for (const file of files) {
+    // File header — dimmed path
+    lines.push(`  ${pc.cyan(file.filePath)}`);
+
+    for (const annotation of file.annotations) {
+      lines.push(formatAnnotationLine(annotation));
     }
 
-    const lines: string[] = [];
-
-    // --- Header ---
-    lines.push(
-        `Found ${pc.bold(String(totalAnnotations))} annotations across ${pc.bold(String(files.length))} files:`,
-    );
+    // Blank line between files for readability.
     lines.push('');
+  }
 
-    // --- Per-file annotation listing ---
-    for (const file of files) {
-        // File header — dimmed path
-        lines.push(`  ${pc.cyan(file.filePath)}`);
-
-        for (const annotation of file.annotations) {
-            lines.push(formatAnnotationLine(annotation));
-        }
-
-        // Blank line between files for readability.
-        lines.push('');
-    }
-
-    return lines.join('\n');
+  return lines.join('\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -120,27 +117,26 @@ export function formatReviewText(
  * @returns A single indented line string.
  */
 function formatAnnotationLine(annotation: ParsedAnnotation): string {
-    const lineNum = pc.dim(`L${String(annotation.line)}`);
-    const field = annotation.field;
+  const lineNum = pc.dim(`L${String(annotation.line)}`);
+  const field = annotation.field;
 
-    // Audit E1 + M6: @enterstellar-warn has no rule — display (warn) as placeholder.
-    const ruleDisplay = annotation.rule !== undefined
-        ? pc.yellow(annotation.rule)
-        : pc.dim('(warn)');
+  // Audit E1 + M6: @enterstellar-warn has no rule — display (warn) as placeholder.
+  const ruleDisplay = annotation.rule !== undefined ? pc.yellow(annotation.rule) : pc.dim('(warn)');
 
-    // Truncate long reasons to keep terminal output readable.
-    const maxReasonLength = 80;
-    const reason = annotation.reason.length > maxReasonLength
-        ? `${annotation.reason.slice(0, maxReasonLength)}…`
-        : annotation.reason;
+  // Truncate long reasons to keep terminal output readable.
+  const maxReasonLength = 80;
+  const reason =
+    annotation.reason.length > maxReasonLength
+      ? `${annotation.reason.slice(0, maxReasonLength)}…`
+      : annotation.reason;
 
-    // Pad field and rule for column alignment (best-effort).
-    const fieldPadded = field.padEnd(14);
-    const rulePadded = (annotation.rule ?? '(warn)').padEnd(14);
+  // Pad field and rule for column alignment (best-effort).
+  const fieldPadded = field.padEnd(14);
+  const rulePadded = (annotation.rule ?? '(warn)').padEnd(14);
 
-    // Use rulePadded for spacing but ruleDisplay for coloring.
-    // We compute spacing from the uncolored text, then apply color.
-    void rulePadded; // Used for length calculation reference only
+  // Use rulePadded for spacing but ruleDisplay for coloring.
+  // We compute spacing from the uncolored text, then apply color.
+  void rulePadded; // Used for length calculation reference only
 
-    return `    ${lineNum}  ${fieldPadded} ${ruleDisplay}  ${pc.dim(`"${reason}"`)}`;
+  return `    ${lineNum}  ${fieldPadded} ${ruleDisplay}  ${pc.dim(`"${reason}"`)}`;
 }

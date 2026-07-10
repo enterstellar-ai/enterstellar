@@ -21,6 +21,13 @@ dist/
 *.tsbuildinfo
 .source/
 
+# Legacy contract-protocol proxy — synced from packages/contract-protocol at build time
+legacy/contract-protocol/schemas/
+legacy/contract-protocol/examples/
+legacy/contract-protocol/conformance/
+legacy/contract-protocol/bin/
+legacy/contract-protocol/PROTOCOL_VERSION.md
+
 # === Next.js ===
 .next/
 

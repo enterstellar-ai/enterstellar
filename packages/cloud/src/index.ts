@@ -1,11 +1,11 @@
 /**
- * @module @enterstellar-ai/cloud
+ * @module @enterstellar/cloud
  * @description Enterstellar Cloud SDK client — forge generation, semantic search,
  * intent routing, trace analytics, IPU metering, and contract certification.
  *
  * **Quick Start:**
  * ```ts
- * import { createEnterstellarCloudClient, CloudError } from '@enterstellar-ai/cloud';
+ * import { createEnterstellarCloudClient, CloudError } from '@enterstellar/cloud';
  *
  * const client = createEnterstellarCloudClient({
  *     apiKey: process.env['ENTERSTELLAR_API_KEY']!,
@@ -66,45 +66,45 @@ export type { IPUCostValue } from './metering/ipu-costs.js';
 // ---------------------------------------------------------------------------
 
 export type {
-    // Client interface
-    EnterstellarCloudClient,
+  // Client interface
+  EnterstellarCloudClient,
 
-    // Configuration
-    CloudConfig,
-    SessionType,
+  // Configuration
+  CloudConfig,
+  SessionType,
 
-    // Universal return wrapper (SD7)
-    CloudResult,
-    CloudIPU,
+  // Universal return wrapper (SD7)
+  CloudResult,
+  CloudIPU,
 
-    // Usage / billing
-    CloudUsage,
+  // Usage / billing
+  CloudUsage,
 
-    // Forge (SD6)
-    ForgeOptions,
-    ForgeFunction,
-    ForgeFragment,
-    ForgeMetaFragment,
-    ForgeNodeFragment,
-    ForgePropertyFragment,
-    ForgeCompleteFragment,
-    ForgeErrorFragment,
+  // Forge (SD6)
+  ForgeOptions,
+  ForgeFunction,
+  ForgeFragment,
+  ForgeMetaFragment,
+  ForgeNodeFragment,
+  ForgePropertyFragment,
+  ForgeCompleteFragment,
+  ForgeErrorFragment,
 
-    // Routing (IR2)
-    RouterPrediction,
+  // Routing (IR2)
+  RouterPrediction,
 
-    // Analytics (TA5)
-    AnalyticsQuery,
-    AnalyticsResult,
+  // Analytics (TA5)
+  AnalyticsQuery,
+  AnalyticsResult,
 
-    // Traces
-    TraceListOptions,
-    TracePage,
+  // Traces
+  TraceListOptions,
+  TracePage,
 
-    // Ledger
-    LedgerListOptions,
-    LedgerPage,
+  // Ledger
+  LedgerListOptions,
+  LedgerPage,
 
-    // Certification (GI5)
-    CertifyResult,
+  // Certification (GI5)
+  CertifyResult,
 } from './types.js';

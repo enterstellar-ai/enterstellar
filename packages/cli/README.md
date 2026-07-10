@@ -1,4 +1,4 @@
-# @enterstellar-ai/cli
+# @enterstellar/cli
 
 > Interactive project scaffolding, component generation, migration pipeline, and annotation review — the developer's entry point to Enterstellar OS.
 
@@ -37,7 +37,7 @@ import {
   reviewCommand,
   detectPackageManager,
   CLI_VERSION,
-} from '@enterstellar-ai/cli';
+} from '@enterstellar/cli';
 
 // Scaffold a project programmatically
 await initCommand('my-app');
@@ -116,27 +116,27 @@ console.log(CLI_VERSION); // '0.0.0'
 
 ### Error Codes
 
-| Code       | Scenario                                                                | Recoverable |
-| :--------- | :---------------------------------------------------------------------- | :---------- |
-| `ENS-9001` | Invalid project name (not kebab-case)                                   | ❌ No       |
-| `ENS-9002` | Invalid component name (not PascalCase)                                 | ❌ No       |
-| `ENS-9003` | Directory exists and is non-empty                                       | ❌ No       |
-| `ENS-9004` | No Enterstellar project found (`@enterstellar-ai/registry` not in deps) | ❌ No       |
-| `ENS-9005` | Package manager install failed                                          | ✅ Yes      |
-| `ENS-9006` | File write failed (permissions, disk space)                             | ✅ Yes      |
+| Code       | Scenario                                                             | Recoverable |
+| :--------- | :------------------------------------------------------------------- | :---------- |
+| `ENS-9001` | Invalid project name (not kebab-case)                                | ❌ No       |
+| `ENS-9002` | Invalid component name (not PascalCase)                              | ❌ No       |
+| `ENS-9003` | Directory exists and is non-empty                                    | ❌ No       |
+| `ENS-9004` | No Enterstellar project found (`@enterstellar/registry` not in deps) | ❌ No       |
+| `ENS-9005` | Package manager install failed                                       | ✅ Yes      |
+| `ENS-9006` | File write failed (permissions, disk space)                          | ✅ Yes      |
 
 ## Configuration
 
 ### `enterstellar init` / `ens init` Templates
 
-| Template     | Description                                 | Key Dependencies                                                                                                   |
-| :----------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------- |
-| `minimal`    | Registry + React integration (zero-config)  | `@enterstellar-ai/react`, `@enterstellar-ai/registry`, `zod`                                                       |
-| `full`       | Full Enterstellar + DevTools + Test harness | Minimal + `@enterstellar-ai/types`, `@enterstellar-ai/cache`, `@enterstellar-ai/devtools`, `@enterstellar-ai/test` |
-| `nextjs`     | Full Enterstellar + Next.js App Router      | Full + `next`, `react`, `react-dom`                                                                                |
-| `vite-react` | Full Enterstellar + Vite dev server         | Full + `vite`, `@vitejs/plugin-react`                                                                              |
+| Template     | Description                                 | Key Dependencies                                                                                       |
+| :----------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------- |
+| `minimal`    | Registry + React integration (zero-config)  | `@enterstellar/react`, `@enterstellar/registry`, `zod`                                                 |
+| `full`       | Full Enterstellar + DevTools + Test harness | Minimal + `@enterstellar/types`, `@enterstellar/cache`, `@enterstellar/devtools`, `@enterstellar/test` |
+| `nextjs`     | Full Enterstellar + Next.js App Router      | Full + `next`, `react`, `react-dom`                                                                    |
+| `vite-react` | Full Enterstellar + Vite dev server         | Full + `vite`, `@vitejs/plugin-react`                                                                  |
 
-> Engine packages (`@enterstellar-ai/compiler`, `@enterstellar-ai/state`, `@enterstellar-ai/telemetry`, `@enterstellar-ai/connection`, `@enterstellar-ai/lifecycle`, `@enterstellar-ai/adapters`) are transitive dependencies of `@enterstellar-ai/react` — consumers do not install them directly.
+> Engine packages (`@enterstellar/compiler`, `@enterstellar/state`, `@enterstellar/telemetry`, `@enterstellar/connection`, `@enterstellar/lifecycle`, `@enterstellar/adapters`) are transitive dependencies of `@enterstellar/react` — consumers do not install them directly.
 
 ### `enterstellar add component` Output
 
@@ -168,7 +168,7 @@ my-enterstellar-app/
 │   │   └── page.tsx             # Provider + Zone example (Next.js)
 │   └── tests/
 │       └── enterstellar.test.ts         # 3 intent-based tests
-├── package.json                 # @enterstellar-ai/react + @enterstellar-ai/registry + zod
+├── package.json                 # @enterstellar/react + @enterstellar/registry + zod
 ├── tsconfig.json                # 15 strict TS flags
 └── README.md                    # Getting started guide
 ```
@@ -181,29 +181,29 @@ my-enterstellar-app/
 | `tsup.config.ts`   | Builds ESM + CJS + DTS. 3 entrypoints: `bin.ts`, `create-enterstellar-app.ts`, `index.ts`. |
 | `vitest.config.ts` | Test runner with globals enabled.                                                          |
 
-**Dependencies:** `@enterstellar-ai/migration`, `@clack/prompts` (interactive prompts), `picocolors` (styled output), `fast-glob` (file discovery)
-**Peer dependencies:** `@enterstellar-ai/types`, `zod`
-**Dev dependencies:** `@enterstellar-ai/types`, `@types/node`
+**Dependencies:** `@enterstellar/migration`, `@clack/prompts` (interactive prompts), `picocolors` (styled output), `fast-glob` (file discovery)
+**Peer dependencies:** `@enterstellar/types`, `zod`
+**Dev dependencies:** `@enterstellar/types`, `@types/node`
 
 ## Design Choices Applied
 
-| Decision                  | Summary                                                                                                                                                                                                                                                                      |
-| :------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **CLI1**                  | Interactive `enterstellar init` / `ens init` flow with 4 template choices. Prompts via `@clack/prompts`.                                                                                                                                                                     |
-| **CLI2**                  | `enterstellar add component` generates 4 files: contract, render, test, fixture.                                                                                                                                                                                             |
-| **CLI3**                  | Auto-detect PM from lockfile. Priority: pnpm > bun > yarn > npm. If none found, prompt.                                                                                                                                                                                      |
-| **L15**                   | No framework imports in the CLI engine. Generated code imports React, but CLI itself is pure Node.js.                                                                                                                                                                        |
-| **Bible §4.17**           | Scaffolded project structure matches the Implementation Bible exactly.                                                                                                                                                                                                       |
-| **Correction 1**          | `enterstellar review` companion command — scans `@enterstellar-review` and `@enterstellar-warn` annotations.                                                                                                                                                                 |
-| **Correction 5 L187-213** | Existing React project detection in `enterstellar init` / `ens init`: syntax-only `ts-morph` scan via `scanComponentsLightweight()` (dynamically imported from `@enterstellar-ai/migration`), 3-tier summary display, migration confirmation prompt (Yes / Yes+Enrich / No). |
-| **Correction 5**          | `enterstellar migrate` — 12 flags, manual arg parsing, 4-level outcome model.                                                                                                                                                                                                |
-| **Correction 6 L457-473** | `.enterstellarignore` auto-generation in `enterstellar init` / `ens init`: canonical 26-pattern file via `generateEnterstellarIgnore()`. Never overwrites existing file.                                                                                                     |
-| **Correction 8**          | Contract pack selector + starter kit selector in `enterstellar init` / `ens init`. 8 pack options (only `shadcn` available), 5 starter kits. Pack selection injects `@enterstellar-ai/contracts-*` into generated `package.json`.                                            |
-| **Audit E1**              | Dual-format annotation parser — separate regex for `@enterstellar-review` (with `rule=`) and `@enterstellar-warn` (without).                                                                                                                                                 |
-| **Audit E2**              | `reviewCommand` export signature locked to match `migrateCommand` async pattern.                                                                                                                                                                                             |
-| **Audit E3**              | No `--filter` flag on `enterstellar review` — not in bible spec (Zero Improvisation).                                                                                                                                                                                        |
-| **Audit M1**              | `enterstellar init` / `ens init` skips `validateDirectory()` when existing React project detected (non-empty dir is intentional).                                                                                                                                            |
-| **Audit M2**              | `enterstellar review` uses own `fast-glob` call (`**/*.contract.ts`), not `resolveSourceFiles()`.                                                                                                                                                                            |
+| Decision                  | Summary                                                                                                                                                                                                                                                                   |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **CLI1**                  | Interactive `enterstellar init` / `ens init` flow with 4 template choices. Prompts via `@clack/prompts`.                                                                                                                                                                  |
+| **CLI2**                  | `enterstellar add component` generates 4 files: contract, render, test, fixture.                                                                                                                                                                                          |
+| **CLI3**                  | Auto-detect PM from lockfile. Priority: pnpm > bun > yarn > npm. If none found, prompt.                                                                                                                                                                                   |
+| **L15**                   | No framework imports in the CLI engine. Generated code imports React, but CLI itself is pure Node.js.                                                                                                                                                                     |
+| **Bible §4.17**           | Scaffolded project structure matches the Implementation Bible exactly.                                                                                                                                                                                                    |
+| **Correction 1**          | `enterstellar review` companion command — scans `@enterstellar-review` and `@enterstellar-warn` annotations.                                                                                                                                                              |
+| **Correction 5 L187-213** | Existing React project detection in `enterstellar init` / `ens init`: syntax-only `ts-morph` scan via `scanComponentsLightweight()` (dynamically imported from `@enterstellar/migration`), 3-tier summary display, migration confirmation prompt (Yes / Yes+Enrich / No). |
+| **Correction 5**          | `enterstellar migrate` — 12 flags, manual arg parsing, 4-level outcome model.                                                                                                                                                                                             |
+| **Correction 6 L457-473** | `.enterstellarignore` auto-generation in `enterstellar init` / `ens init`: canonical 26-pattern file via `generateEnterstellarIgnore()`. Never overwrites existing file.                                                                                                  |
+| **Correction 8**          | Contract pack selector + starter kit selector in `enterstellar init` / `ens init`. 8 pack options (only `shadcn` available), 5 starter kits. Pack selection injects `@enterstellar/contracts-*` into generated `package.json`.                                            |
+| **Audit E1**              | Dual-format annotation parser — separate regex for `@enterstellar-review` (with `rule=`) and `@enterstellar-warn` (without).                                                                                                                                              |
+| **Audit E2**              | `reviewCommand` export signature locked to match `migrateCommand` async pattern.                                                                                                                                                                                          |
+| **Audit E3**              | No `--filter` flag on `enterstellar review` — not in bible spec (Zero Improvisation).                                                                                                                                                                                     |
+| **Audit M1**              | `enterstellar init` / `ens init` skips `validateDirectory()` when existing React project detected (non-empty dir is intentional).                                                                                                                                         |
+| **Audit M2**              | `enterstellar review` uses own `fast-glob` call (`**/*.contract.ts`), not `resolveSourceFiles()`.                                                                                                                                                                         |
 
 ## See Also
 

@@ -17,7 +17,7 @@ This is the core safety guarantee: **the LLM can never hallucinate a component t
 `defineComponent()` is the factory for creating `ComponentContract` objects. It validates your input against 9 registration-time rules (R1–R9) at the call site — before anything is registered, before any zone renders. If you pass an invalid name, a missing state, or a token that doesn't start with `token:`, you get an error immediately.
 
 ```ts
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 export const StatusCard = defineComponent({
@@ -127,7 +127,7 @@ Fill in `StatusCard.contract.ts` using `defineComponent()` as shown above. The v
 ### Register in the registry
 
 ```ts
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createRegistry } from '@enterstellar/registry';
 import { StatusCard } from './components/status-card/StatusCard.contract';
 
 export const registry = createRegistry({
@@ -159,7 +159,7 @@ export function StatusCard({ title, value, status }: StatusCardProps) {
 ### Test the intent
 
 ```ts
-import { createTestHarness } from '@enterstellar-ai/test';
+import { createTestHarness } from '@enterstellar/test';
 
 const harness = createTestHarness({ registry });
 const trace = await harness.resolve('Show system health for the API');

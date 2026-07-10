@@ -1,24 +1,24 @@
 /**
- * @module @enterstellar-ai/devtools/export-traces
+ * @module @enterstellar/devtools/export-traces
  * @description Utility for exporting DevTools traces as a downloadable JSON file.
  *
  * Creates a {@link TraceExportBundle} containing all buffered traces
  * and zone configurations, then triggers a browser file download.
  * The resulting `.json` file can be shared with collaborators or
- * imported into `@enterstellar-ai/test` via `harness.loadTrace()`.
+ * imported into `@enterstellar/test` via `harness.loadTrace()`.
  *
  * @see Design Choice DT8 — JSON export via download
  *
  * @example
  * ```ts
- * import { exportTraces } from '@enterstellar-ai/devtools';
+ * import { exportTraces } from '@enterstellar/devtools';
  *
  * exportTraces(allTraces, zoneConfigs);
  * // → downloads "enterstellar-traces-2026-02-22T01-02-03.json"
  * ```
  */
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 import type { TraceExportBundle } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -27,7 +27,7 @@ import type { TraceExportBundle } from './types.js';
 
 /**
  * Current SDK version embedded in the export bundle.
- * Updated manually on each release (matches `@enterstellar-ai/types` version).
+ * Updated manually on each release (matches `@enterstellar/types` version).
  */
 const SDK_VERSION = '0.0.0';
 
@@ -46,11 +46,11 @@ const SDK_VERSION = '0.0.0';
  * @internal
  */
 export function generateExportFilename(): string {
-    const timestamp = new Date()
-        .toISOString()
-        .replace(/:/g, '-')
-        .replace(/\.\d{3}Z$/, '');
-    return `enterstellar-traces-${timestamp}.json`;
+  const timestamp = new Date()
+    .toISOString()
+    .replace(/:/g, '-')
+    .replace(/\.\d{3}Z$/, '');
+  return `enterstellar-traces-${timestamp}.json`;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,15 +70,15 @@ export function generateExportFilename(): string {
  * @internal
  */
 export function createExportBundle(
-    traces: readonly ZoneTrace[],
-    zoneConfigs: Readonly<Record<string, unknown>>,
+  traces: readonly ZoneTrace[],
+  zoneConfigs: Readonly<Record<string, unknown>>,
 ): TraceExportBundle {
-    return {
-        exportedAt: new Date().toISOString(),
-        sdkVersion: SDK_VERSION,
-        traces,
-        zoneConfigs,
-    };
+  return {
+    exportedAt: new Date().toISOString(),
+    sdkVersion: SDK_VERSION,
+    traces,
+    zoneConfigs,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -100,24 +100,24 @@ export function createExportBundle(
  * @internal
  */
 export function triggerDownload(content: string, filename: string): void {
-    if (typeof document === 'undefined') {
-        return;
-    }
+  if (typeof document === 'undefined') {
+    return;
+  }
 
-    const blob = new Blob([content], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+  const blob = new Blob([content], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
 
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = filename;
-    anchor.style.display = 'none';
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.style.display = 'none';
 
-    document.body.appendChild(anchor);
-    anchor.click();
+  document.body.appendChild(anchor);
+  anchor.click();
 
-    // Cleanup: remove element and revoke blob URL
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
+  // Cleanup: remove element and revoke blob URL
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
 }
 
 // ---------------------------------------------------------------------------
@@ -133,7 +133,7 @@ export function triggerDownload(content: string, filename: string): void {
  *
  * The exported file can be:
  * - Shared with collaborators for offline debugging
- * - Imported into `@enterstellar-ai/test` via `harness.loadTrace()`
+ * - Imported into `@enterstellar/test` via `harness.loadTrace()`
  * - Analyzed in external tools (JSON-compatible)
  *
  * @param traces - All traces to include in the export.
@@ -142,11 +142,11 @@ export function triggerDownload(content: string, filename: string): void {
  * @see Design Choice DT8 — JSON export via download
  */
 export function exportTraces(
-    traces: readonly ZoneTrace[],
-    zoneConfigs: Readonly<Record<string, unknown>>,
+  traces: readonly ZoneTrace[],
+  zoneConfigs: Readonly<Record<string, unknown>>,
 ): void {
-    const bundle = createExportBundle(traces, zoneConfigs);
-    const json = JSON.stringify(bundle, null, 2);
-    const filename = generateExportFilename();
-    triggerDownload(json, filename);
+  const bundle = createExportBundle(traces, zoneConfigs);
+  const json = JSON.stringify(bundle, null, 2);
+  const filename = generateExportFilename();
+  triggerDownload(json, filename);
 }

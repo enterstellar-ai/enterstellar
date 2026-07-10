@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/normalizer/types
- * @description Public types for the `@enterstellar-ai/normalizer` module.
+ * @module @enterstellar/normalizer/types
+ * @description Public types for the `@enterstellar/normalizer` module.
  *
  * Defines the `ProtocolNormalizer` interface (T1: interface for objects
  * with methods), configuration types, and AG-UI event shapes.
@@ -10,7 +10,7 @@
  * @see Design Choice T1 — interfaces for objects with methods
  */
 
-import type { ComponentIntent, IntentProtocol } from '@enterstellar-ai/types';
+import type { ComponentIntent, IntentProtocol } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Protocol Normalizer Interface
@@ -43,33 +43,33 @@ import type { ComponentIntent, IntentProtocol } from '@enterstellar-ai/types';
  * @see Design Choice N3 — explicit factory, no auto-detection
  */
 export interface ProtocolNormalizer {
-    /** The protocol this normalizer handles. Read-only once created. */
-    readonly protocol: IntentProtocol;
+  /** The protocol this normalizer handles. Read-only once created. */
+  readonly protocol: IntentProtocol;
 
-    /**
-     * Lightweight structural check: can this normalizer handle the given event?
-     *
-     * Must be synchronous and fast — no parsing, no async, no side effects.
-     * Used by `createNormalizer()` to dispatch events to the correct adapter.
-     *
-     * @param event - Raw event from the protocol transport, typed as `unknown`.
-     * @returns `true` if this adapter can normalize the event.
-     */
-    canHandle(event: unknown): boolean;
+  /**
+   * Lightweight structural check: can this normalizer handle the given event?
+   *
+   * Must be synchronous and fast — no parsing, no async, no side effects.
+   * Used by `createNormalizer()` to dispatch events to the correct adapter.
+   *
+   * @param event - Raw event from the protocol transport, typed as `unknown`.
+   * @returns `true` if this adapter can normalize the event.
+   */
+  canHandle(event: unknown): boolean;
 
-    /**
-     * Convert a raw protocol event into a `ComponentIntent`.
-     *
-     * Returns `null` if the event has no UI implication (e.g., AG-UI
-     * `RunStartedEvent` maps to a lifecycle signal, not a component intent).
-     *
-     * The returned `ComponentIntent` is validated by `createNormalizer()`
-     * against `ComponentIntentSchema` before being returned to the consumer.
-     *
-     * @param event - Raw event from the protocol transport, typed as `unknown`.
-     * @returns A normalized `ComponentIntent`, or `null` if no UI intent.
-     */
-    normalize(event: unknown): ComponentIntent | null;
+  /**
+   * Convert a raw protocol event into a `ComponentIntent`.
+   *
+   * Returns `null` if the event has no UI implication (e.g., AG-UI
+   * `RunStartedEvent` maps to a lifecycle signal, not a component intent).
+   *
+   * The returned `ComponentIntent` is validated by `createNormalizer()`
+   * against `ComponentIntentSchema` before being returned to the consumer.
+   *
+   * @param event - Raw event from the protocol transport, typed as `unknown`.
+   * @returns A normalized `ComponentIntent`, or `null` if no UI intent.
+   */
+  normalize(event: unknown): ComponentIntent | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -83,14 +83,14 @@ export interface ProtocolNormalizer {
  * @see Design Choice N3
  */
 export type NormalizerConfig = {
-    /**
-     * Ordered list of protocol adapters.
-     *
-     * When an event is dispatched, adapters are checked in order.
-     * The first adapter whose `canHandle()` returns `true` processes the event.
-     * Order matters — place the most specific adapter first.
-     */
-    readonly adapters: readonly ProtocolNormalizer[];
+  /**
+   * Ordered list of protocol adapters.
+   *
+   * When an event is dispatched, adapters are checked in order.
+   * The first adapter whose `canHandle()` returns `true` processes the event.
+   * Order matters — place the most specific adapter first.
+   */
+  readonly adapters: readonly ProtocolNormalizer[];
 };
 
 /**
@@ -119,15 +119,15 @@ export type NormalizerDispatch = (event: unknown) => ComponentIntent | null;
  * @see Design Choice N5 — buffer-and-assemble streaming
  */
 export type AGUIAdapterConfig = {
-    /**
-     * Default confidence score for intents from AG-UI tool calls (0.0–1.0).
-     *
-     * Used when the agent does not provide an explicit confidence value.
-     * Must be between 0.0 and 1.0 inclusive.
-     *
-     * @default 0.8
-     */
-    readonly defaultConfidence?: number;
+  /**
+   * Default confidence score for intents from AG-UI tool calls (0.0–1.0).
+   *
+   * Used when the agent does not provide an explicit confidence value.
+   * Must be between 0.0 and 1.0 inclusive.
+   *
+   * @default 0.8
+   */
+  readonly defaultConfidence?: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -158,24 +158,24 @@ export type AGUIAdapterConfig = {
  * @see Design Choice N2 — custom normalizer signature
  */
 export type CustomAdapterConfig = {
-    /**
-     * The user-provided normalization function.
-     *
-     * Receives a raw protocol message (typed as `unknown`) and must return
-     * a `ComponentIntent` or `null` if the message doesn't map to a UI intent.
-     *
-     * @see Design Choice N2
-     */
-    readonly normalize: (message: unknown) => ComponentIntent | null;
+  /**
+   * The user-provided normalization function.
+   *
+   * Receives a raw protocol message (typed as `unknown`) and must return
+   * a `ComponentIntent` or `null` if the message doesn't map to a UI intent.
+   *
+   * @see Design Choice N2
+   */
+  readonly normalize: (message: unknown) => ComponentIntent | null;
 
-    /**
-     * Optional structural check for whether this adapter handles the message.
-     *
-     * If not provided, defaults to a function that always returns `true` —
-     * meaning this adapter acts as a catch-all. Place it last in the
-     * adapter list to avoid shadowing more specific adapters.
-     */
-    readonly canHandle?: (message: unknown) => boolean;
+  /**
+   * Optional structural check for whether this adapter handles the message.
+   *
+   * If not provided, defaults to a function that always returns `true` —
+   * meaning this adapter acts as a catch-all. Place it last in the
+   * adapter list to avoid shadowing more specific adapters.
+   */
+  readonly canHandle?: (message: unknown) => boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -191,16 +191,16 @@ export type CustomAdapterConfig = {
  * @see Design Choice N4
  */
 export type AGUIToolCallEvent = {
-    /** Event type discriminator. */
-    readonly type: 'tool_call_start';
-    /** Unique identifier for this tool call. */
-    readonly toolCallId: string;
-    /** Name of the tool being invoked — maps to component name. */
-    readonly toolName: string;
-    /** Arguments for the tool call — maps to component props. */
-    readonly args: Record<string, unknown>;
-    /** Run identifier — used as `correlationId` (P2). */
-    readonly runId?: string;
+  /** Event type discriminator. */
+  readonly type: 'tool_call_start';
+  /** Unique identifier for this tool call. */
+  readonly toolCallId: string;
+  /** Name of the tool being invoked — maps to component name. */
+  readonly toolName: string;
+  /** Arguments for the tool call — maps to component props. */
+  readonly args: Record<string, unknown>;
+  /** Run identifier — used as `correlationId` (P2). */
+  readonly runId?: string;
 };
 
 /**
@@ -213,14 +213,14 @@ export type AGUIToolCallEvent = {
  * @see Design Choice N4
  */
 export type AGUITextMessageEvent = {
-    /** Event type discriminator. */
-    readonly type: 'text_message_start';
-    /** Message identifier. */
-    readonly messageId: string;
-    /** Text content of the message. */
-    readonly content?: string;
-    /** Run identifier — used as `correlationId` (P2). */
-    readonly runId?: string;
+  /** Event type discriminator. */
+  readonly type: 'text_message_start';
+  /** Message identifier. */
+  readonly messageId: string;
+  /** Text content of the message. */
+  readonly content?: string;
+  /** Run identifier — used as `correlationId` (P2). */
+  readonly runId?: string;
 };
 
 /**
@@ -230,16 +230,13 @@ export type AGUITextMessageEvent = {
  * @see Design Choice N4
  */
 export type AGUILifecycleEvent = {
-    /** Event type discriminator. */
-    readonly type: 'run_started' | 'run_finished' | 'run_error';
-    /** Run identifier. */
-    readonly runId?: string;
+  /** Event type discriminator. */
+  readonly type: 'run_started' | 'run_finished' | 'run_error';
+  /** Run identifier. */
+  readonly runId?: string;
 };
 
 /**
  * Union of all AG-UI event shapes handled by the normalizer.
  */
-export type AGUIEvent =
-    | AGUIToolCallEvent
-    | AGUITextMessageEvent
-    | AGUILifecycleEvent;
+export type AGUIEvent = AGUIToolCallEvent | AGUITextMessageEvent | AGUILifecycleEvent;

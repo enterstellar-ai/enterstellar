@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/__tests__/validate-adapter
+ * @module @enterstellar/adapters/__tests__/validate-adapter
  * @description Unit tests for `validateAdapterConfig()` — shared validation utility.
  *
  * Tests the two validation steps:
@@ -16,7 +16,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { validateAdapterConfig } from '../src/validate-adapter.js';
 
@@ -26,41 +26,43 @@ import { validateAdapterConfig } from '../src/validate-adapter.js';
 
 /** Minimal valid auth config for testing. */
 function createValidAuthConfig(): Readonly<Record<string, unknown>> {
-    return {
-        name: 'test-auth',
-        getSession: () => Promise.resolve(null),
-        hasRole: () => Promise.resolve(false),
-        onAuthChange: () => () => { /* noop unsubscribe */ },
-    };
+  return {
+    name: 'test-auth',
+    getSession: () => Promise.resolve(null),
+    hasRole: () => Promise.resolve(false),
+    onAuthChange: () => () => {
+      /* noop unsubscribe */
+    },
+  };
 }
 
 /** Minimal valid data config for testing. */
 function createValidDataConfig(): Readonly<Record<string, unknown>> {
-    return {
-        name: 'test-data',
-        query: () => Promise.resolve([]),
-        mutate: () => Promise.resolve(null),
-        subscribe: () => () => { },
-    };
+  return {
+    name: 'test-data',
+    query: () => Promise.resolve([]),
+    mutate: () => Promise.resolve(null),
+    subscribe: () => () => {},
+  };
 }
 
 /** Minimal valid error config for testing. */
 function createValidErrorConfig(): Readonly<Record<string, unknown>> {
-    return {
-        name: 'test-error',
-        report: () => Promise.resolve(),
-        shouldRetry: () => Promise.resolve(false),
-        sanitize: (e: Error) => Promise.resolve(e),
-    };
+  return {
+    name: 'test-error',
+    report: () => Promise.resolve(),
+    shouldRetry: () => Promise.resolve(false),
+    sanitize: (e: Error) => Promise.resolve(e),
+  };
 }
 
 /** Minimal valid analytics config for testing. */
 function createValidAnalyticsConfig(): Readonly<Record<string, unknown>> {
-    return {
-        name: 'test-analytics',
-        track: () => { },
-        identify: () => { },
-    };
+  return {
+    name: 'test-analytics',
+    track: () => {},
+    identify: () => {},
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -68,29 +70,29 @@ function createValidAnalyticsConfig(): Readonly<Record<string, unknown>> {
 // ---------------------------------------------------------------------------
 
 describe('validateAdapterConfig — valid configs', () => {
-    it('passes silently for a valid auth config', () => {
-        expect(() => {
-            validateAdapterConfig('auth', createValidAuthConfig());
-        }).not.toThrow();
-    });
+  it('passes silently for a valid auth config', () => {
+    expect(() => {
+      validateAdapterConfig('auth', createValidAuthConfig());
+    }).not.toThrow();
+  });
 
-    it('passes silently for a valid data config', () => {
-        expect(() => {
-            validateAdapterConfig('data', createValidDataConfig());
-        }).not.toThrow();
-    });
+  it('passes silently for a valid data config', () => {
+    expect(() => {
+      validateAdapterConfig('data', createValidDataConfig());
+    }).not.toThrow();
+  });
 
-    it('passes silently for a valid error config', () => {
-        expect(() => {
-            validateAdapterConfig('error', createValidErrorConfig());
-        }).not.toThrow();
-    });
+  it('passes silently for a valid error config', () => {
+    expect(() => {
+      validateAdapterConfig('error', createValidErrorConfig());
+    }).not.toThrow();
+  });
 
-    it('passes silently for a valid analytics config', () => {
-        expect(() => {
-            validateAdapterConfig('analytics', createValidAnalyticsConfig());
-        }).not.toThrow();
-    });
+  it('passes silently for a valid analytics config', () => {
+    expect(() => {
+      validateAdapterConfig('analytics', createValidAnalyticsConfig());
+    }).not.toThrow();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -98,68 +100,68 @@ describe('validateAdapterConfig — valid configs', () => {
 // ---------------------------------------------------------------------------
 
 describe('validateAdapterConfig — ENS-7001 (invalid name)', () => {
-    it('throws ENS-7001 when name is an empty string', () => {
-        const config = { ...createValidAuthConfig(), name: '' };
+  it('throws ENS-7001 when name is an empty string', () => {
+    const config = { ...createValidAuthConfig(), name: '' };
 
-        expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('auth', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.module).toBe('adapters');
-            expect(error.recoverable).toBe(false);
-            expect(error.message).toContain('name');
-        }
-    });
+    expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('auth', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.module).toBe('adapters');
+      expect(error.recoverable).toBe(false);
+      expect(error.message).toContain('name');
+    }
+  });
 
-    it('throws ENS-7001 when name is a number', () => {
-        const config = { ...createValidDataConfig(), name: 42 };
+  it('throws ENS-7001 when name is a number', () => {
+    const config = { ...createValidDataConfig(), name: 42 };
 
-        expect(() => validateAdapterConfig('data', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('data', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('name');
-        }
-    });
+    expect(() => validateAdapterConfig('data', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('data', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('name');
+    }
+  });
 
-    it('throws ENS-7001 when name is undefined', () => {
-        const config = { ...createValidErrorConfig(), name: undefined };
+  it('throws ENS-7001 when name is undefined', () => {
+    const config = { ...createValidErrorConfig(), name: undefined };
 
-        expect(() => validateAdapterConfig('error', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('error', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-        }
-    });
+    expect(() => validateAdapterConfig('error', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('error', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+    }
+  });
 
-    it('throws ENS-7001 when name is null', () => {
-        const config = { ...createValidAnalyticsConfig(), name: null };
+  it('throws ENS-7001 when name is null', () => {
+    const config = { ...createValidAnalyticsConfig(), name: null };
 
-        expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('analytics', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-        }
-    });
+    expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('analytics', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+    }
+  });
 
-    it('includes the adapter type in the error message', () => {
-        const config = { ...createValidAuthConfig(), name: '' };
+  it('includes the adapter type in the error message', () => {
+    const config = { ...createValidAuthConfig(), name: '' };
 
-        try {
-            validateAdapterConfig('auth', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.message).toContain('auth');
-        }
-    });
+    try {
+      validateAdapterConfig('auth', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.message).toContain('auth');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -167,105 +169,105 @@ describe('validateAdapterConfig — ENS-7001 (invalid name)', () => {
 // ---------------------------------------------------------------------------
 
 describe('validateAdapterConfig — ENS-7001 (missing methods)', () => {
-    it('throws ENS-7001 when auth config is missing getSession', () => {
-        const config: Record<string, unknown> = {
-            name: 'test-auth',
-            hasRole: () => Promise.resolve(false),
-            onAuthChange: () => () => { },
-        };
+  it('throws ENS-7001 when auth config is missing getSession', () => {
+    const config: Record<string, unknown> = {
+      name: 'test-auth',
+      hasRole: () => Promise.resolve(false),
+      onAuthChange: () => () => {},
+    };
 
-        expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('auth', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('getSession');
-        }
-    });
+    expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('auth', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('getSession');
+    }
+  });
 
-    it('throws ENS-7001 when auth config is missing hasRole', () => {
-        const config: Record<string, unknown> = {
-            name: 'test-auth',
-            getSession: () => Promise.resolve(null),
-            onAuthChange: () => () => { },
-        };
+  it('throws ENS-7001 when auth config is missing hasRole', () => {
+    const config: Record<string, unknown> = {
+      name: 'test-auth',
+      getSession: () => Promise.resolve(null),
+      onAuthChange: () => () => {},
+    };
 
-        expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('auth', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('hasRole');
-        }
-    });
+    expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('auth', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('hasRole');
+    }
+  });
 
-    it('throws ENS-7001 when data config is missing query', () => {
-        const config: Record<string, unknown> = {
-            name: 'test-data',
-            mutate: () => Promise.resolve(null),
-            subscribe: () => () => { },
-        };
+  it('throws ENS-7001 when data config is missing query', () => {
+    const config: Record<string, unknown> = {
+      name: 'test-data',
+      mutate: () => Promise.resolve(null),
+      subscribe: () => () => {},
+    };
 
-        expect(() => validateAdapterConfig('data', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('data', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('query');
-        }
-    });
+    expect(() => validateAdapterConfig('data', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('data', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('query');
+    }
+  });
 
-    it('throws ENS-7001 when error config is missing shouldRetry', () => {
-        const config: Record<string, unknown> = {
-            name: 'test-error',
-            report: () => Promise.resolve(),
-            sanitize: (e: Error) => e,
-        };
+  it('throws ENS-7001 when error config is missing shouldRetry', () => {
+    const config: Record<string, unknown> = {
+      name: 'test-error',
+      report: () => Promise.resolve(),
+      sanitize: (e: Error) => e,
+    };
 
-        expect(() => validateAdapterConfig('error', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('error', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('shouldRetry');
-        }
-    });
+    expect(() => validateAdapterConfig('error', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('error', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('shouldRetry');
+    }
+  });
 
-    it('throws ENS-7001 when analytics config is missing track', () => {
-        const config: Record<string, unknown> = {
-            name: 'test-analytics',
-            identify: () => { },
-        };
+  it('throws ENS-7001 when analytics config is missing track', () => {
+    const config: Record<string, unknown> = {
+      name: 'test-analytics',
+      identify: () => {},
+    };
 
-        expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('analytics', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('track');
-        }
-    });
+    expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('analytics', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('track');
+    }
+  });
 
-    it('throws ENS-7001 when analytics config is missing identify', () => {
-        const config: Record<string, unknown> = {
-            name: 'test-analytics',
-            track: () => { },
-        };
+  it('throws ENS-7001 when analytics config is missing identify', () => {
+    const config: Record<string, unknown> = {
+      name: 'test-analytics',
+      track: () => {},
+    };
 
-        expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('analytics', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('identify');
-        }
-    });
+    expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('analytics', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('identify');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -273,71 +275,71 @@ describe('validateAdapterConfig — ENS-7001 (missing methods)', () => {
 // ---------------------------------------------------------------------------
 
 describe('validateAdapterConfig — ENS-7001 (non-function methods)', () => {
-    it('throws ENS-7001 when a method is a string instead of a function', () => {
-        const config = { ...createValidAuthConfig(), getSession: 'not a function' };
+  it('throws ENS-7001 when a method is a string instead of a function', () => {
+    const config = { ...createValidAuthConfig(), getSession: 'not a function' };
 
-        expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('auth', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('getSession');
-            expect(error.message).toContain('string');
-        }
-    });
+    expect(() => validateAdapterConfig('auth', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('auth', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('getSession');
+      expect(error.message).toContain('string');
+    }
+  });
 
-    it('throws ENS-7001 when a method is null', () => {
-        const config = { ...createValidDataConfig(), query: null };
+  it('throws ENS-7001 when a method is null', () => {
+    const config = { ...createValidDataConfig(), query: null };
 
-        expect(() => validateAdapterConfig('data', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('data', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('query');
-            expect(error.message).toContain('null');
-        }
-    });
+    expect(() => validateAdapterConfig('data', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('data', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('query');
+      expect(error.message).toContain('null');
+    }
+  });
 
-    it('throws ENS-7001 when a method is a number', () => {
-        const config = { ...createValidErrorConfig(), report: 123 };
+  it('throws ENS-7001 when a method is a number', () => {
+    const config = { ...createValidErrorConfig(), report: 123 };
 
-        expect(() => validateAdapterConfig('error', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('error', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('report');
-            expect(error.message).toContain('number');
-        }
-    });
+    expect(() => validateAdapterConfig('error', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('error', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('report');
+      expect(error.message).toContain('number');
+    }
+  });
 
-    it('throws ENS-7001 when a method is a boolean', () => {
-        const config = { ...createValidAnalyticsConfig(), track: true };
+  it('throws ENS-7001 when a method is a boolean', () => {
+    const config = { ...createValidAnalyticsConfig(), track: true };
 
-        expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
-        try {
-            validateAdapterConfig('analytics', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.code).toBe('ENS-7001');
-            expect(error.message).toContain('track');
-            expect(error.message).toContain('boolean');
-        }
-    });
+    expect(() => validateAdapterConfig('analytics', config)).toThrow(EnterstellarError);
+    try {
+      validateAdapterConfig('analytics', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.code).toBe('ENS-7001');
+      expect(error.message).toContain('track');
+      expect(error.message).toContain('boolean');
+    }
+  });
 
-    it('includes expected type "function" and received type in the message', () => {
-        const config = { ...createValidAuthConfig(), onAuthChange: { not: 'a function' } };
+  it('includes expected type "function" and received type in the message', () => {
+    const config = { ...createValidAuthConfig(), onAuthChange: { not: 'a function' } };
 
-        try {
-            validateAdapterConfig('auth', config);
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.message).toContain('Expected function');
-            expect(error.message).toContain('object');
-        }
-    });
+    try {
+      validateAdapterConfig('auth', config);
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.message).toContain('Expected function');
+      expect(error.message).toContain('object');
+    }
+  });
 });

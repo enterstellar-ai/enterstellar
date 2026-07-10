@@ -1,5 +1,5 @@
 {
-  "name": "@enterstellar-ai/examples-dashboard",
+  "name": "@enterstellar/examples-dashboard",
   "description": "Dashboard example — multi-zone clinical dashboard with design tokens and adapters.",
   "version": "0.0.0",
   "author": "Enterstellar",

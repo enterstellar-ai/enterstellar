@@ -3,7 +3,7 @@
  * @description Interactive React renderers for the Enterstellar Playground components.
  *
  * Per Design Choice R6, renderers are completely decoupled from contracts.
- * Each renderer is registered via `registerRenderer()` from `@enterstellar-ai/react`
+ * Each renderer is registered via `registerRenderer()` from `@enterstellar/react`
  * and looked up at render time by `<Zone>` using string name matching.
  *
  * **Interactive renderers (no readOnly):**
@@ -23,7 +23,7 @@
 
 import { useState, useMemo, type JSX } from 'react';
 
-import { registerRenderer } from '@enterstellar-ai/react';
+import { registerRenderer } from '@enterstellar/react';
 
 import { registerAllDomainRenderers } from './domain-renderers';
 
@@ -100,19 +100,19 @@ export function registerPlaygroundRenderers(): void {
 
   registerRenderer('MetricCard', (props: Record<string, unknown>): JSX.Element => {
     const label = str(props['label'], 'Metric');
-    const value = typeof props['value'] === 'number' ? String(props['value']) : str(props['value'], '—');
+    const value =
+      typeof props['value'] === 'number' ? String(props['value']) : str(props['value'], '—');
     const unit = str(props['unit']);
     const trend = str(props['trend']);
-    const sparkline = arr(props['sparkline']).filter(
-      (v): v is number => typeof v === 'number',
-    );
+    const sparkline = arr(props['sparkline']).filter((v): v is number => typeof v === 'number');
 
     /** Trend arrow and color class */
-    const trendConfig = {
-      up: { arrow: '↑', color: 'text-success' },
-      down: { arrow: '↓', color: 'text-error' },
-      flat: { arrow: '→', color: 'text-playground-muted' },
-    }[trend] ?? null;
+    const trendConfig =
+      {
+        up: { arrow: '↑', color: 'text-success' },
+        down: { arrow: '↓', color: 'text-error' },
+        flat: { arrow: '→', color: 'text-playground-muted' },
+      }[trend] ?? null;
 
     return (
       <div className="rounded-xl border border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))] p-5">
@@ -220,12 +220,12 @@ export function registerPlaygroundRenderers(): void {
                     <th
                       key={key}
                       className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--token-text-secondary,theme(colors.playground-muted))] text-${align} ${sortable ? 'cursor-pointer select-none hover:text-[var(--token-text-primary,theme(colors.neutral-100))]' : ''}`}
-                      onClick={() => { handleSort(key); }}
+                      onClick={() => {
+                        handleSort(key);
+                      }}
                     >
                       {label}
-                      {isSorted && (
-                        <span className="ml-1">{sortAsc ? '↑' : '↓'}</span>
-                      )}
+                      {isSorted && <span className="ml-1">{sortAsc ? '↑' : '↓'}</span>}
                     </th>
                   );
                 })}
@@ -278,8 +278,12 @@ export function registerPlaygroundRenderers(): void {
     return (
       <div className="rounded-xl border border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))] px-5 py-4 inline-flex items-center gap-3">
         <span className="relative flex size-3">
-          <span className={`absolute inline-flex size-full rounded-full opacity-75 ${dotColor[status] ?? 'bg-playground-muted'} ${pulse ? 'animate-ping' : ''}`} />
-          <span className={`relative inline-flex size-3 rounded-full ${dotColor[status] ?? 'bg-playground-muted'}`} />
+          <span
+            className={`absolute inline-flex size-full rounded-full opacity-75 ${dotColor[status] ?? 'bg-playground-muted'} ${pulse ? 'animate-ping' : ''}`}
+          />
+          <span
+            className={`relative inline-flex size-3 rounded-full ${dotColor[status] ?? 'bg-playground-muted'}`}
+          />
         </span>
         <span className="text-sm font-medium text-[var(--token-text-primary,theme(colors.neutral-100))]">
           {label}
@@ -401,22 +405,24 @@ export function registerPlaygroundRenderers(): void {
                 {/* Step circle */}
                 <div className="flex flex-col items-center gap-1.5">
                   <div
-                    className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${isComplete
-                      ? 'bg-success/20 border-success text-success'
-                      : isActive
-                        ? 'bg-[var(--token-accent,theme(colors.primary-500))]/20 border-[var(--token-accent,theme(colors.primary-500))] text-[var(--token-accent,theme(colors.primary-500))]'
-                        : 'border-[var(--token-card-border,theme(colors.playground-border))] text-playground-muted'
-                      }`}
+                    className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
+                      isComplete
+                        ? 'bg-success/20 border-success text-success'
+                        : isActive
+                          ? 'bg-[var(--token-accent,theme(colors.primary-500))]/20 border-[var(--token-accent,theme(colors.primary-500))] text-[var(--token-accent,theme(colors.primary-500))]'
+                          : 'border-[var(--token-card-border,theme(colors.playground-border))] text-playground-muted'
+                    }`}
                   >
                     {isComplete ? '✓' : String(i + 1)}
                   </div>
                   <span
-                    className={`text-[10px] text-center max-w-[72px] leading-tight ${isActive
-                      ? 'text-[var(--token-text-primary,theme(colors.neutral-100))] font-medium'
-                      : isPending
-                        ? 'text-playground-muted'
-                        : 'text-success'
-                      }`}
+                    className={`text-[10px] text-center max-w-[72px] leading-tight ${
+                      isActive
+                        ? 'text-[var(--token-text-primary,theme(colors.neutral-100))] font-medium'
+                        : isPending
+                          ? 'text-playground-muted'
+                          : 'text-success'
+                    }`}
                   >
                     {step}
                   </span>
@@ -424,10 +430,11 @@ export function registerPlaygroundRenderers(): void {
                 {/* Connector line */}
                 {i < steps.length - 1 && (
                   <div
-                    className={`h-0.5 flex-1 mx-1 mt-[-18px] ${isComplete
-                      ? 'bg-success'
-                      : 'bg-[var(--token-card-border,theme(colors.playground-border))]'
-                      }`}
+                    className={`h-0.5 flex-1 mx-1 mt-[-18px] ${
+                      isComplete
+                        ? 'bg-success'
+                        : 'bg-[var(--token-card-border,theme(colors.playground-border))]'
+                    }`}
                   />
                 )}
               </div>
@@ -463,7 +470,12 @@ export function registerPlaygroundRenderers(): void {
       critical: { border: 'border-error/50', icon: '🚨', bg: 'bg-error/15' },
     };
 
-    const style = severityStyles[severity] ?? severityStyles['info'] ?? { border: 'border-primary-500/30', icon: 'ℹ️', bg: 'bg-primary-500/10' };
+    const style = severityStyles[severity] ??
+      severityStyles['info'] ?? {
+        border: 'border-primary-500/30',
+        icon: 'ℹ️',
+        bg: 'bg-primary-500/10',
+      };
 
     return (
       <div className={`rounded-xl border ${style.border} ${style.bg} p-4 flex gap-3`}>
@@ -479,7 +491,9 @@ export function registerPlaygroundRenderers(): void {
         {dismissible && (
           <button
             type="button"
-            onClick={() => { setDismissed(true); }}
+            onClick={() => {
+              setDismissed(true);
+            }}
             className="text-playground-muted hover:text-neutral-100 transition-colors text-lg shrink-0 cursor-pointer"
             aria-label="Dismiss alert"
           >
@@ -545,7 +559,10 @@ export function registerPlaygroundRenderers(): void {
           <input
             type="text"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setSelectedIndex(0); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setSelectedIndex(0);
+            }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="w-full bg-[var(--token-surface,theme(colors.playground-panel))] border border-[var(--token-card-border,theme(colors.playground-border))] rounded-lg px-3 py-2 text-sm text-[var(--token-text-primary,theme(colors.neutral-100))] placeholder:text-playground-muted focus:outline-none focus:border-primary-500/50"
@@ -566,11 +583,14 @@ export function registerPlaygroundRenderers(): void {
                 return (
                   <div
                     key={str(cmd['action'])}
-                    className={`flex items-center justify-between px-4 py-2 cursor-pointer transition-colors ${isSelected
-                      ? 'bg-[var(--token-accent,theme(colors.primary-500))]/15 text-[var(--token-text-primary,theme(colors.neutral-100))]'
-                      : 'hover:bg-[var(--token-surface,theme(colors.playground-panel))] text-[var(--token-text-primary,theme(colors.neutral-200))]'
-                      }`}
-                    onMouseEnter={() => { setSelectedIndex(thisIndex); }}
+                    className={`flex items-center justify-between px-4 py-2 cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-[var(--token-accent,theme(colors.primary-500))]/15 text-[var(--token-text-primary,theme(colors.neutral-100))]'
+                        : 'hover:bg-[var(--token-surface,theme(colors.playground-panel))] text-[var(--token-text-primary,theme(colors.neutral-200))]'
+                    }`}
+                    onMouseEnter={() => {
+                      setSelectedIndex(thisIndex);
+                    }}
                   >
                     <span className="text-sm">{str(cmd['label'])}</span>
                     {str(cmd['shortcut']) !== '' && (
@@ -585,9 +605,7 @@ export function registerPlaygroundRenderers(): void {
           ))}
 
           {filteredCommands.length === 0 && (
-            <p className="px-4 py-6 text-center text-sm text-playground-muted">
-              No commands found
-            </p>
+            <p className="px-4 py-6 text-center text-sm text-playground-muted">No commands found</p>
           )}
         </div>
       </div>
@@ -602,7 +620,8 @@ export function registerPlaygroundRenderers(): void {
     const bodyText = str(props['body']);
     const variant = str(props['variant'], 'default');
 
-    const isFallback = props['originalComponent'] !== undefined || (title === '' && bodyText === '');
+    const isFallback =
+      props['originalComponent'] !== undefined || (title === '' && bodyText === '');
 
     if (isFallback) {
       const originalComponent = str(props['originalComponent'], 'UnknownComponent');
@@ -613,11 +632,24 @@ export function registerPlaygroundRenderers(): void {
       return (
         <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 flex flex-col gap-2 h-full justify-center">
           <div className="flex items-center gap-2 text-red-500">
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
             <h3 className="text-xs font-bold tracking-wider uppercase">LLM Crash Isolated</h3>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--token-text-secondary,theme(colors.playground-muted))]">
-            The Enterstellar Engine intercepted an invalid component schema hallucination for <strong>{originalComponent}</strong> and sandboxed the failure.
+            The Enterstellar Engine intercepted an invalid component schema hallucination for{' '}
+            <strong>{originalComponent}</strong> and sandboxed the failure.
             <br />
             <span className="text-red-400 mt-1 block">Error: {firstError}</span>
           </p>
@@ -631,10 +663,24 @@ export function registerPlaygroundRenderers(): void {
     }
 
     return (
-      <div className={`p-5 rounded-xl border ${variant === 'outlined' ? 'border-[var(--token-card-border,theme(colors.playground-border))] bg-transparent' : 'border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))]'}`}>
-        {title !== '' && <h3 className="text-lg font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))] mb-1">{title}</h3>}
-        {subtitle !== '' && <p className="text-sm text-[var(--token-text-secondary,theme(colors.playground-muted))] mb-4">{subtitle}</p>}
-        {bodyText !== '' && <p className="text-sm text-[var(--token-text-primary,theme(colors.neutral-200))] whitespace-pre-wrap mb-4">{bodyText}</p>}
+      <div
+        className={`p-5 rounded-xl border ${variant === 'outlined' ? 'border-[var(--token-card-border,theme(colors.playground-border))] bg-transparent' : 'border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))]'}`}
+      >
+        {title !== '' && (
+          <h3 className="text-lg font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))] mb-1">
+            {title}
+          </h3>
+        )}
+        {subtitle !== '' && (
+          <p className="text-sm text-[var(--token-text-secondary,theme(colors.playground-muted))] mb-4">
+            {subtitle}
+          </p>
+        )}
+        {bodyText !== '' && (
+          <p className="text-sm text-[var(--token-text-primary,theme(colors.neutral-200))] whitespace-pre-wrap mb-4">
+            {bodyText}
+          </p>
+        )}
       </div>
     );
   });

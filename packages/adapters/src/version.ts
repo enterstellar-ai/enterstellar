@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/adapters/version
- * @description Package version constant for `@enterstellar-ai/adapters`.
+ * @module @enterstellar/adapters/version
+ * @description Package version constant for `@enterstellar/adapters`.
  *
  * Used by DevTools for version display and runtime compatibility checks.
  * Must be kept in sync with the `version` field in `package.json`.
@@ -9,7 +9,7 @@
  */
 
 /**
- * Current version of the `@enterstellar-ai/adapters` package.
+ * Current version of the `@enterstellar/adapters` package.
  *
  * @remarks
  * This value MUST match the `version` field in `package.json`.

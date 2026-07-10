@@ -25,7 +25,7 @@ The Enterstellar playbook: add one `<Zone>`, write one contract, wire `<Provider
 ### Step 1: Install
 
 ```bash
-npm install @enterstellar-ai/react @enterstellar-ai/registry
+npm install @enterstellar/react @enterstellar/registry
 ```
 
 ### Step 2: Define one contract
@@ -33,7 +33,7 @@ npm install @enterstellar-ai/react @enterstellar-ai/registry
 Create `src/enterstellar/components/SearchResults.contract.ts`:
 
 ```ts
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 export const SearchResults = defineComponent({
@@ -84,7 +84,7 @@ export const SearchResults = defineComponent({
 `enterstellar/registry.ts`:
 
 ```ts
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createRegistry } from '@enterstellar/registry';
 import { SearchResults } from './contracts/search-results.contract';
 
 export const registry = createRegistry({
@@ -97,7 +97,7 @@ export const registry = createRegistry({
 **Next.js App Router (`app/layout.tsx`):**
 
 ```tsx
-import { Provider } from '@enterstellar-ai/react';
+import { Provider } from '@enterstellar/react';
 import { registry } from '@/enterstellar/registry';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -134,7 +134,7 @@ export default function SearchPage({ query }: { query: string }) {
 }
 
 // After: Enterstellar Zone alongside static UI
-import { Zone } from '@enterstellar-ai/react';
+import { Zone } from '@enterstellar/react';
 
 export default function SearchPage({ query }: { query: string }) {
   return (
@@ -181,7 +181,7 @@ At this stage, most teams also wire:
 - `<EnterstellarDevTools />` for trace inspection
 - An `AuthAdapter` for RBAC zone gating
 - A `RenderCache` for repeated intents
-- Regression tests for the registry via `@enterstellar-ai/test`
+- Regression tests for the registry via `@enterstellar/test`
 
 ## Working Alongside Existing State Management
 

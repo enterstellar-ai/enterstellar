@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/connection/reconnect
+ * @module @enterstellar/connection/reconnect
  * @description Exponential backoff scheduler for automatic reconnection.
  *
  * Produces a delay sequence: `1s → 2s → 4s → 8s → 16s → maxDelay → maxDelay → ...`
@@ -29,25 +29,25 @@ import { INITIAL_BACKOFF_MS } from './types.js';
  * `nextDelay()` and schedules `setTimeout` / `setInterval` externally.
  */
 export type ReconnectScheduler = {
-    /**
-     * Computes and returns the next delay in milliseconds.
-     * Each call increments the internal attempt counter.
-     *
-     * Sequence with default maxDelay (30_000ms):
-     * `1000 → 2000 → 4000 → 8000 → 16000 → 30000 → 30000 → ...`
-     *
-     * @returns The delay in milliseconds before the next reconnect attempt.
-     */
-    readonly nextDelay: () => number;
+  /**
+   * Computes and returns the next delay in milliseconds.
+   * Each call increments the internal attempt counter.
+   *
+   * Sequence with default maxDelay (30_000ms):
+   * `1000 → 2000 → 4000 → 8000 → 16000 → 30000 → 30000 → ...`
+   *
+   * @returns The delay in milliseconds before the next reconnect attempt.
+   */
+  readonly nextDelay: () => number;
 
-    /**
-     * Resets the backoff counter to zero.
-     * Call this on successful reconnect to restart the sequence.
-     */
-    readonly reset: () => void;
+  /**
+   * Resets the backoff counter to zero.
+   * Call this on successful reconnect to restart the sequence.
+   */
+  readonly reset: () => void;
 
-    /** Current attempt number (0-indexed, incremented by `nextDelay()`). */
-    readonly attempt: number;
+  /** Current attempt number (0-indexed, incremented by `nextDelay()`). */
+  readonly attempt: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -79,35 +79,31 @@ export type ReconnectScheduler = {
  * scheduler.nextDelay(); // 1000 (restarted)
  * ```
  */
-export function createReconnectScheduler(
-    config: ReconnectConfig,
-): ReconnectScheduler {
-    let currentAttempt = 0;
+export function createReconnectScheduler(config: ReconnectConfig): ReconnectScheduler {
+  let currentAttempt = 0;
 
-    const scheduler: ReconnectScheduler = {
-        nextDelay(): number {
-            // Compute delay: initialBackoff * 2^attempt, capped at maxDelay.
-            // Math.min guarantees we never exceed the configured ceiling.
-            // Bit-shift (1 << attempt) is safe for attempt < 31 — at that point
-            // the delay would be ~2 billion ms which is far beyond maxDelay anyway.
-            const uncapped =
-                currentAttempt < 31
-                    ? INITIAL_BACKOFF_MS * (1 << currentAttempt)
-                    : config.maxDelay;
+  const scheduler: ReconnectScheduler = {
+    nextDelay(): number {
+      // Compute delay: initialBackoff * 2^attempt, capped at maxDelay.
+      // Math.min guarantees we never exceed the configured ceiling.
+      // Bit-shift (1 << attempt) is safe for attempt < 31 — at that point
+      // the delay would be ~2 billion ms which is far beyond maxDelay anyway.
+      const uncapped =
+        currentAttempt < 31 ? INITIAL_BACKOFF_MS * (1 << currentAttempt) : config.maxDelay;
 
-            const delay = Math.min(uncapped, config.maxDelay);
-            currentAttempt += 1;
-            return delay;
-        },
+      const delay = Math.min(uncapped, config.maxDelay);
+      currentAttempt += 1;
+      return delay;
+    },
 
-        reset(): void {
-            currentAttempt = 0;
-        },
+    reset(): void {
+      currentAttempt = 0;
+    },
 
-        get attempt(): number {
-            return currentAttempt;
-        },
-    };
+    get attempt(): number {
+      return currentAttempt;
+    },
+  };
 
-    return scheduler;
+  return scheduler;
 }

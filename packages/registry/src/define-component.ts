@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/registry/define-component
+ * @module @enterstellar/registry/define-component
  * @description `defineComponent()` — the factory for creating ComponentContracts.
  *
  * This is the primary authoring API for Enterstellar component developers. It accepts
@@ -18,7 +18,7 @@
  *
  * @example
  * ```ts
- * import { defineComponent } from '@enterstellar-ai/registry';
+ * import { defineComponent } from '@enterstellar/registry';
  * import { z } from 'zod';
  *
  * const PatientVitals = defineComponent({
@@ -45,21 +45,21 @@
  * ```
  */
 
-import { createComponentId } from '@enterstellar-ai/types';
-import type { ComponentContract } from '@enterstellar-ai/types';
+import { createComponentId } from '@enterstellar/types';
+import type { ComponentContract } from '@enterstellar/types';
 
 import type { ComponentContractInput } from './types.js';
 import { validateContract } from './validators/contract-validator.js';
 import {
-    invalidNameError,
-    descriptionTooLongError,
-    invalidTagCountError,
-    missingStateError,
-    invalidReadyStateError,
-    invalidTokenValueError,
-    invalidPropsSchemaError,
-    invalidAriaRoleError,
-    missingDescriptionError,
+  invalidNameError,
+  descriptionTooLongError,
+  invalidTagCountError,
+  missingStateError,
+  invalidReadyStateError,
+  invalidTokenValueError,
+  invalidPropsSchemaError,
+  invalidAriaRoleError,
+  missingDescriptionError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------
@@ -70,54 +70,51 @@ import {
  * Maps a validation rule ID to the corresponding `EnterstellarError` factory.
  * Used to throw the exact error for the first violation found.
  */
-function throwForViolation(
-    rule: string,
-    contract: ComponentContractInput,
-): never {
-    switch (rule) {
-        case 'R1':
-            throw invalidNameError(contract.name);
-        case 'R2':
-            throw descriptionTooLongError(contract.description.length);
-        case 'R3':
-            throw invalidTagCountError(contract.tags.length);
-        case 'R4': {
-            // Find the first missing state
-            const states = ['loading', 'error', 'empty', 'ready'] as const;
-            for (const state of states) {
-                if (!contract.states[state].trim()) {
-                    throw missingStateError(state);
-                }
-            }
-            // Fallback (should not reach here if validation reported R4)
-            throw missingStateError('unknown');
+function throwForViolation(rule: string, contract: ComponentContractInput): never {
+  switch (rule) {
+    case 'R1':
+      throw invalidNameError(contract.name);
+    case 'R2':
+      throw descriptionTooLongError(contract.description.length);
+    case 'R3':
+      throw invalidTagCountError(contract.tags.length);
+    case 'R4': {
+      // Find the first missing state
+      const states = ['loading', 'error', 'empty', 'ready'] as const;
+      for (const state of states) {
+        if (!contract.states[state].trim()) {
+          throw missingStateError(state);
         }
-        case 'R5':
-            throw invalidReadyStateError(contract.name, contract.states.ready);
-        case 'R6': {
-            // Find the first invalid token
-            for (const [key, value] of Object.entries(contract.tokens)) {
-                if (!value.startsWith('token:')) {
-                    throw invalidTokenValueError(key, value);
-                }
-            }
-            // Fallback
-            throw invalidTokenValueError('unknown', '');
-        }
-        case 'R7':
-            throw invalidPropsSchemaError();
-        case 'R8':
-            throw invalidAriaRoleError(contract.accessibility.role);
-        case 'R9':
-            throw missingDescriptionError();
-        default:
-            // Unreachable by design — all rule IDs (R1–R9) are handled above.
-            // Plain Error, not EnterstellarError: this is an internal invariant violation.
-            throw new Error(
-                `[Enterstellar Internal] Unknown validation rule: '${rule}'. ` +
-                'All known rules should be handled in throwForViolation().',
-            );
+      }
+      // Fallback (should not reach here if validation reported R4)
+      throw missingStateError('unknown');
     }
+    case 'R5':
+      throw invalidReadyStateError(contract.name, contract.states.ready);
+    case 'R6': {
+      // Find the first invalid token
+      for (const [key, value] of Object.entries(contract.tokens)) {
+        if (!value.startsWith('token:')) {
+          throw invalidTokenValueError(key, value);
+        }
+      }
+      // Fallback
+      throw invalidTokenValueError('unknown', '');
+    }
+    case 'R7':
+      throw invalidPropsSchemaError();
+    case 'R8':
+      throw invalidAriaRoleError(contract.accessibility.role);
+    case 'R9':
+      throw missingDescriptionError();
+    default:
+      // Unreachable by design — all rule IDs (R1–R9) are handled above.
+      // Plain Error, not EnterstellarError: this is an internal invariant violation.
+      throw new Error(
+        `[Enterstellar Internal] Unknown validation rule: '${rule}'. ` +
+          'All known rules should be handled in throwForViolation().',
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -149,28 +146,28 @@ function throwForViolation(
  * @see Design Choice R6 — no `render` field on the contract.
  */
 export function defineComponent(input: ComponentContractInput): ComponentContract {
-    // ----- Validate all rules -----
-    const result = validateContract(input);
+  // ----- Validate all rules -----
+  const result = validateContract(input);
 
-    if (!result.valid) {
-        // Throw on the first violation (fail fast at the call site)
-        const firstViolation = result.violations[0];
-        if (firstViolation !== undefined) {
-            throwForViolation(firstViolation.rule, input);
-        }
+  if (!result.valid) {
+    // Throw on the first violation (fail fast at the call site)
+    const firstViolation = result.violations[0];
+    if (firstViolation !== undefined) {
+      throwForViolation(firstViolation.rule, input);
     }
+  }
 
-    // ----- Build the full contract -----
-    const contract: ComponentContract = {
-        ...input,
-        id: createComponentId(input.name),
-        _meta: {
-            forged: false,
-            version: '1.0.0',
-            createdAt: new Date().toISOString(),
-        },
-    };
+  // ----- Build the full contract -----
+  const contract: ComponentContract = {
+    ...input,
+    id: createComponentId(input.name),
+    _meta: {
+      forged: false,
+      version: '1.0.0',
+      createdAt: new Date().toISOString(),
+    },
+  };
 
-    // ----- Freeze and return -----
-    return Object.freeze(contract);
+  // ----- Freeze and return -----
+  return Object.freeze(contract);
 }

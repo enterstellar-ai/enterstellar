@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/pipeline/accessibility-step
+ * @module @enterstellar/compiler/pipeline/accessibility-step
  * @description Pipeline Step 4: Accessibility Validation and Auto-Injection.
  *
  * Validates that the compiled props satisfy the component contract's
@@ -11,17 +11,17 @@
  * natural tab order. Focus management belongs to the component author.
  *
  * **C11 compliance:** AST-based lightweight check (no DOM dependency).
- * Full `axe-core` audits are deferred to `@enterstellar-ai/test` for CI testing.
+ * Full `axe-core` audits are deferred to `@enterstellar/test` for CI testing.
  *
  * **L15 compliance:** Zero framework imports.
  *
  * @see Design Choice C10 — role and aria-* only, per-component.
- * @see Design Choice C11 — AST-based in compiler, axe-core in @enterstellar-ai/test.
+ * @see Design Choice C11 — AST-based in compiler, axe-core in @enterstellar/test.
  */
 
 import type { CompilationContext, CompilationStep } from '../types.js';
 import { missingAccessibilityError } from '../errors.js';
-import type { ComponentCategory } from '@enterstellar-ai/types';
+import type { ComponentCategory } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Accessibility Attribute Derivation
@@ -44,22 +44,21 @@ type PredefinedCategory = Exclude<ComponentCategory, `custom:${string}`>;
  * **Compile-time sync guarantee:** The `satisfies` constraint ensures
  * every key is a valid `PredefinedCategory`. The exhaustiveness check
  * below ensures every `PredefinedCategory` is present as a key.
- * If `ComponentCategory` in `@enterstellar-ai/types` changes, `tsc` errors here.
+ * If `ComponentCategory` in `@enterstellar/types` changes, `tsc` errors here.
  *
  * @see Design Choice C10 — per-component based on category and semantic role
  * @see Design Choice R11 — compile-time exhaustiveness via `satisfies`
  */
 const CATEGORY_ROLE_DEFAULTS: Readonly<Record<PredefinedCategory, string>> = {
-    'clinical': 'region',
-    'admin': 'region',
-    'navigation': 'navigation',
-    'data-display': 'article',
-    'form': 'form',
-    'feedback': 'alert',
-    'layout': 'group',
-    'utility': 'complementary',
+  clinical: 'region',
+  admin: 'region',
+  navigation: 'navigation',
+  'data-display': 'article',
+  form: 'form',
+  feedback: 'alert',
+  layout: 'group',
+  utility: 'complementary',
 } satisfies Record<PredefinedCategory, string>;
-
 
 /**
  * Derives a default ARIA role from the component's category.
@@ -70,12 +69,10 @@ const CATEGORY_ROLE_DEFAULTS: Readonly<Record<PredefinedCategory, string>> = {
  * @returns A WAI-ARIA role string.
  */
 function deriveRoleFromCategory(category: string): string {
-    // Handle custom categories (e.g., 'custom:dashboard')
-    const baseCategory = category.startsWith('custom:')
-        ? category
-        : category;
+  // Handle custom categories (e.g., 'custom:dashboard')
+  const baseCategory = category.startsWith('custom:') ? category : category;
 
-    return (CATEGORY_ROLE_DEFAULTS as Readonly<Record<string, string>>)[baseCategory] ?? 'region';
+  return (CATEGORY_ROLE_DEFAULTS as Readonly<Record<string, string>>)[baseCategory] ?? 'region';
 }
 
 // ---------------------------------------------------------------------------
@@ -111,73 +108,67 @@ function deriveRoleFromCategory(category: string): string {
  * ```
  */
 export const accessibilityStep: CompilationStep = async (
-    context: CompilationContext,
-    next: () => Promise<CompilationContext>,
+  context: CompilationContext,
+  next: () => Promise<CompilationContext>,
 ): Promise<CompilationContext> => {
-    const { contract, config } = context;
-    const { accessibility } = contract;
+  const { contract, config } = context;
+  const { accessibility } = contract;
 
-    // --- 1. Validate and inject `role` ---
+  // --- 1. Validate and inject `role` ---
 
-    const existingRole = context.props['role'];
+  const existingRole = context.props['role'];
 
-    if (existingRole === undefined || existingRole === '') {
-        if (config.autoAccessibility) {
-            // Auto-inject role from contract or derive from category
-            const role = accessibility.role !== ''
-                ? accessibility.role
-                : deriveRoleFromCategory(contract.category);
+  if (existingRole === undefined || existingRole === '') {
+    if (config.autoAccessibility) {
+      // Auto-inject role from contract or derive from category
+      const role =
+        accessibility.role !== '' ? accessibility.role : deriveRoleFromCategory(contract.category);
 
-            context.props['role'] = role;
-            context.accessibilityInjections.push('role');
-        } else {
-            // Report missing role as error
-            context.errors.push(
-                missingAccessibilityError('role', contract.name),
-            );
-        }
+      context.props['role'] = role;
+      context.accessibilityInjections.push('role');
+    } else {
+      // Report missing role as error
+      context.errors.push(missingAccessibilityError('role', contract.name));
     }
+  }
 
-    // --- 2. Validate and inject `aria-label` ---
+  // --- 2. Validate and inject `aria-label` ---
 
-    const existingAriaLabel = context.props['aria-label'];
+  const existingAriaLabel = context.props['aria-label'];
 
-    if (existingAriaLabel === undefined || existingAriaLabel === '') {
-        if (config.autoAccessibility) {
-            // Auto-inject ariaLabel from contract accessibility config
-            const ariaLabel = accessibility.ariaLabel !== ''
-                ? accessibility.ariaLabel
-                : contract.description;
+  if (existingAriaLabel === undefined || existingAriaLabel === '') {
+    if (config.autoAccessibility) {
+      // Auto-inject ariaLabel from contract accessibility config
+      const ariaLabel =
+        accessibility.ariaLabel !== '' ? accessibility.ariaLabel : contract.description;
 
-            context.props['aria-label'] = ariaLabel;
-            context.accessibilityInjections.push('aria-label');
-        } else {
-            // Report missing aria-label as error
-            context.errors.push(
-                missingAccessibilityError('aria-label', contract.name),
-            );
-        }
+      context.props['aria-label'] = ariaLabel;
+      context.accessibilityInjections.push('aria-label');
+    } else {
+      // Report missing aria-label as error
+      context.errors.push(missingAccessibilityError('aria-label', contract.name));
     }
+  }
 
-    // --- 3. Auto-inject `aria-live` for dynamic components ---
+  // --- 3. Auto-inject `aria-live` for dynamic components ---
 
-    if (
-        config.autoAccessibility &&
-        accessibility.announceOnUpdate &&
-        context.props['aria-live'] === undefined
-    ) {
-        context.props['aria-live'] = 'polite';
-        context.accessibilityInjections.push('aria-live');
-    }
+  if (
+    config.autoAccessibility &&
+    accessibility.announceOnUpdate &&
+    context.props['aria-live'] === undefined
+  ) {
+    context.props['aria-live'] = 'polite';
+    context.accessibilityInjections.push('aria-live');
+  }
 
-    // --- 4. HARD CONSTRAINT: Never inject tabindex (C10) ---
-    // This is intentionally a no-op. The comment exists as documentation
-    // and as a guard against future modifications. If someone adds tabindex
-    // injection here, the PR review and this comment should catch it.
-    //
-    // > "Auto-injecting tabindex is dangerous: it can trap keyboard users
-    // >  or destroy the natural tab order. Focus management belongs to the
-    // >  component author, not the compiler." — Design Choice C10
+  // --- 4. HARD CONSTRAINT: Never inject tabindex (C10) ---
+  // This is intentionally a no-op. The comment exists as documentation
+  // and as a guard against future modifications. If someone adds tabindex
+  // injection here, the PR review and this comment should catch it.
+  //
+  // > "Auto-injecting tabindex is dangerous: it can trap keyboard users
+  // >  or destroy the natural tab order. Focus management belongs to the
+  // >  component author, not the compiler." — Design Choice C10
 
-    return next();
+  return next();
 };

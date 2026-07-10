@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/state/errors
- * @description Error factories for `@enterstellar-ai/state`.
+ * @module @enterstellar/state/errors
+ * @description Error factories for `@enterstellar/state`.
  *
  * All errors are `EnterstellarError` instances with codes in the `ENS-4xxx` range.
  * Error messages are prefixed with the code for grep-ability.
@@ -20,7 +20,7 @@
  * @see Design Choices S5, S7, S9
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // ENS-4002 — Extension Already Registered
@@ -33,12 +33,12 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * @returns An `EnterstellarError` with code `ENS-4002`.
  */
 export function extensionAlreadyRegisteredError(name: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4002',
-        'state',
-        `[ENS-4002] Extension "${name}" is already registered. Each extension name must be unique.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-4002',
+    'state',
+    `[ENS-4002] Extension "${name}" is already registered. Each extension name must be unique.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -53,12 +53,12 @@ export function extensionAlreadyRegisteredError(name: string): EnterstellarError
  * @returns An `EnterstellarError` with code `ENS-4003`.
  */
 export function extensionValidationError(name: string, errors: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4003',
-        'state',
-        `[ENS-4003] Value for extension "${name}" failed schema validation: ${errors}`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-4003',
+    'state',
+    `[ENS-4003] Value for extension "${name}" failed schema validation: ${errors}`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -75,12 +75,12 @@ export function extensionValidationError(name: string, errors: string): Enterste
  * @returns An `EnterstellarError` with code `ENS-4004`.
  */
 export function invalidKeyError(key: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4004',
-        'state',
-        `[ENS-4004] Unknown store key "${key}". Valid keys: "zones", "traceIds", "session", or a registered extension name.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-4004',
+    'state',
+    `[ENS-4004] Unknown store key "${key}". Valid keys: "zones", "traceIds", "session", or a registered extension name.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -98,13 +98,13 @@ export function invalidKeyError(key: string): EnterstellarError {
  * @returns An `EnterstellarError` with code `ENS-4005`.
  */
 export function persistenceError(strategy: string, cause: unknown): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4005',
-        'state',
-        `[ENS-4005] Persistence adapter "${strategy}" failed. The store continues in memory. See cause for details.`,
-        true,
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-4005',
+    'state',
+    `[ENS-4005] Persistence adapter "${strategy}" failed. The store continues in memory. See cause for details.`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -120,13 +120,13 @@ export function persistenceError(strategy: string, cause: unknown): Enterstellar
  * @see Design Choice S9 — 1MB hard limit.
  */
 export function snapshotSizeLimitError(sizeBytes: number): EnterstellarError {
-    const sizeMB = (sizeBytes / (1024 * 1024)).toFixed(2);
-    return new EnterstellarError(
-        'ENS-4006',
-        'state',
-        `[ENS-4006] Snapshot size (${sizeMB} MB) exceeds the 1 MB limit. Move large data to IndexedDB directly.`,
-        false,
-    );
+  const sizeMB = (sizeBytes / (1024 * 1024)).toFixed(2);
+  return new EnterstellarError(
+    'ENS-4006',
+    'state',
+    `[ENS-4006] Snapshot size (${sizeMB} MB) exceeds the 1 MB limit. Move large data to IndexedDB directly.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -145,13 +145,13 @@ export function snapshotSizeLimitError(sizeBytes: number): EnterstellarError {
  * @see Design Choice S5 (amended v2).
  */
 export function majorVersionMismatchError(
-    snapshotVersion: string,
-    currentVersion: string,
+  snapshotVersion: string,
+  currentVersion: string,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-4007',
-        'state',
-        `[ENS-4007] Cannot restore state from future version ${snapshotVersion}. Current schema version is ${currentVersion}. Please update Enterstellar.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-4007',
+    'state',
+    `[ENS-4007] Cannot restore state from future version ${snapshotVersion}. Current schema version is ${currentVersion}. Please update Enterstellar.`,
+    false,
+  );
 }

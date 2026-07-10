@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/migrate/resolve-source-files
+ * @module @enterstellar/cli/migrate/resolve-source-files
  * @description File discovery engine for the `enterstellar migrate` command.
  *
  * Implements the 3-layer exclusion model from Correction 6:
@@ -41,10 +41,10 @@ import { loadEnterstellarIgnorePatterns } from './enterstellarignore.js';
  * files that were excluded by the 3-layer exclusion model.
  */
 export type FileDiscoveryResult = {
-    /** Sorted, deduplicated list of absolute file paths. */
-    readonly files: readonly string[];
-    /** Number of files excluded by the 3-layer model. */
-    readonly excludedCount: number;
+  /** Sorted, deduplicated list of absolute file paths. */
+  readonly files: readonly string[];
+  /** Number of files excluded by the 3-layer model. */
+  readonly excludedCount: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -66,10 +66,10 @@ export type FileDiscoveryResult = {
  * @see Correction 6 — hardcoded exclusions (Layer 1)
  */
 const HARDCODED_EXCLUSIONS: readonly string[] = [
-    '**/node_modules/**',
-    '**/.git/**',
-    '**/.enterstellar/**',
-    '**/*.d.ts',
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/.enterstellar/**',
+  '**/*.d.ts',
 ];
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ const GLOB_CHARS = ['*', '?', '{'] as const;
  * @returns `true` if the path contains `*`, `?`, or `{`.
  */
 function isGlobPattern(pathStr: string): boolean {
-    return GLOB_CHARS.some((char) => pathStr.includes(char));
+  return GLOB_CHARS.some((char) => pathStr.includes(char));
 }
 
 // ---------------------------------------------------------------------------
@@ -111,14 +111,14 @@ function isGlobPattern(pathStr: string): boolean {
  * @see Correction 6 — 3-layer exclusion model
  */
 export function mergeExclusions(
-    enterstellarignorePatterns: readonly string[],
-    excludeFlags: readonly string[],
+  enterstellarignorePatterns: readonly string[],
+  excludeFlags: readonly string[],
 ): readonly string[] {
-    return [
-        ...HARDCODED_EXCLUSIONS,   // Layer 1: hardcoded
-        ...enterstellarignorePatterns,     // Layer 2: .enterstellarignore
-        ...excludeFlags,           // Layer 3: --exclude flags
-    ];
+  return [
+    ...HARDCODED_EXCLUSIONS, // Layer 1: hardcoded
+    ...enterstellarignorePatterns, // Layer 2: .enterstellarignore
+    ...excludeFlags, // Layer 3: --exclude flags
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -158,70 +158,68 @@ export function mergeExclusions(
  * @see Correction 6 — 3-layer exclusion model
  */
 export async function resolveSourceFiles(
-    pathArgs: readonly string[],
-    excludePatterns: readonly string[],
+  pathArgs: readonly string[],
+  excludePatterns: readonly string[],
 ): Promise<FileDiscoveryResult> {
-    // Step 1: Load .enterstellarignore patterns (Layer 2).
-    // Use the first path arg's directory as the starting point for
-    // project root discovery. If no path args, use cwd.
-    const firstPath = pathArgs[0];
-    const searchDir = firstPath !== undefined
-        ? resolve(firstPath)
-        : process.cwd();
-    const enterstellarignorePatterns = loadEnterstellarIgnorePatterns(searchDir);
+  // Step 1: Load .enterstellarignore patterns (Layer 2).
+  // Use the first path arg's directory as the starting point for
+  // project root discovery. If no path args, use cwd.
+  const firstPath = pathArgs[0];
+  const searchDir = firstPath !== undefined ? resolve(firstPath) : process.cwd();
+  const enterstellarignorePatterns = loadEnterstellarIgnorePatterns(searchDir);
 
-    // Step 2: Merge all three exclusion layers.
-    const allExclusions = mergeExclusions(enterstellarignorePatterns, excludePatterns);
+  // Step 2: Merge all three exclusion layers.
+  const allExclusions = mergeExclusions(enterstellarignorePatterns, excludePatterns);
 
-    // Step 3: Resolve each path argument.
-    const collectedFiles = new Set<string>();
-    let totalDiscovered = 0;
+  // Step 3: Resolve each path argument.
+  const collectedFiles = new Set<string>();
+  let totalDiscovered = 0;
 
-    for (const pathArg of pathArgs) {
-        const resolvedPath = resolve(pathArg);
+  for (const pathArg of pathArgs) {
+    const resolvedPath = resolve(pathArg);
 
-        if (isGlobPattern(pathArg)) {
-            // --- Glob pattern: pass directly to fast-glob ---
-            const globMatches = await fg(pathArg, {
-                absolute: true,
-                onlyFiles: true,
-                ignore: [...allExclusions],
-            });
-            totalDiscovered += globMatches.length;
-            for (const match of globMatches) {
-                collectedFiles.add(match);
-            }
-        } else if (existsSync(resolvedPath) && statSync(resolvedPath).isFile()) {
-            // --- Single file: resolve absolute path ---
-            totalDiscovered += 1;
-            collectedFiles.add(resolvedPath);
-        } else if (existsSync(resolvedPath) && statSync(resolvedPath).isDirectory()) {
-            // --- Directory: expand to **/*.{tsx,ts} ---
-            const dirPattern = `${resolvedPath}/**/*.{tsx,ts}`;
-            const dirMatches = await fg(dirPattern, {
-                absolute: true,
-                onlyFiles: true,
-                ignore: [...allExclusions],
-            });
-            totalDiscovered += dirMatches.length;
-            for (const match of dirMatches) {
-                collectedFiles.add(match);
-            }
-        }
-        // Non-existent paths that aren't globs are silently skipped.
-        // fast-glob will return [] for non-matching globs, which is correct.
+    if (isGlobPattern(pathArg)) {
+      // --- Glob pattern: pass directly to fast-glob ---
+      const globMatches = await fg(pathArg, {
+        absolute: true,
+        onlyFiles: true,
+        ignore: [...allExclusions],
+      });
+      totalDiscovered += globMatches.length;
+      for (const match of globMatches) {
+        collectedFiles.add(match);
+      }
+    } else if (existsSync(resolvedPath) && statSync(resolvedPath).isFile()) {
+      // --- Single file: resolve absolute path ---
+      totalDiscovered += 1;
+      collectedFiles.add(resolvedPath);
+    } else if (existsSync(resolvedPath) && statSync(resolvedPath).isDirectory()) {
+      // --- Directory: expand to **/*.{tsx,ts} ---
+      const dirPattern = `${resolvedPath}/**/*.{tsx,ts}`;
+      const dirMatches = await fg(dirPattern, {
+        absolute: true,
+        onlyFiles: true,
+        ignore: [...allExclusions],
+      });
+      totalDiscovered += dirMatches.length;
+      for (const match of dirMatches) {
+        collectedFiles.add(match);
+      }
     }
+    // Non-existent paths that aren't globs are silently skipped.
+    // fast-glob will return [] for non-matching globs, which is correct.
+  }
 
-    // Step 4: Sort for deterministic output.
-    const sortedFiles = [...collectedFiles].sort();
+  // Step 4: Sort for deterministic output.
+  const sortedFiles = [...collectedFiles].sort();
 
-    // Step 5: Calculate excluded count.
-    // For single-file args, exclusions are not applied by fast-glob.
-    // The excluded count reflects what fast-glob filtered.
-    const excludedCount = totalDiscovered - sortedFiles.length;
+  // Step 5: Calculate excluded count.
+  // For single-file args, exclusions are not applied by fast-glob.
+  // The excluded count reflects what fast-glob filtered.
+  const excludedCount = totalDiscovered - sortedFiles.length;
 
-    return {
-        files: sortedFiles,
-        excludedCount: Math.max(0, excludedCount),
-    };
+  return {
+    files: sortedFiles,
+    excludedCount: Math.max(0, excludedCount),
+  };
 }

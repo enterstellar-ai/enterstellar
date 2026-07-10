@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/contract-protocol/__tests__/validate-cli
+ * @module @enterstellar/contract-protocol/__tests__/validate-cli
  * @description Tests for the CLI validator (`bin/validate.ts`).
  *
  * Validates the CLI's behavior for all exit code paths:
@@ -40,12 +40,12 @@ const CLI_CMD = 'npx tsx bin/validate.ts';
  * Result of a CLI execution, including exit code and output streams.
  */
 type CliResult = {
-    /** Process exit code (0, 1, or 2). */
-    readonly exitCode: number;
-    /** Captured stdout content. */
-    readonly stdout: string;
-    /** Captured stderr content. */
-    readonly stderr: string;
+  /** Process exit code (0, 1, or 2). */
+  readonly exitCode: number;
+  /** Captured stdout content. */
+  readonly stdout: string;
+  /** Captured stderr content. */
+  readonly stderr: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -62,45 +62,45 @@ type CliResult = {
  * @returns The CLI execution result with exit code, stdout, and stderr.
  */
 function runCli(args: string): CliResult {
-    try {
-        const stdout = execSync(`${CLI_CMD} ${args}`, {
-            cwd: PACKAGE_ROOT,
-            stdio: 'pipe',
-            encoding: 'utf-8',
-        });
+  try {
+    const stdout = execSync(`${CLI_CMD} ${args}`, {
+      cwd: PACKAGE_ROOT,
+      stdio: 'pipe',
+      encoding: 'utf-8',
+    });
 
-        return {
-            exitCode: 0,
-            stdout,
-            stderr: '',
-        };
-    } catch (error: unknown) {
-        // `execSync` throws when exit code ≠ 0.
-        // The thrown error has `status`, `stdout`, and `stderr` properties,
-        // but TypeScript types it as `unknown`. We narrow carefully.
-        if (
-            typeof error === 'object' &&
-            error !== null &&
-            'status' in error &&
-            'stdout' in error &&
-            'stderr' in error
-        ) {
-            const execError = error as {
-                readonly status: number | null;
-                readonly stdout: Buffer | string;
-                readonly stderr: Buffer | string;
-            };
+    return {
+      exitCode: 0,
+      stdout,
+      stderr: '',
+    };
+  } catch (error: unknown) {
+    // `execSync` throws when exit code ≠ 0.
+    // The thrown error has `status`, `stdout`, and `stderr` properties,
+    // but TypeScript types it as `unknown`. We narrow carefully.
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'status' in error &&
+      'stdout' in error &&
+      'stderr' in error
+    ) {
+      const execError = error as {
+        readonly status: number | null;
+        readonly stdout: Buffer | string;
+        readonly stderr: Buffer | string;
+      };
 
-            return {
-                exitCode: execError.status ?? 1,
-                stdout: String(execError.stdout),
-                stderr: String(execError.stderr),
-            };
-        }
-
-        // Unexpected error shape — re-throw for debugging.
-        throw error;
+      return {
+        exitCode: execError.status ?? 1,
+        stdout: String(execError.stdout),
+        stderr: String(execError.stderr),
+      };
     }
+
+    // Unexpected error shape — re-throw for debugging.
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -108,109 +108,101 @@ function runCli(args: string): CliResult {
 // ---------------------------------------------------------------------------
 
 describe('CLI Validator (bin/validate.ts)', () => {
-    // -------------------------------------------------------------------------
-    // Exit 0 — valid input
-    // -------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Exit 0 — valid input
+  // -------------------------------------------------------------------------
 
-    describe('Exit 0 — Valid Input', () => {
-        it('should pass a valid conformance fixture', () => {
-            const result = runCli(
-                'component-intent conformance/component-intent/valid/minimal.json',
-            );
-            expect(result.exitCode).toBe(0);
-            expect(result.stdout).toContain('PASS');
-        });
-
-        it('should pass a valid example file', () => {
-            const result = runCli(
-                'forge-signal examples/patient-vitals.signal.json',
-            );
-            expect(result.exitCode).toBe(0);
-            expect(result.stdout).toContain('PASS');
-        });
-
-        it('should pass the full component-contract fixture', () => {
-            const result = runCli(
-                'component-contract conformance/component-contract/valid/full.json',
-            );
-            expect(result.exitCode).toBe(0);
-            expect(result.stdout).toContain('PASS');
-        });
+  describe('Exit 0 — Valid Input', () => {
+    it('should pass a valid conformance fixture', () => {
+      const result = runCli('component-intent conformance/component-intent/valid/minimal.json');
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('PASS');
     });
 
-    // -------------------------------------------------------------------------
-    // Exit 1 — invalid input (validation errors)
-    // -------------------------------------------------------------------------
-
-    describe('Exit 1 — Invalid Input', () => {
-        it('should fail an invalid conformance fixture', () => {
-            const result = runCli(
-                'component-contract conformance/component-contract/invalid/missing-name.json',
-            );
-            expect(result.exitCode).toBe(1);
-            expect(result.stderr).toContain('FAIL');
-        });
-
-        it('should print validation error details', () => {
-            const result = runCli(
-                'component-contract conformance/component-contract/invalid/missing-name.json',
-            );
-            expect(result.exitCode).toBe(1);
-            expect(result.stderr).toContain('Validation errors');
-        });
-
-        it('should fail when confidence is out of range', () => {
-            const result = runCli(
-                'component-intent conformance/component-intent/invalid/confidence-out-of-range.json',
-            );
-            expect(result.exitCode).toBe(1);
-            expect(result.stderr).toContain('FAIL');
-        });
-
-        it('should fail when enum value is invalid', () => {
-            const result = runCli(
-                'forge-signal conformance/forge-signal/invalid/invalid-category.json',
-            );
-            expect(result.exitCode).toBe(1);
-            expect(result.stderr).toContain('FAIL');
-        });
+    it('should pass a valid example file', () => {
+      const result = runCli('forge-signal examples/patient-vitals.signal.json');
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('PASS');
     });
 
-    // -------------------------------------------------------------------------
-    // Exit 2 — usage errors
-    // -------------------------------------------------------------------------
-
-    describe('Exit 2 — Usage Errors', () => {
-        it('should exit 2 with no arguments', () => {
-            const result = runCli('');
-            expect(result.exitCode).toBe(2);
-            expect(result.stderr).toContain('Usage');
-        });
-
-        it('should exit 2 with only a schema name (no input file)', () => {
-            const result = runCli('component-contract');
-            expect(result.exitCode).toBe(2);
-            expect(result.stderr).toContain('Missing required arguments');
-        });
-
-        it('should exit 2 for an unknown schema name', () => {
-            const result = runCli('nonexistent-schema some-file.json');
-            expect(result.exitCode).toBe(2);
-            expect(result.stderr).toContain('Unknown schema');
-            expect(result.stderr).toContain('nonexistent-schema');
-        });
-
-        it('should exit 2 for a missing input file', () => {
-            const result = runCli('component-contract this-file-does-not-exist.json');
-            expect(result.exitCode).toBe(2);
-            expect(result.stderr).toContain('File not found');
-        });
-
-        it('should list available schemas in usage output', () => {
-            const result = runCli('');
-            expect(result.stderr).toContain('component-contract');
-            expect(result.stderr).toContain('forge-signal');
-            expect(result.stderr).toContain('zone-config');
-        });
+    it('should pass the full component-contract fixture', () => {
+      const result = runCli('component-contract conformance/component-contract/valid/full.json');
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('PASS');
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // Exit 1 — invalid input (validation errors)
+  // -------------------------------------------------------------------------
+
+  describe('Exit 1 — Invalid Input', () => {
+    it('should fail an invalid conformance fixture', () => {
+      const result = runCli(
+        'component-contract conformance/component-contract/invalid/missing-name.json',
+      );
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('FAIL');
+    });
+
+    it('should print validation error details', () => {
+      const result = runCli(
+        'component-contract conformance/component-contract/invalid/missing-name.json',
+      );
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Validation errors');
+    });
+
+    it('should fail when confidence is out of range', () => {
+      const result = runCli(
+        'component-intent conformance/component-intent/invalid/confidence-out-of-range.json',
+      );
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('FAIL');
+    });
+
+    it('should fail when enum value is invalid', () => {
+      const result = runCli('forge-signal conformance/forge-signal/invalid/invalid-category.json');
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('FAIL');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Exit 2 — usage errors
+  // -------------------------------------------------------------------------
+
+  describe('Exit 2 — Usage Errors', () => {
+    it('should exit 2 with no arguments', () => {
+      const result = runCli('');
+      expect(result.exitCode).toBe(2);
+      expect(result.stderr).toContain('Usage');
+    });
+
+    it('should exit 2 with only a schema name (no input file)', () => {
+      const result = runCli('component-contract');
+      expect(result.exitCode).toBe(2);
+      expect(result.stderr).toContain('Missing required arguments');
+    });
+
+    it('should exit 2 for an unknown schema name', () => {
+      const result = runCli('nonexistent-schema some-file.json');
+      expect(result.exitCode).toBe(2);
+      expect(result.stderr).toContain('Unknown schema');
+      expect(result.stderr).toContain('nonexistent-schema');
+    });
+
+    it('should exit 2 for a missing input file', () => {
+      const result = runCli('component-contract this-file-does-not-exist.json');
+      expect(result.exitCode).toBe(2);
+      expect(result.stderr).toContain('File not found');
+    });
+
+    it('should list available schemas in usage output', () => {
+      const result = runCli('');
+      expect(result.stderr).toContain('component-contract');
+      expect(result.stderr).toContain('forge-signal');
+      expect(result.stderr).toContain('zone-config');
+    });
+  });
 });

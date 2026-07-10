@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/assembly
+ * @module @enterstellar/migration/assembly
  * @description Phase 3 — Contract and test file assembly.
  *
  * Re-exports the contract assembler, test scaffold generator, and

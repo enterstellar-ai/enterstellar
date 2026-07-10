@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/utils/run-install
+ * @module @enterstellar/cli/utils/run-install
  * @description Runs the detected package manager's install command in a project directory.
  *
  * Spawns the install command as a child process, capturing stdout and stderr.
@@ -47,33 +47,33 @@ import { createInstallFailedError } from './errors.js';
  * ```
  */
 export function runInstall(pm: PackageManager, cwd: string): void {
-    const command = getInstallCommand(pm);
-    const s = spinner();
+  const command = getInstallCommand(pm);
+  const s = spinner();
 
-    s.start(`Installing dependencies with ${pm}...`);
+  s.start(`Installing dependencies with ${pm}...`);
 
-    try {
-        execSync(command, {
-            cwd,
-            stdio: 'pipe',
-            env: {
-                ...process.env,
-                /**
-                 * Suppress npm/pnpm update notifications during scaffolding.
-                 * The user just installed — they don't need upgrade nags.
-                 */
-                NO_UPDATE_NOTIFIER: '1',
-            },
-            /**
-             * 10 MB output buffer — generous limit for install output.
-             * Default is 1 MB which can overflow on large dependency trees.
-             */
-            maxBuffer: 10 * 1024 * 1024,
-        });
+  try {
+    execSync(command, {
+      cwd,
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        /**
+         * Suppress npm/pnpm update notifications during scaffolding.
+         * The user just installed — they don't need upgrade nags.
+         */
+        NO_UPDATE_NOTIFIER: '1',
+      },
+      /**
+       * 10 MB output buffer — generous limit for install output.
+       * Default is 1 MB which can overflow on large dependency trees.
+       */
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
-        s.stop('Dependencies installed.');
-    } catch (error: unknown) {
-        s.stop('Installation failed.');
-        throw createInstallFailedError(pm, error);
-    }
+    s.stop('Dependencies installed.');
+  } catch (error: unknown) {
+    s.stop('Installation failed.');
+    throw createInstallFailedError(pm, error);
+  }
 }

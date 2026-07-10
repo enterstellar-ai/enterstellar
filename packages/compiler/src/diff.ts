@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/diff
+ * @module @enterstellar/compiler/diff
  * @description Generates a diff between raw LLM props and final compiled props.
  *
  * The diff is invaluable for DevTools debugging — it shows exactly what the
@@ -17,13 +17,13 @@
 
 /**
  * The diff between raw LLM output and final compiled props.
- * Matches the `CompilationResult.diff` shape from `@enterstellar-ai/types`.
+ * Matches the `CompilationResult.diff` shape from `@enterstellar/types`.
  */
 export type PropsDiff = {
-    /** The raw props as received from the agent (snapshot before pipeline). */
-    readonly raw: Readonly<Record<string, unknown>>;
-    /** The final compiled props after correction, stripping, and injection. */
-    readonly compiled: Readonly<Record<string, unknown>>;
+  /** The raw props as received from the agent (snapshot before pipeline). */
+  readonly raw: Readonly<Record<string, unknown>>;
+  /** The final compiled props after correction, stripping, and injection. */
+  readonly compiled: Readonly<Record<string, unknown>>;
 };
 
 // ---------------------------------------------------------------------------
@@ -40,10 +40,8 @@ export type PropsDiff = {
  * @param props - The props object to snapshot.
  * @returns A deep copy of the props.
  */
-export function snapshotProps(
-    props: Readonly<Record<string, unknown>>,
-): Record<string, unknown> {
-    return JSON.parse(JSON.stringify(props)) as Record<string, unknown>;
+export function snapshotProps(props: Readonly<Record<string, unknown>>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(props)) as Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -72,16 +70,16 @@ export function snapshotProps(
  * ```
  */
 export function generateDiff(
-    rawProps: Readonly<Record<string, unknown>>,
-    compiledProps: Readonly<Record<string, unknown>>,
-    includeDiff: boolean,
+  rawProps: Readonly<Record<string, unknown>>,
+  compiledProps: Readonly<Record<string, unknown>>,
+  includeDiff: boolean,
 ): PropsDiff | undefined {
-    if (!includeDiff) {
-        return undefined;
-    }
+  if (!includeDiff) {
+    return undefined;
+  }
 
-    return {
-        raw: rawProps,
-        compiled: snapshotProps(compiledProps),
-    };
+  return {
+    raw: rawProps,
+    compiled: snapshotProps(compiledProps),
+  };
 }

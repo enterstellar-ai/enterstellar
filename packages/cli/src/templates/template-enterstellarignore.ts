@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-enterstellarignore
+ * @module @enterstellar/cli/templates/template-enterstellarignore
  * @description Generates the canonical `.enterstellarignore` file for `enterstellar init`.
  *
  * The `.enterstellarignore` file follows `.gitignore`-compatible syntax and defines
@@ -57,10 +57,10 @@
  * @see Correction 6, L301-354 — verbatim canonical contents
  */
 export function generateEnterstellarIgnore(): string {
-    // Correction 6, L301-354: Verbatim canonical contents.
-    // Every pattern below is prescribed by the Migration Bible.
-    // Do NOT add, remove, or reorder patterns without updating the spec.
-    return `# .enterstellarignore — Files excluded from \`enterstellar migrate\`
+  // Correction 6, L301-354: Verbatim canonical contents.
+  // Every pattern below is prescribed by the Migration Bible.
+  // Do NOT add, remove, or reorder patterns without updating the spec.
+  return `# .enterstellarignore — Files excluded from \`enterstellar migrate\`
 # Syntax: .gitignore-compatible glob patterns
 # Docs: https://enterstellar.dev/docs/cli/enterstellarignore
 

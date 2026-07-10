@@ -38,7 +38,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import type { PlaygroundMode, SceneIntentResult } from '@/enterstellar/agent-connection';
 import type { PlaygroundScene } from '@/enterstellar/scenes/types';
-import type { ZoneTrace, CompilationProvenance, CompilationError } from '@enterstellar-ai/types';
+import type { ZoneTrace, CompilationProvenance, CompilationError } from '@enterstellar/types';
 import type { PipelineState } from './playground-shell';
 import type { StepStatus } from './pipeline-step-card';
 
@@ -89,7 +89,7 @@ interface EducationalTraceConsoleProps {
  * fell back to GenericCard in the render pipeline.
  *
  * This function now runs the same `safeParse` that the real compiler
- * uses in `@enterstellar-ai/compiler/pipeline/parse-step.ts`. The trace status
+ * uses in `@enterstellar/compiler/pipeline/parse-step.ts`. The trace status
  * accurately reflects whether the component's props will pass or fail
  * Zod validation.
  *
@@ -113,9 +113,7 @@ function buildTraceFromResult(result: SceneIntentResult, index: number = 0): Zon
   // ── Real Schema Pre-Validation ────────────────────────────────────
   // Run the same Zod safeParse the compiler uses in parse-step.ts.
   // This produces accurate trace data for the educational console.
-  const contract = playgroundContracts.find(
-    (c) => c.name === intent.component,
-  );
+  const contract = playgroundContracts.find((c) => c.name === intent.component);
 
   let compilationStatus: 'pass' | 'fail' = 'pass';
   let compilationErrors: CompilationError[] = [];
@@ -123,11 +121,13 @@ function buildTraceFromResult(result: SceneIntentResult, index: number = 0): Zon
   if (contract === undefined) {
     // Component name doesn't exist in registry → ENS-3004
     compilationStatus = 'fail';
-    compilationErrors = [{
-      code: 'ENS-3004',
-      message: `Component "${intent.component}" not found in registry`,
-      path: 'component',
-    }];
+    compilationErrors = [
+      {
+        code: 'ENS-3004',
+        message: `Component "${intent.component}" not found in registry`,
+        path: 'component',
+      },
+    ];
   } else {
     // Run the real Zod schema validation
     const parseResult = contract.props.safeParse(intent.props);
@@ -179,7 +179,10 @@ function buildTraceFromResult(result: SceneIntentResult, index: number = 0): Zon
  *
  * @internal
  */
-function buildHallucinatedTraceFromResult(result: SceneIntentResult, index: number = 0): ZoneTrace | null {
+function buildHallucinatedTraceFromResult(
+  result: SceneIntentResult,
+  index: number = 0,
+): ZoneTrace | null {
   const hallucinated = result.hallucinatedIntents;
   if (hallucinated === undefined || hallucinated.length === 0) return null;
 
@@ -420,9 +423,10 @@ export function EducationalTraceConsole({
   const analysis = activeEducation.analyzeTrace(trace, mode);
 
   // Generate analysis for the active step (hallucinated trace) — only in hallucinating mode
-  const hallucinatedAnalysis = mode === 'hallucinating' && hallucinatedTrace !== null
-    ? activeEducation.analyzeTrace(hallucinatedTrace, mode)
-    : null;
+  const hallucinatedAnalysis =
+    mode === 'hallucinating' && hallucinatedTrace !== null
+      ? activeEducation.analyzeTrace(hallucinatedTrace, mode)
+      : null;
 
   const isHallucinating = mode === 'hallucinating' && hallucinatedAnalysis !== null;
 
@@ -465,10 +469,18 @@ export function EducationalTraceConsole({
                   icon={stepEd.icon}
                   title={stepEd.title}
                   index={i}
-                  status={getStepStatus(i, pipelineState, activePipelineStep, isAutoAdvancing, perStepAnalysisStatus[i] ?? null)}
+                  status={getStepStatus(
+                    i,
+                    pipelineState,
+                    activePipelineStep,
+                    isAutoAdvancing,
+                    perStepAnalysisStatus[i] ?? null,
+                  )}
                   isSelected={i === activePipelineStep}
                   isAutoAdvancing={isAutoAdvancing}
-                  onClick={() => { handleStepClick(i); }}
+                  onClick={() => {
+                    handleStepClick(i);
+                  }}
                 />
               ))}
             </div>
@@ -489,13 +501,19 @@ export function EducationalTraceConsole({
                       {trace && lastResult && (
                         <div className="flex items-center justify-between mt-1 pt-1 border-t border-success/10">
                           <div className="text-[9px] text-success/70">
-                            Spotlight parsing zone: <span className="font-mono bg-success/10 px-1 py-0.5 rounded text-success/90">{trace.intent.component}</span> (Zone {activeTraceIndex + 1} of {lastResult.intents.length})
+                            Spotlight parsing zone:{' '}
+                            <span className="font-mono bg-success/10 px-1 py-0.5 rounded text-success/90">
+                              {trace.intent.component}
+                            </span>{' '}
+                            (Zone {activeTraceIndex + 1} of {lastResult.intents.length})
                           </div>
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               disabled={activeTraceIndex === 0}
-                              onClick={() => { setActiveTraceIndex((i) => Math.max(0, i - 1)); }}
+                              onClick={() => {
+                                setActiveTraceIndex((i) => Math.max(0, i - 1));
+                              }}
                               className="w-5 h-5 flex items-center justify-center rounded bg-success/10 text-success hover:bg-success/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             >
                               ‹
@@ -503,7 +521,11 @@ export function EducationalTraceConsole({
                             <button
                               type="button"
                               disabled={activeTraceIndex >= lastResult.intents.length - 1}
-                              onClick={() => { setActiveTraceIndex((i) => Math.min(lastResult.intents.length - 1, i + 1)); }}
+                              onClick={() => {
+                                setActiveTraceIndex((i) =>
+                                  Math.min(lastResult.intents.length - 1, i + 1),
+                                );
+                              }}
                               className="w-5 h-5 flex items-center justify-center rounded bg-success/10 text-success hover:bg-success/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             >
                               ›
@@ -542,13 +564,19 @@ export function EducationalTraceConsole({
                   {trace && lastResult && (
                     <div className="flex items-center justify-between px-4 py-2 border-b border-playground-border/20 bg-playground-panel/30 shrink-0">
                       <span className="text-[10px] text-playground-muted uppercase tracking-wider">
-                        Spotlight Analysis: <span className="font-mono text-primary-400">"{trace.intent.component}"</span> (Zone {activeTraceIndex + 1} of {lastResult.intents.length})
+                        Spotlight Analysis:{' '}
+                        <span className="font-mono text-primary-400">
+                          "{trace.intent.component}"
+                        </span>{' '}
+                        (Zone {activeTraceIndex + 1} of {lastResult.intents.length})
                       </span>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
                           disabled={activeTraceIndex === 0}
-                          onClick={() => { setActiveTraceIndex((i) => Math.max(0, i - 1)); }}
+                          onClick={() => {
+                            setActiveTraceIndex((i) => Math.max(0, i - 1));
+                          }}
                           className="w-5 h-5 flex items-center justify-center rounded border border-playground-border/50 text-playground-muted hover:text-neutral-200 hover:bg-playground-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                           ‹
@@ -556,7 +584,11 @@ export function EducationalTraceConsole({
                         <button
                           type="button"
                           disabled={activeTraceIndex >= lastResult.intents.length - 1}
-                          onClick={() => { setActiveTraceIndex((i) => Math.min(lastResult.intents.length - 1, i + 1)); }}
+                          onClick={() => {
+                            setActiveTraceIndex((i) =>
+                              Math.min(lastResult.intents.length - 1, i + 1),
+                            );
+                          }}
                           className="w-5 h-5 flex items-center justify-center rounded border border-playground-border/50 text-playground-muted hover:text-neutral-200 hover:bg-playground-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                           ›

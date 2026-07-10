@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/components/status-badge
+ * @module @enterstellar/devtools/components/status-badge
  * @description Color-coded compilation status indicator.
  *
  * Renders a small inline badge with a background tint and text color
@@ -30,9 +30,9 @@ import { statusBadgeStyles } from '../styles.js';
  * Displayed as uppercase text within the badge.
  */
 const STATUS_LABELS: Readonly<Record<StatusBadgeProps['status'], string>> = {
-    pass: 'PASS',
-    corrected: 'CORRECTED',
-    fail: 'FAIL',
+  pass: 'PASS',
+  corrected: 'CORRECTED',
+  fail: 'FAIL',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -51,21 +51,21 @@ const STATUS_LABELS: Readonly<Record<StatusBadgeProps['status'], string>> = {
  * @internal
  */
 export function StatusBadge(props: StatusBadgeProps): React.JSX.Element {
-    const { status } = props;
+  const { status } = props;
 
-    const mergedStyle: React.CSSProperties = {
-        ...statusBadgeStyles['base'],
-        ...statusBadgeStyles[status],
-    };
+  const mergedStyle: React.CSSProperties = {
+    ...statusBadgeStyles['base'],
+    ...statusBadgeStyles[status],
+  };
 
-    return (
-        <span
-            style={mergedStyle}
-            role="status"
-            aria-label={`Compilation status: ${status}`}
-            data-enterstellar-devtools-status={status}
-        >
-            {STATUS_LABELS[status]}
-        </span>
-    );
+  return (
+    <span
+      style={mergedStyle}
+      role="status"
+      aria-label={`Compilation status: ${status}`}
+      data-enterstellar-devtools-status={status}
+    >
+      {STATUS_LABELS[status]}
+    </span>
+  );
 }

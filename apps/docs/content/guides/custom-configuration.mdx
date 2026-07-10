@@ -16,7 +16,7 @@ icon: Settings
 ## Custom Compiler
 
 ```ts
-import { createCompiler } from '@enterstellar-ai/compiler';
+import { createCompiler } from '@enterstellar/compiler';
 import { registry } from './enterstellar/registry';
 
 const compiler = createCompiler({
@@ -59,7 +59,7 @@ Pass to `Provider`:
 Override for your traffic pattern:
 
 ```ts
-import { createRenderCache } from '@enterstellar-ai/cache';
+import { createRenderCache } from '@enterstellar/cache';
 
 const cache = createRenderCache({
   strategy: 'lru',
@@ -76,8 +76,8 @@ const cache = createRenderCache({
 Pre-populate the cache with your 5 most common intents on startup so the first users see instant renders:
 
 ```ts
-import { createRenderCache } from '@enterstellar-ai/cache';
-import { createCompiler } from '@enterstellar-ai/compiler';
+import { createRenderCache } from '@enterstellar/cache';
+import { createCompiler } from '@enterstellar/compiler';
 
 const cache = createRenderCache({ maxEntries: 500, ttl: 1800 });
 const compiler = createCompiler({ registry });
@@ -105,7 +105,7 @@ Warmup failures are silently skipped (CA7). If a compile call fails during warmu
 ## Custom Store
 
 ```ts
-import { createEnterstellarStore } from '@enterstellar-ai/state';
+import { createEnterstellarStore } from '@enterstellar/state';
 
 // Enterprise: encrypted, 50 traces max, custom thread ID
 const encKey = await crypto.subtle.generateKey(
@@ -128,7 +128,7 @@ const store = await createEnterstellarStore({
 If your org's data residency policy prohibits Enterstellar's default telemetry (IndexedDB queue, 30s flush):
 
 ```ts
-import { createTelemetryCollector } from '@enterstellar-ai/telemetry';
+import { createTelemetryCollector } from '@enterstellar/telemetry';
 
 // Opt-out: no-op collector that discards all events
 const telemetry = createTelemetryCollector({
@@ -146,12 +146,12 @@ const telemetry = createTelemetryCollector({
 ## Full Enterprise Configuration
 
 ```tsx
-import { Provider } from '@enterstellar-ai/react';
-import { createCompiler } from '@enterstellar-ai/compiler';
-import { createRenderCache } from '@enterstellar-ai/cache';
-import { createEnterstellarStore } from '@enterstellar-ai/state';
-import { createTelemetryCollector } from '@enterstellar-ai/telemetry';
-import { createAgentConnection } from '@enterstellar-ai/connection';
+import { Provider } from '@enterstellar/react';
+import { createCompiler } from '@enterstellar/compiler';
+import { createRenderCache } from '@enterstellar/cache';
+import { createEnterstellarStore } from '@enterstellar/state';
+import { createTelemetryCollector } from '@enterstellar/telemetry';
+import { createAgentConnection } from '@enterstellar/connection';
 import { registry } from './enterstellar/registry';
 
 // 1. Custom compiler with HIPAA middleware

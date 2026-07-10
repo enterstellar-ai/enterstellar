@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-test
+ * @module @enterstellar/cli/templates/template-test
  * @description Generates `src/tests/enterstellar.test.ts` — example intent-based tests.
  *
  * Produces 3 test cases demonstrating Enterstellar's intent testing workflow:
@@ -8,7 +8,7 @@
  * 2. **Validation pass test** — Verifies that valid props compile successfully.
  * 3. **Validation fail test** — Verifies that invalid props produce correct errors.
  *
- * Uses `createTestHarness()` from `@enterstellar-ai/test` with mock responses so tests
+ * Uses `createTestHarness()` from `@enterstellar/test` with mock responses so tests
  * are fully deterministic — no real LLM calls.
  *
  * @see Implementation Bible §4.17 — "Example intent-based tests"
@@ -23,7 +23,7 @@
  * Generates the `src/tests/enterstellar.test.ts` file content for a scaffolded project.
  *
  * The generated file:
- * 1. Imports `createTestHarness` and assertion helpers from `@enterstellar-ai/test`.
+ * 1. Imports `createTestHarness` and assertion helpers from `@enterstellar/test`.
  * 2. Imports the project registry.
  * 3. Creates a test harness with mock responses for deterministic testing.
  * 4. Defines 3 test cases covering resolution, pass, and fail scenarios.
@@ -37,7 +37,7 @@
  * ```
  */
 export function generateTest(): string {
-    return `/**
+  return `/**
  * Enterstellar Intent-Based Tests
  *
  * These tests demonstrate how to verify that your Enterstellar registry
@@ -49,7 +49,7 @@ export function generateTest(): string {
  */
 
 import { describe, it, expect } from 'vitest';
-import { createTestHarness } from '@enterstellar-ai/test';
+import { createTestHarness } from '@enterstellar/test';
 
 import { registry } from '../enterstellar/registry.js';
 

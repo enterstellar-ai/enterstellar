@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/test/assertions
+ * @module @enterstellar/test/assertions
  * @description Framework-agnostic assertion helpers for Enterstellar test harness.
  *
  * Each function checks a condition and throws `EnterstellarError` on failure. Returns
@@ -17,8 +17,8 @@
  * @see Implementation Bible §4.5 — `harness.expect.*` specification.
  */
 
-import type { AgentTrace, CompilationResult } from '@enterstellar-ai/types';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import type { AgentTrace, CompilationResult } from '@enterstellar/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // ENS-5001: componentToBe
@@ -40,20 +40,17 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  * harness.expect.componentToBe(trace, 'PatientVitals');
  * ```
  */
-export function componentToBe(
-    trace: AgentTrace,
-    componentName: string,
-): void {
-    const actual = trace.resolution.resolvedComponent;
+export function componentToBe(trace: AgentTrace, componentName: string): void {
+  const actual = trace.resolution.resolvedComponent;
 
-    if (actual !== componentName) {
-        throw new EnterstellarError(
-            'ENS-5001',
-            'test',
-            `Expected component "${componentName}" but resolved to "${actual}".`,
-            false,
-        );
-    }
+  if (actual !== componentName) {
+    throw new EnterstellarError(
+      'ENS-5001',
+      'test',
+      `Expected component "${componentName}" but resolved to "${actual}".`,
+      false,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -75,21 +72,17 @@ export function componentToBe(
  * harness.expect.confidenceAbove(trace, 0.8); // passes if confidence > 0.8
  * ```
  */
-export function confidenceAbove(
-    trace: AgentTrace,
-    threshold: number,
-): void {
-    const actual = trace.intent.confidence;
+export function confidenceAbove(trace: AgentTrace, threshold: number): void {
+  const actual = trace.intent.confidence;
 
-    if (actual <= threshold) {
-        throw new EnterstellarError(
-            'ENS-5002',
-            'test',
-            `Expected confidence above ${threshold.toFixed(2)} ` +
-            `but got ${actual.toFixed(2)}.`,
-            false,
-        );
-    }
+  if (actual <= threshold) {
+    throw new EnterstellarError(
+      'ENS-5002',
+      'test',
+      `Expected confidence above ${threshold.toFixed(2)} ` + `but got ${actual.toFixed(2)}.`,
+      false,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -112,19 +105,19 @@ export function confidenceAbove(
  * ```
  */
 export function compilationToPass(result: CompilationResult): void {
-    if (result.status !== 'pass') {
-        const errorSummary = result.errors
-            .map((e) => `  [${e.code}] ${e.path}: ${e.message}`)
-            .join('\n');
+  if (result.status !== 'pass') {
+    const errorSummary = result.errors
+      .map((e) => `  [${e.code}] ${e.path}: ${e.message}`)
+      .join('\n');
 
-        throw new EnterstellarError(
-            'ENS-5003',
-            'test',
-            `Expected compilation to pass but got status "${result.status}".\n` +
-            `Errors (${result.errors.length.toString()}):\n${errorSummary}`,
-            false,
-        );
-    }
+    throw new EnterstellarError(
+      'ENS-5003',
+      'test',
+      `Expected compilation to pass but got status "${result.status}".\n` +
+        `Errors (${result.errors.length.toString()}):\n${errorSummary}`,
+      false,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -146,22 +139,18 @@ export function compilationToPass(result: CompilationResult): void {
  * ```
  */
 export function tokenCompliant(result: CompilationResult): void {
-    const tokenErrors = result.errors.filter(
-        (e) => e.code === 'ENS-2002',
+  const tokenErrors = result.errors.filter((e) => e.code === 'ENS-2002');
+
+  if (tokenErrors.length > 0) {
+    const errorSummary = tokenErrors.map((e) => `  [${e.code}] ${e.path}: ${e.message}`).join('\n');
+
+    throw new EnterstellarError(
+      'ENS-5004',
+      'test',
+      `Expected token compliance but found ${tokenErrors.length.toString()} violation(s):\n${errorSummary}`,
+      false,
     );
-
-    if (tokenErrors.length > 0) {
-        const errorSummary = tokenErrors
-            .map((e) => `  [${e.code}] ${e.path}: ${e.message}`)
-            .join('\n');
-
-        throw new EnterstellarError(
-            'ENS-5004',
-            'test',
-            `Expected token compliance but found ${tokenErrors.length.toString()} violation(s):\n${errorSummary}`,
-            false,
-        );
-    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -183,21 +172,17 @@ export function tokenCompliant(result: CompilationResult): void {
  * harness.expect.latencyBelow(trace, 100); // passes if totalMs < 100
  * ```
  */
-export function latencyBelow(
-    trace: AgentTrace,
-    maxMs: number,
-): void {
-    const actual = trace.metrics.totalMs;
+export function latencyBelow(trace: AgentTrace, maxMs: number): void {
+  const actual = trace.metrics.totalMs;
 
-    if (actual >= maxMs) {
-        throw new EnterstellarError(
-            'ENS-5005',
-            'test',
-            `Expected latency below ${maxMs.toString()}ms ` +
-            `but got ${actual.toFixed(2)}ms.`,
-            false,
-        );
-    }
+  if (actual >= maxMs) {
+    throw new EnterstellarError(
+      'ENS-5005',
+      'test',
+      `Expected latency below ${maxMs.toString()}ms ` + `but got ${actual.toFixed(2)}ms.`,
+      false,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -219,20 +204,16 @@ export function latencyBelow(
  * ```
  */
 export function accessibilityToPass(result: CompilationResult): void {
-    const a11yErrors = result.errors.filter(
-        (e) => e.code === 'ENS-2003',
+  const a11yErrors = result.errors.filter((e) => e.code === 'ENS-2003');
+
+  if (a11yErrors.length > 0) {
+    const errorSummary = a11yErrors.map((e) => `  [${e.code}] ${e.path}: ${e.message}`).join('\n');
+
+    throw new EnterstellarError(
+      'ENS-5006',
+      'test',
+      `Expected accessibility compliance but found ${a11yErrors.length.toString()} violation(s):\n${errorSummary}`,
+      false,
     );
-
-    if (a11yErrors.length > 0) {
-        const errorSummary = a11yErrors
-            .map((e) => `  [${e.code}] ${e.path}: ${e.message}`)
-            .join('\n');
-
-        throw new EnterstellarError(
-            'ENS-5006',
-            'test',
-            `Expected accessibility compliance but found ${a11yErrors.length.toString()} violation(s):\n${errorSummary}`,
-            false,
-        );
-    }
+  }
 }

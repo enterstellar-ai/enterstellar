@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react
+ * @module @enterstellar/react
  * @description React integration for Enterstellar OS — Provider, Zone,
  * lifecycle management, cache integration, adapters, hooks, and renderer registry.
  *
- * This barrel file exports the full public API surface of `@enterstellar-ai/react`.
- * Consumers import from `@enterstellar-ai/react` — internal modules are not part
+ * This barrel file exports the full public API surface of `@enterstellar/react`.
+ * Consumers import from `@enterstellar/react` — internal modules are not part
  * of the public API.
  *
  * ## Quick Start
@@ -22,7 +22,7 @@
  *   useEnterstellarTrace,
  *   useEnterstellarAdapters,
  *   useSpatialContext,
- * } from '@enterstellar-ai/react';
+ * } from '@enterstellar/react';
  * ```
  *
  * ## Architecture
@@ -64,11 +64,7 @@ export { ZoneErrorBoundary } from './zone-error-boundary.js';
 export { defineComponent } from './define-component.js';
 export type { DefineComponentConfig, DefineComponentResult } from './define-component.js';
 
-export {
-    rendererRegistry,
-    registerRenderer,
-    createRendererRegistry,
-} from './renderer-registry.js';
+export { rendererRegistry, registerRenderer, createRendererRegistry } from './renderer-registry.js';
 export type { RendererRegistry } from './renderer-registry.js';
 
 // ---------------------------------------------------------------------------
@@ -106,14 +102,14 @@ export { useSpatialContext } from './hooks/use-spatial-context.js';
 // ---------------------------------------------------------------------------
 
 export type {
-    ProviderProps,
-    ZoneProps,
-    RetryPolicy,
-    EnterstellarAdapters,
-    EnterstellarComponentRenderer,
+  ProviderProps,
+  ZoneProps,
+  RetryPolicy,
+  EnterstellarAdapters,
+  EnterstellarComponentRenderer,
 } from './types.js';
 
-export type { RenderCache } from '@enterstellar-ai/cache';
+export type { RenderCache } from '@enterstellar/cache';
 
 export type { ProvenanceBadgeProps } from './provenance-badge.js';
 export type { ZoneErrorBoundaryProps } from './zone-error-boundary.js';

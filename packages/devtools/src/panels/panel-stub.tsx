@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/panels/panel-stub
+ * @module @enterstellar/devtools/panels/panel-stub
  * @description Stub component for deferred DevTools tabs.
  *
  * Renders a "Coming in a future release" placeholder for tabs that
@@ -32,8 +32,8 @@ import { panelStubStyles } from '../styles.js';
  * @internal
  */
 type PanelStubProps = {
-    /** The deferred tab to render a stub for. */
-    readonly tab: DevToolsTab;
+  /** The deferred tab to render a stub for. */
+  readonly tab: DevToolsTab;
 };
 
 // ---------------------------------------------------------------------------
@@ -54,25 +54,21 @@ type PanelStubProps = {
  * @internal
  */
 export function PanelStub(props: PanelStubProps): React.JSX.Element {
-    const { tab } = props;
-    const label = TAB_LABELS[tab];
+  const { tab } = props;
+  const label = TAB_LABELS[tab];
 
-    return (
-        <div
-            style={panelStubStyles['container']}
-            data-enterstellar-devtools-panel={tab}
-            role="status"
-            aria-label={`${label} — coming soon`}
-        >
-            <span style={panelStubStyles['icon']} aria-hidden="true">
-                🚧
-            </span>
-            <span style={panelStubStyles['title']}>
-                {label}
-            </span>
-            <span style={panelStubStyles['subtitle']}>
-                Coming in a future release.
-            </span>
-        </div>
-    );
+  return (
+    <div
+      style={panelStubStyles['container']}
+      data-enterstellar-devtools-panel={tab}
+      role="status"
+      aria-label={`${label} — coming soon`}
+    >
+      <span style={panelStubStyles['icon']} aria-hidden="true">
+        🚧
+      </span>
+      <span style={panelStubStyles['title']}>{label}</span>
+      <span style={panelStubStyles['subtitle']}>Coming in a future release.</span>
+    </div>
+  );
 }

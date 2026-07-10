@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/hooks/use-spatial-context
+ * @module @enterstellar/react/hooks/use-spatial-context
  * @description Hook for DOM-awareness data within an `<Zone>`.
  *
  * Provides zone dimensions, visibility state, and an explicit
@@ -21,7 +21,7 @@
  *
  * @example
  * ```tsx
- * import { useSpatialContext } from '@enterstellar-ai/react';
+ * import { useSpatialContext } from '@enterstellar/react';
  * import { useRef } from 'react';
  *
  * function MyZone() {
@@ -46,7 +46,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { SpatialContext, SpatialContextSnapshot } from '@enterstellar-ai/types';
+import type { SpatialContext, SpatialContextSnapshot } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -67,148 +67,157 @@ import type { SpatialContext, SpatialContextSnapshot } from '@enterstellar-ai/ty
  * @see Appendix E P13
  */
 export function useSpatialContext(
-    zoneName: string,
-    zoneRef: React.RefObject<HTMLDivElement | null>,
+  zoneName: string,
+  zoneRef: React.RefObject<HTMLDivElement | null>,
 ): SpatialContext {
-    // -----------------------------------------------------------------------
-    // Observable State
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Observable State
+  // -----------------------------------------------------------------------
 
-    const [width, setWidth] = useState(0);
-    const [height, setHeight] = useState(0);
-    const [isVisible, setIsVisible] = useState(false);
-    const [focusedElement, setFocusedElement] = useState<string | undefined>(undefined);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const [focusedElement, setFocusedElement] = useState<string | undefined>(undefined);
 
-    // Stable ref to avoid stale closures in observer callbacks
-    const stateRef = useRef({ width: 0, height: 0, isVisible: false, focusedElement: undefined as string | undefined });
+  // Stable ref to avoid stale closures in observer callbacks
+  const stateRef = useRef({
+    width: 0,
+    height: 0,
+    isVisible: false,
+    focusedElement: undefined as string | undefined,
+  });
 
-    // -----------------------------------------------------------------------
-    // ResizeObserver — width & height
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // ResizeObserver — width & height
+  // -----------------------------------------------------------------------
 
-    useEffect(() => {
-        const element = zoneRef.current;
-        if (element === null) {
-            return;
+  useEffect(() => {
+    const element = zoneRef.current;
+    if (element === null) {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry !== undefined) {
+        const { width: w, height: h } = entry.contentRect;
+        const roundedW = Math.round(w);
+        const roundedH = Math.round(h);
+
+        // Only update if actually changed (avoid re-render loops)
+        if (stateRef.current.width !== roundedW || stateRef.current.height !== roundedH) {
+          stateRef.current.width = roundedW;
+          stateRef.current.height = roundedH;
+          setWidth(roundedW);
+          setHeight(roundedH);
         }
+      }
+    });
 
-        const observer = new ResizeObserver((entries) => {
-            const entry = entries[0];
-            if (entry !== undefined) {
-                const { width: w, height: h } = entry.contentRect;
-                const roundedW = Math.round(w);
-                const roundedH = Math.round(h);
-
-                // Only update if actually changed (avoid re-render loops)
-                if (stateRef.current.width !== roundedW || stateRef.current.height !== roundedH) {
-                    stateRef.current.width = roundedW;
-                    stateRef.current.height = roundedH;
-                    setWidth(roundedW);
-                    setHeight(roundedH);
-                }
-            }
-        });
-
-        observer.observe(element);
-        return () => { observer.disconnect(); };
-    }, [zoneRef]);
-
-    // -----------------------------------------------------------------------
-    // IntersectionObserver — isVisible
-    // -----------------------------------------------------------------------
-
-    useEffect(() => {
-        const element = zoneRef.current;
-        if (element === null) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const entry = entries[0];
-                if (entry !== undefined) {
-                    const visible = entry.isIntersecting;
-                    if (stateRef.current.isVisible !== visible) {
-                        stateRef.current.isVisible = visible;
-                        setIsVisible(visible);
-                    }
-                }
-            },
-            { threshold: 0.1 },
-        );
-
-        observer.observe(element);
-        return () => { observer.disconnect(); };
-    }, [zoneRef]);
-
-    // -----------------------------------------------------------------------
-    // Focus Tracking (passive — blur/focus events only)
-    // -----------------------------------------------------------------------
-
-    useEffect(() => {
-        const element = zoneRef.current;
-        if (element === null) {
-            return;
-        }
-
-        const handleFocusIn = (event: FocusEvent): void => {
-            const target = event.target;
-            if (target instanceof HTMLElement) {
-                const id = target.id || (target.getAttribute('data-enterstellar-id') ?? undefined);
-                stateRef.current.focusedElement = id;
-                setFocusedElement(id);
-            }
-        };
-
-        const handleFocusOut = (): void => {
-            stateRef.current.focusedElement = undefined;
-            setFocusedElement(undefined);
-        };
-
-        element.addEventListener('focusin', handleFocusIn);
-        element.addEventListener('focusout', handleFocusOut);
-
-        return () => {
-            element.removeEventListener('focusin', handleFocusIn);
-            element.removeEventListener('focusout', handleFocusOut);
-        };
-    }, [zoneRef]);
-
-    // -----------------------------------------------------------------------
-    // captureContext() — Active Mode (P13)
-    // -----------------------------------------------------------------------
-
-    /**
-     * Captures a frozen snapshot of the current spatial context.
-     * Consumer decides when to call this (e.g., Cmd+K, "Ask AI" button).
-     *
-     * @returns A `SpatialContextSnapshot` with an ISO 8601 timestamp.
-     */
-    const captureContext = useCallback((): SpatialContextSnapshot => {
-        const snapshot: SpatialContextSnapshot = {
-            zone: zoneName,
-            width: stateRef.current.width,
-            height: stateRef.current.height,
-            isVisible: stateRef.current.isVisible,
-            ...(stateRef.current.focusedElement !== undefined
-                ? { focusedElement: stateRef.current.focusedElement }
-                : {}),
-            capturedAt: new Date().toISOString(),
-        };
-
-        return Object.freeze(snapshot);
-    }, [zoneName]);
-
-    // -----------------------------------------------------------------------
-    // Return SpatialContext
-    // -----------------------------------------------------------------------
-
-    return {
-        zone: zoneName,
-        width,
-        height,
-        isVisible,
-        ...(focusedElement !== undefined ? { focusedElement } : {}),
-        captureContext,
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
     };
+  }, [zoneRef]);
+
+  // -----------------------------------------------------------------------
+  // IntersectionObserver — isVisible
+  // -----------------------------------------------------------------------
+
+  useEffect(() => {
+    const element = zoneRef.current;
+    if (element === null) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry !== undefined) {
+          const visible = entry.isIntersecting;
+          if (stateRef.current.isVisible !== visible) {
+            stateRef.current.isVisible = visible;
+            setIsVisible(visible);
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, [zoneRef]);
+
+  // -----------------------------------------------------------------------
+  // Focus Tracking (passive — blur/focus events only)
+  // -----------------------------------------------------------------------
+
+  useEffect(() => {
+    const element = zoneRef.current;
+    if (element === null) {
+      return;
+    }
+
+    const handleFocusIn = (event: FocusEvent): void => {
+      const target = event.target;
+      if (target instanceof HTMLElement) {
+        const id = target.id || (target.getAttribute('data-enterstellar-id') ?? undefined);
+        stateRef.current.focusedElement = id;
+        setFocusedElement(id);
+      }
+    };
+
+    const handleFocusOut = (): void => {
+      stateRef.current.focusedElement = undefined;
+      setFocusedElement(undefined);
+    };
+
+    element.addEventListener('focusin', handleFocusIn);
+    element.addEventListener('focusout', handleFocusOut);
+
+    return () => {
+      element.removeEventListener('focusin', handleFocusIn);
+      element.removeEventListener('focusout', handleFocusOut);
+    };
+  }, [zoneRef]);
+
+  // -----------------------------------------------------------------------
+  // captureContext() — Active Mode (P13)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Captures a frozen snapshot of the current spatial context.
+   * Consumer decides when to call this (e.g., Cmd+K, "Ask AI" button).
+   *
+   * @returns A `SpatialContextSnapshot` with an ISO 8601 timestamp.
+   */
+  const captureContext = useCallback((): SpatialContextSnapshot => {
+    const snapshot: SpatialContextSnapshot = {
+      zone: zoneName,
+      width: stateRef.current.width,
+      height: stateRef.current.height,
+      isVisible: stateRef.current.isVisible,
+      ...(stateRef.current.focusedElement !== undefined
+        ? { focusedElement: stateRef.current.focusedElement }
+        : {}),
+      capturedAt: new Date().toISOString(),
+    };
+
+    return Object.freeze(snapshot);
+  }, [zoneName]);
+
+  // -----------------------------------------------------------------------
+  // Return SpatialContext
+  // -----------------------------------------------------------------------
+
+  return {
+    zone: zoneName,
+    width,
+    height,
+    isVisible,
+    ...(focusedElement !== undefined ? { focusedElement } : {}),
+    captureContext,
+  };
 }

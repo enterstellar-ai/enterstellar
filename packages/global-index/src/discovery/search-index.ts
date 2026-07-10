@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/discovery/search-index
+ * @module @enterstellar/global-index/discovery/search-index
  * @description Internal HTTP methods for contract search and retrieval.
  *
  * Provides three operations against the Global Index service:
@@ -23,10 +23,7 @@ import { createSearchError } from '../errors.js';
 import { execute, executeOptional } from '../transport.js';
 import type { TransportConfig } from '../transport.js';
 import { GlobalSearchResultSchema } from '../types.js';
-import type {
-    GlobalSearchOptions,
-    GlobalSearchResult,
-} from '../types.js';
+import type { GlobalSearchOptions, GlobalSearchResult } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Response Schemas
@@ -39,7 +36,7 @@ import type {
  * @internal
  */
 const SearchResponseSchema = z.object({
-    results: z.array(GlobalSearchResultSchema),
+  results: z.array(GlobalSearchResultSchema),
 });
 
 /**
@@ -49,7 +46,7 @@ const SearchResponseSchema = z.object({
  * @internal
  */
 const SingleResultResponseSchema = z.object({
-    result: GlobalSearchResultSchema,
+  result: GlobalSearchResultSchema,
 });
 
 /**
@@ -59,7 +56,7 @@ const SingleResultResponseSchema = z.object({
  * @internal
  */
 const FeaturedResponseSchema = z.object({
-    results: z.array(GlobalSearchResultSchema),
+  results: z.array(GlobalSearchResultSchema),
 });
 
 // ---------------------------------------------------------------------------
@@ -84,50 +81,54 @@ const FeaturedResponseSchema = z.object({
  * @internal
  */
 export async function searchContracts(
-    config: TransportConfig,
-    query: string,
-    options?: GlobalSearchOptions,
+  config: TransportConfig,
+  query: string,
+  options?: GlobalSearchOptions,
 ): Promise<readonly GlobalSearchResult[]> {
-    // -----------------------------------------------------------------------
-    // Build request body
-    // -----------------------------------------------------------------------
-    const body: Record<string, unknown> = { query };
+  // -----------------------------------------------------------------------
+  // Build request body
+  // -----------------------------------------------------------------------
+  const body: Record<string, unknown> = { query };
 
-    if (options?.topK !== undefined) {
-        body['topK'] = options.topK;
+  if (options?.topK !== undefined) {
+    body['topK'] = options.topK;
+  }
+
+  if (options?.filters !== undefined) {
+    const filters: Record<string, unknown> = {};
+
+    if (options.filters.category !== undefined) {
+      filters['category'] = options.filters.category;
+    }
+    if (options.filters.publisher !== undefined) {
+      filters['publisher'] = options.filters.publisher;
+    }
+    if (options.filters.certified !== undefined) {
+      filters['certified'] = options.filters.certified;
     }
 
-    if (options?.filters !== undefined) {
-        const filters: Record<string, unknown> = {};
-
-        if (options.filters.category !== undefined) {
-            filters['category'] = options.filters.category;
-        }
-        if (options.filters.publisher !== undefined) {
-            filters['publisher'] = options.filters.publisher;
-        }
-        if (options.filters.certified !== undefined) {
-            filters['certified'] = options.filters.certified;
-        }
-
-        // Only include filters object if at least one filter is set
-        if (Object.keys(filters).length > 0) {
-            body['filters'] = filters;
-        }
+    // Only include filters object if at least one filter is set
+    if (Object.keys(filters).length > 0) {
+      body['filters'] = filters;
     }
+  }
 
-    // -----------------------------------------------------------------------
-    // HTTP request
-    // -----------------------------------------------------------------------
-    const response = await execute(config, {
-        method: 'POST',
-        path: '/v1/search',
-        body: body,
-    }, SearchResponseSchema);
+  // -----------------------------------------------------------------------
+  // HTTP request
+  // -----------------------------------------------------------------------
+  const response = await execute(
+    config,
+    {
+      method: 'POST',
+      path: '/v1/search',
+      body: body,
+    },
+    SearchResponseSchema,
+  );
 
-    // Cast: Zod validates the envelope; contract field is passed through
-    // as Record<string, unknown> but contains a full ComponentContract at runtime.
-    return response.data.results as unknown as readonly GlobalSearchResult[];
+  // Cast: Zod validates the envelope; contract field is passed through
+  // as Record<string, unknown> but contains a full ComponentContract at runtime.
+  return response.data.results as unknown as readonly GlobalSearchResult[];
 }
 
 // ---------------------------------------------------------------------------
@@ -152,36 +153,40 @@ export async function searchContracts(
  * @internal
  */
 export async function getContract(
-    config: TransportConfig,
-    name: string,
-    registryUrl: string,
+  config: TransportConfig,
+  name: string,
+  registryUrl: string,
 ): Promise<GlobalSearchResult | null> {
-    // -----------------------------------------------------------------------
-    // Guard: empty name or registry URL
-    // -----------------------------------------------------------------------
-    if (name.trim() === '') {
-        throw createSearchError('Component name must not be empty.');
-    }
+  // -----------------------------------------------------------------------
+  // Guard: empty name or registry URL
+  // -----------------------------------------------------------------------
+  if (name.trim() === '') {
+    throw createSearchError('Component name must not be empty.');
+  }
 
-    if (registryUrl.trim() === '') {
-        throw createSearchError('Registry URL must not be empty.');
-    }
+  if (registryUrl.trim() === '') {
+    throw createSearchError('Registry URL must not be empty.');
+  }
 
-    // -----------------------------------------------------------------------
-    // HTTP request — uses executeOptional for 404 → null
-    // -----------------------------------------------------------------------
-    const response = await executeOptional(config, {
-        method: 'GET',
-        path: `/v1/contracts/${encodeURIComponent(name)}`,
-        query: { registry: registryUrl },
-    }, SingleResultResponseSchema);
+  // -----------------------------------------------------------------------
+  // HTTP request — uses executeOptional for 404 → null
+  // -----------------------------------------------------------------------
+  const response = await executeOptional(
+    config,
+    {
+      method: 'GET',
+      path: `/v1/contracts/${encodeURIComponent(name)}`,
+      query: { registry: registryUrl },
+    },
+    SingleResultResponseSchema,
+  );
 
-    if (response === null) {
-        return null;
-    }
+  if (response === null) {
+    return null;
+  }
 
-    // Cast: Zod validates the envelope; contract field is a full ComponentContract at runtime.
-    return response.data.result as unknown as GlobalSearchResult;
+  // Cast: Zod validates the envelope; contract field is a full ComponentContract at runtime.
+  return response.data.result as unknown as GlobalSearchResult;
 }
 
 // ---------------------------------------------------------------------------
@@ -201,14 +206,16 @@ export async function getContract(
  *
  * @internal
  */
-export async function getFeatured(
-    config: TransportConfig,
-): Promise<readonly GlobalSearchResult[]> {
-    const response = await execute(config, {
-        method: 'GET',
-        path: '/v1/featured',
-    }, FeaturedResponseSchema);
+export async function getFeatured(config: TransportConfig): Promise<readonly GlobalSearchResult[]> {
+  const response = await execute(
+    config,
+    {
+      method: 'GET',
+      path: '/v1/featured',
+    },
+    FeaturedResponseSchema,
+  );
 
-    // Cast: Zod validates the envelope; contract field is a full ComponentContract at runtime.
-    return response.data.results as unknown as readonly GlobalSearchResult[];
+  // Cast: Zod validates the envelope; contract field is a full ComponentContract at runtime.
+  return response.data.results as unknown as readonly GlobalSearchResult[];
 }

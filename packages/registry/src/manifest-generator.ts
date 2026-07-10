@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/registry/manifest-generator
+ * @module @enterstellar/registry/manifest-generator
  * @description Generates `CompactManifestEntry[]` from a collection of ComponentContracts.
  *
  * The compact manifest is the token-efficient component description injected
@@ -16,7 +16,7 @@
  * @see Design Choice R10 — example data via `intent` + `props` fields.
  */
 
-import type { ComponentContract, CompactManifestEntry } from '@enterstellar-ai/types';
+import type { ComponentContract, CompactManifestEntry } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Type Guard Helper
@@ -27,7 +27,7 @@ import type { ComponentContract, CompactManifestEntry } from '@enterstellar-ai/t
  * Avoids raw `as Record<string, unknown>` casts throughout introspection logic.
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
-    return value !== null && typeof value === 'object';
+  return value !== null && typeof value === 'object';
 }
 
 // ---------------------------------------------------------------------------
@@ -50,23 +50,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * @returns A `Record<string, string>` mapping prop keys to type descriptions.
  */
 function extractPropSummary(props: unknown, depth: number = 0): Record<string, string> {
-    const summary: Record<string, string> = {};
+  const summary: Record<string, string> = {};
 
-    if (!isRecord(props)) {
-        return summary;
-    }
-
-    // Zod v4 objects have a `.shape` property (object with ZodType values)
-    if ('shape' in props) {
-        const shape = props['shape'];
-        if (isRecord(shape)) {
-            for (const [key, fieldSchema] of Object.entries(shape)) {
-                summary[key] = describeZodType(fieldSchema, depth);
-            }
-        }
-    }
-
+  if (!isRecord(props)) {
     return summary;
+  }
+
+  // Zod v4 objects have a `.shape` property (object with ZodType values)
+  if ('shape' in props) {
+    const shape = props['shape'];
+    if (isRecord(shape)) {
+      for (const [key, fieldSchema] of Object.entries(shape)) {
+        summary[key] = describeZodType(fieldSchema, depth);
+      }
+    }
+  }
+
+  return summary;
 }
 
 /**
@@ -89,17 +89,17 @@ const MAX_INTROSPECTION_DEPTH = 3;
  * @internal
  */
 function resolveTypeName(def: Record<string, unknown>): string {
-    // Zod v3: _def.typeName = 'ZodString'
-    if (typeof def['typeName'] === 'string') {
-        return def['typeName'];
-    }
+  // Zod v3: _def.typeName = 'ZodString'
+  if (typeof def['typeName'] === 'string') {
+    return def['typeName'];
+  }
 
-    // Zod v4: _zod.def.type = 'string' (or _def.type = 'string')
-    if (typeof def['type'] === 'string') {
-        return def['type'];
-    }
+  // Zod v4: _zod.def.type = 'string' (or _def.type = 'string')
+  if (typeof def['type'] === 'string') {
+    return def['type'];
+  }
 
-    return '';
+  return '';
 }
 
 /**
@@ -114,13 +114,13 @@ function resolveTypeName(def: Record<string, unknown>): string {
  * @internal
  */
 function normalizeTypeName(raw: string): string {
-    // Zod v3: 'ZodString' → 'string', 'ZodArray' → 'array'
-    if (raw.startsWith('Zod')) {
-        return raw.slice(3).toLowerCase();
-    }
+  // Zod v3: 'ZodString' → 'string', 'ZodArray' → 'array'
+  if (raw.startsWith('Zod')) {
+    return raw.slice(3).toLowerCase();
+  }
 
-    // Zod v4: already lowercase ('string', 'array', 'enum', etc.)
-    return raw.toLowerCase();
+  // Zod v4: already lowercase ('string', 'array', 'enum', etc.)
+  return raw.toLowerCase();
 }
 
 /**
@@ -134,12 +134,12 @@ function normalizeTypeName(raw: string): string {
  * @internal
  */
 function formatPropSummaryInline(summary: Record<string, string>): string {
-    const entries = Object.entries(summary);
-    if (entries.length === 0) {
-        return 'object';
-    }
-    const fields = entries.map(([key, typeDesc]) => `${key}: ${typeDesc}`).join(', ');
-    return `{${fields}}`;
+  const entries = Object.entries(summary);
+  if (entries.length === 0) {
+    return 'object';
+  }
+  const fields = entries.map(([key, typeDesc]) => `${key}: ${typeDesc}`).join(', ');
+  return `{${fields}}`;
 }
 
 /**
@@ -164,103 +164,103 @@ function formatPropSummaryInline(summary: Record<string, string>): string {
  * @see Design Choice R8 — compact JSON format with readable type strings.
  */
 function describeZodType(schema: unknown, depth: number = 0): string {
-    if (!isRecord(schema)) {
-        return 'unknown';
-    }
-
-    // Depth guard: prevent infinite recursion on self-referential schemas
-    if (depth >= MAX_INTROSPECTION_DEPTH) {
-        return 'unknown';
-    }
-
-    // Resolve the internal definition from Zod v3 (_def) or Zod v4 (_zod)
-    const rawDef = '_def' in schema ? schema['_def'] : '_zod' in schema ? schema['_zod'] : null;
-    const def = isRecord(rawDef) ? rawDef : null;
-
-    // Zod v4 nests the definition inside _zod.def
-    const innerDef = def !== null && 'def' in def && isRecord(def['def']) ? def['def'] : def;
-
-    if (innerDef !== null) {
-        const rawTypeName = resolveTypeName(innerDef);
-        const typeName = normalizeTypeName(rawTypeName);
-
-        switch (typeName) {
-            case 'string':
-                return 'string';
-            case 'number':
-                return 'number';
-            case 'boolean':
-                return 'boolean';
-            case 'enum': {
-                // Zod v3: _def.values = ['a', 'b', 'c']
-                const values = innerDef['values'];
-                if (Array.isArray(values)) {
-                    return `enum: ${values.join('|')}`;
-                }
-                // Zod v4: _zod.def.entries = { a: 'a', b: 'b' }
-                const entries = innerDef['entries'];
-                if (isRecord(entries)) {
-                    return `enum: ${Object.keys(entries).join('|')}`;
-                }
-                return 'enum';
-            }
-            case 'array': {
-                // Zod v3: _def.type = innerSchema
-                // Zod v4: _zod.def.element = innerSchema
-                const element = innerDef['element'] ?? innerDef['type'];
-                if (element !== undefined && isRecord(element)) {
-                    const inner = describeZodType(element, depth + 1);
-                    return `array of ${inner}`;
-                }
-                return 'array';
-            }
-            case 'object': {
-                // DRY: reuse extractPropSummary() to introspect the shape.
-                // The schema itself (not innerDef) has the .shape property.
-                const summary = extractPropSummary(schema, depth + 1);
-                return formatPropSummaryInline(summary);
-            }
-            case 'union': {
-                // Zod v4: _zod.def.options = [ZodType, ZodType, ...]
-                const options = innerDef['options'];
-                if (Array.isArray(options)) {
-                    const described = options.map((opt: unknown) => describeZodType(opt, depth + 1));
-                    return described.join(' | ');
-                }
-                return 'unknown';
-            }
-            case 'optional': {
-                const innerType = innerDef['innerType'];
-                if (innerType !== undefined) {
-                    return `${describeZodType(innerType, depth + 1)} (optional)`;
-                }
-                return 'optional';
-            }
-            case 'nullable': {
-                const innerType = innerDef['innerType'];
-                if (innerType !== undefined) {
-                    return `${describeZodType(innerType, depth + 1)} (nullable)`;
-                }
-                return 'nullable';
-            }
-            case 'default': {
-                const innerType = innerDef['innerType'];
-                if (innerType !== undefined) {
-                    return describeZodType(innerType, depth + 1);
-                }
-                return 'unknown';
-            }
-            default:
-                break;
-        }
-    }
-
-    // Fallback: check for description property on the schema itself
-    if ('description' in schema && typeof schema['description'] === 'string') {
-        return schema['description'];
-    }
-
+  if (!isRecord(schema)) {
     return 'unknown';
+  }
+
+  // Depth guard: prevent infinite recursion on self-referential schemas
+  if (depth >= MAX_INTROSPECTION_DEPTH) {
+    return 'unknown';
+  }
+
+  // Resolve the internal definition from Zod v3 (_def) or Zod v4 (_zod)
+  const rawDef = '_def' in schema ? schema['_def'] : '_zod' in schema ? schema['_zod'] : null;
+  const def = isRecord(rawDef) ? rawDef : null;
+
+  // Zod v4 nests the definition inside _zod.def
+  const innerDef = def !== null && 'def' in def && isRecord(def['def']) ? def['def'] : def;
+
+  if (innerDef !== null) {
+    const rawTypeName = resolveTypeName(innerDef);
+    const typeName = normalizeTypeName(rawTypeName);
+
+    switch (typeName) {
+      case 'string':
+        return 'string';
+      case 'number':
+        return 'number';
+      case 'boolean':
+        return 'boolean';
+      case 'enum': {
+        // Zod v3: _def.values = ['a', 'b', 'c']
+        const values = innerDef['values'];
+        if (Array.isArray(values)) {
+          return `enum: ${values.join('|')}`;
+        }
+        // Zod v4: _zod.def.entries = { a: 'a', b: 'b' }
+        const entries = innerDef['entries'];
+        if (isRecord(entries)) {
+          return `enum: ${Object.keys(entries).join('|')}`;
+        }
+        return 'enum';
+      }
+      case 'array': {
+        // Zod v3: _def.type = innerSchema
+        // Zod v4: _zod.def.element = innerSchema
+        const element = innerDef['element'] ?? innerDef['type'];
+        if (element !== undefined && isRecord(element)) {
+          const inner = describeZodType(element, depth + 1);
+          return `array of ${inner}`;
+        }
+        return 'array';
+      }
+      case 'object': {
+        // DRY: reuse extractPropSummary() to introspect the shape.
+        // The schema itself (not innerDef) has the .shape property.
+        const summary = extractPropSummary(schema, depth + 1);
+        return formatPropSummaryInline(summary);
+      }
+      case 'union': {
+        // Zod v4: _zod.def.options = [ZodType, ZodType, ...]
+        const options = innerDef['options'];
+        if (Array.isArray(options)) {
+          const described = options.map((opt: unknown) => describeZodType(opt, depth + 1));
+          return described.join(' | ');
+        }
+        return 'unknown';
+      }
+      case 'optional': {
+        const innerType = innerDef['innerType'];
+        if (innerType !== undefined) {
+          return `${describeZodType(innerType, depth + 1)} (optional)`;
+        }
+        return 'optional';
+      }
+      case 'nullable': {
+        const innerType = innerDef['innerType'];
+        if (innerType !== undefined) {
+          return `${describeZodType(innerType, depth + 1)} (nullable)`;
+        }
+        return 'nullable';
+      }
+      case 'default': {
+        const innerType = innerDef['innerType'];
+        if (innerType !== undefined) {
+          return describeZodType(innerType, depth + 1);
+        }
+        return 'unknown';
+      }
+      default:
+        break;
+    }
+  }
+
+  // Fallback: check for description property on the schema itself
+  if ('description' in schema && typeof schema['description'] === 'string') {
+    return schema['description'];
+  }
+
+  return 'unknown';
 }
 
 // ---------------------------------------------------------------------------
@@ -286,24 +286,22 @@ function describeZodType(schema: unknown, depth: number = 0): string {
  * // [{ name: 'PatientVitals', description: '...', category: 'clinical', props: { patientId: 'string' } }]
  * ```
  */
-export function generateManifest(
-    contracts: Iterable<ComponentContract>,
-): CompactManifestEntry[] {
-    const entries: CompactManifestEntry[] = [];
+export function generateManifest(contracts: Iterable<ComponentContract>): CompactManifestEntry[] {
+  const entries: CompactManifestEntry[] = [];
 
-    for (const contract of contracts) {
-        const entry: CompactManifestEntry = {
-            name: contract.name,
-            description: contract.description,
-            category: contract.category,
-            props: extractPropSummary(contract.props),
-        };
+  for (const contract of contracts) {
+    const entry: CompactManifestEntry = {
+      name: contract.name,
+      description: contract.description,
+      category: contract.category,
+      props: extractPropSummary(contract.props),
+    };
 
-        entries.push(entry);
-    }
+    entries.push(entry);
+  }
 
-    // Sort alphabetically for deterministic output
-    entries.sort((a, b) => a.name.localeCompare(b.name));
+  // Sort alphabetically for deterministic output
+  entries.sort((a, b) => a.name.localeCompare(b.name));
 
-    return entries;
+  return entries;
 }

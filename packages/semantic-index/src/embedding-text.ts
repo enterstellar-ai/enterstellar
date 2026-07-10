@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/semantic-index/embedding-text
+ * @module @enterstellar/semantic-index/embedding-text
  * @description Pure function that converts a `ComponentContract` into a single
  * text string for embedding by a vector model.
  *
@@ -19,7 +19,7 @@
  * @see Design Choice SI2 — locked field set for embedding.
  */
 
-import type { ComponentContract } from '@enterstellar-ai/types';
+import type { ComponentContract } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Zod Shape Extraction
@@ -36,20 +36,20 @@ import type { ComponentContract } from '@enterstellar-ai/types';
  * @returns Array of top-level property key names, or empty array.
  */
 function extractPropKeys(zodSchema: unknown): readonly string[] {
-    // ZodObject instances expose `.shape` as a plain object of ZodType values.
-    // We check for the property's existence and type defensively — the contract
-    // type declares `props: z.ZodType` (opaque), so we cannot rely on a specific
-    // Zod class hierarchy.
-    if (
-        zodSchema !== null &&
-        typeof zodSchema === 'object' &&
-        'shape' in zodSchema &&
-        zodSchema.shape !== null &&
-        typeof zodSchema.shape === 'object'
-    ) {
-        return Object.keys(zodSchema.shape);
-    }
-    return [];
+  // ZodObject instances expose `.shape` as a plain object of ZodType values.
+  // We check for the property's existence and type defensively — the contract
+  // type declares `props: z.ZodType` (opaque), so we cannot rely on a specific
+  // Zod class hierarchy.
+  if (
+    zodSchema !== null &&
+    typeof zodSchema === 'object' &&
+    'shape' in zodSchema &&
+    zodSchema.shape !== null &&
+    typeof zodSchema.shape === 'object'
+  ) {
+    return Object.keys(zodSchema.shape);
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -85,28 +85,28 @@ function extractPropKeys(zodSchema: unknown): readonly string[] {
  * @see Design Choice SI2 — locked field set.
  */
 export function buildEmbeddingText(contract: ComponentContract): string {
-    const parts: string[] = [
-        // 1. Component name
-        contract.name,
+  const parts: string[] = [
+    // 1. Component name
+    contract.name,
 
-        // 2. Description
-        contract.description,
+    // 2. Description
+    contract.description,
 
-        // 3. Category
-        contract.category,
+    // 3. Category
+    contract.category,
 
-        // 4. Tags (space-separated)
-        contract.tags.join(' '),
+    // 4. Tags (space-separated)
+    contract.tags.join(' '),
 
-        // 5. Prop keys extracted from Zod schema (space-separated)
-        extractPropKeys(contract.props).join(' '),
+    // 5. Prop keys extracted from Zod schema (space-separated)
+    extractPropKeys(contract.props).join(' '),
 
-        // 6. Accessibility role
-        contract.accessibility.role,
-    ];
+    // 6. Accessibility role
+    contract.accessibility.role,
+  ];
 
-    // Collapse multiple spaces and trim outer whitespace for a clean
-    // embedding input. Avoids double-spaces from empty tag arrays or
-    // schemas with no extractable prop keys.
-    return parts.join(' ').replace(/\s+/g, ' ').trim();
+  // Collapse multiple spaces and trim outer whitespace for a clean
+  // embedding input. Avoids double-spaces from empty tag arrays or
+  // schemas with no extractable prop keys.
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
 }

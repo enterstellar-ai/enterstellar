@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/types/forge
+ * @module @enterstellar/types/forge
  * @description Forge types — runtime component generation and Cold Path pipeline.
  *
  * The Forge generates temporary ComponentContracts when the registry has
@@ -28,24 +28,24 @@ import type { CompilationResult } from './compiler.js';
  * @see Design Choice F8 (auto-routing)
  */
 export type ForgeResult = {
-    /** Whether the forge successfully generated a valid contract. */
-    readonly success: boolean;
-    /**
-     * The generated ComponentContract, or `null` on failure.
-     * Marked with `_meta.forged = true`.
-     * Named with prefix `__forged_{name}_{8-char-hash}` (F13).
-     */
-    readonly contract: ComponentContract | null;
-    /** Compilation result — forged contracts MUST pass the compiler (L3, L13). */
-    readonly compilationResult: CompilationResult | null;
-    /** Whether the fallback component was used instead. */
-    readonly fallbackUsed: boolean;
-    /**
-     * Which forge mode generated this contract.
-     *
-     * @see Appendix D Ruling 7
-     */
-    readonly forgeMode: 'local' | 'cloud';
+  /** Whether the forge successfully generated a valid contract. */
+  readonly success: boolean;
+  /**
+   * The generated ComponentContract, or `null` on failure.
+   * Marked with `_meta.forged = true`.
+   * Named with prefix `__forged_{name}_{8-char-hash}` (F13).
+   */
+  readonly contract: ComponentContract | null;
+  /** Compilation result — forged contracts MUST pass the compiler (L3, L13). */
+  readonly compilationResult: CompilationResult | null;
+  /** Whether the fallback component was used instead. */
+  readonly fallbackUsed: boolean;
+  /**
+   * Which forge mode generated this contract.
+   *
+   * @see Appendix D Ruling 7
+   */
+  readonly forgeMode: 'local' | 'cloud';
 };
 
 /**
@@ -55,18 +55,18 @@ export type ForgeResult = {
  * @see Bible §4.10 — Cold Path Rules
  */
 export type ForgeTraceRecord = {
-    /** Slugified intent name. */
-    readonly intentSlug: string;
-    /** Raw intent string hash (SHA-256). */
-    readonly intentHash: string;
-    /** Which forge mode was used. */
-    readonly forgeMode: 'local' | 'cloud';
-    /** Whether the forge succeeded. */
-    readonly success: boolean;
-    /** ISO 8601 timestamp. */
-    readonly timestamp: string;
-    /** Optional context provided during forge invocation. */
-    readonly context?: Readonly<Record<string, unknown>>;
+  /** Slugified intent name. */
+  readonly intentSlug: string;
+  /** Raw intent string hash (SHA-256). */
+  readonly intentHash: string;
+  /** Which forge mode was used. */
+  readonly forgeMode: 'local' | 'cloud';
+  /** Whether the forge succeeded. */
+  readonly success: boolean;
+  /** ISO 8601 timestamp. */
+  readonly timestamp: string;
+  /** Optional context provided during forge invocation. */
+  readonly context?: Readonly<Record<string, unknown>>;
 };
 
 /**
@@ -75,12 +75,12 @@ export type ForgeTraceRecord = {
  * @see Design Choices F10–F12
  */
 export type ColdPathConfig = {
-    /** Whether the Cold Path is enabled. */
-    readonly enabled: boolean;
-    /** Minimum occurrences of a similar intent before clustering. Default: 5 (F11). */
-    readonly clusterThreshold: number;
-    /** Whether to auto-queue clustered contracts for HITL review. */
-    readonly autoPromote: boolean;
+  /** Whether the Cold Path is enabled. */
+  readonly enabled: boolean;
+  /** Minimum occurrences of a similar intent before clustering. Default: 5 (F11). */
+  readonly clusterThreshold: number;
+  /** Whether to auto-queue clustered contracts for HITL review. */
+  readonly autoPromote: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -93,31 +93,31 @@ export type ColdPathConfig = {
  * @see Design Choice T7
  */
 export const ForgeResultSchema = z.object({
-    success: z.boolean(),
-    /**
-     * `z.unknown().nullable()` instead of `ComponentContractSchema.nullable()`
-     * to avoid circular schema references (forge → contract → compiler).
-     * TS type is properly typed as `ComponentContract | null`.
-     */
-    contract: z.unknown().nullable(),
-    /**
-     * `z.unknown().nullable()` for the same reason — avoids circular
-     * schema dependency with `CompilationResultSchema`.
-     * TS type is properly typed as `CompilationResult | null`.
-     */
-    compilationResult: z.unknown().nullable(),
-    fallbackUsed: z.boolean(),
-    forgeMode: z.enum(['local', 'cloud']),
+  success: z.boolean(),
+  /**
+   * `z.unknown().nullable()` instead of `ComponentContractSchema.nullable()`
+   * to avoid circular schema references (forge → contract → compiler).
+   * TS type is properly typed as `ComponentContract | null`.
+   */
+  contract: z.unknown().nullable(),
+  /**
+   * `z.unknown().nullable()` for the same reason — avoids circular
+   * schema dependency with `CompilationResultSchema`.
+   * TS type is properly typed as `CompilationResult | null`.
+   */
+  compilationResult: z.unknown().nullable(),
+  fallbackUsed: z.boolean(),
+  forgeMode: z.enum(['local', 'cloud']),
 });
 
 /**
  * Zod schema for validating a `ForgeTraceRecord` at runtime.
  */
 export const ForgeTraceRecordSchema = z.object({
-    intentSlug: z.string().min(1),
-    intentHash: z.string().min(1),
-    forgeMode: z.enum(['local', 'cloud']),
-    success: z.boolean(),
-    timestamp: z.string().min(1),
-    context: z.record(z.string(), z.unknown()).optional(),
+  intentSlug: z.string().min(1),
+  intentHash: z.string().min(1),
+  forgeMode: z.enum(['local', 'cloud']),
+  success: z.boolean(),
+  timestamp: z.string().min(1),
+  context: z.record(z.string(), z.unknown()).optional(),
 });

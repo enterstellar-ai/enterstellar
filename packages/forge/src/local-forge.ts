@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge/local-forge
+ * @module @enterstellar/forge/local-forge
  * @description LocalForge — template-based contract generation.
  *
  * LocalForge generates `ComponentContract` instances from the pre-approved
@@ -22,9 +22,9 @@
  */
 
 import { z } from 'zod';
-import { createComponentId } from '@enterstellar-ai/types';
+import { createComponentId } from '@enterstellar/types';
 
-import type { ComponentCategory, ComponentContract, ComponentIntent } from '@enterstellar-ai/types';
+import type { ComponentCategory, ComponentContract, ComponentIntent } from '@enterstellar/types';
 
 import type { ForgeConstraints, ForgeTemplate, ForgeTemplateSlot } from './types.js';
 import type { TemplateRegistry } from './templates/registry.js';
@@ -42,18 +42,18 @@ import { generateForgedName } from './naming.js';
  * @returns A default value matching the slot type.
  */
 function getSlotDefault(slot: ForgeTemplateSlot): unknown {
-    switch (slot.type) {
-        case 'string':
-            return '';
-        case 'number':
-            return 0;
-        case 'boolean':
-            return false;
-        case 'string[]':
-            return [];
-        case 'record':
-            return {};
-    }
+  switch (slot.type) {
+    case 'string':
+      return '';
+    case 'number':
+      return 0;
+    case 'boolean':
+      return false;
+    case 'string[]':
+      return [];
+    case 'record':
+      return {};
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -75,36 +75,34 @@ function getSlotDefault(slot: ForgeTemplateSlot): unknown {
  * @param slots - The template slots to build the schema from.
  * @returns A Zod object schema representing the slot surface.
  */
-function buildSlotsSchema(
-    slots: readonly ForgeTemplateSlot[],
-): z.ZodType {
-    const shape: Record<string, z.ZodType> = {};
+function buildSlotsSchema(slots: readonly ForgeTemplateSlot[]): z.ZodType {
+  const shape: Record<string, z.ZodType> = {};
 
-    for (const slot of slots) {
-        let validator: z.ZodType;
+  for (const slot of slots) {
+    let validator: z.ZodType;
 
-        switch (slot.type) {
-            case 'string':
-                validator = z.string();
-                break;
-            case 'number':
-                validator = z.number();
-                break;
-            case 'boolean':
-                validator = z.boolean();
-                break;
-            case 'string[]':
-                validator = z.array(z.string());
-                break;
-            case 'record':
-                validator = z.record(z.string(), z.unknown());
-                break;
-        }
-
-        shape[slot.name] = slot.required ? validator : validator.optional();
+    switch (slot.type) {
+      case 'string':
+        validator = z.string();
+        break;
+      case 'number':
+        validator = z.number();
+        break;
+      case 'boolean':
+        validator = z.boolean();
+        break;
+      case 'string[]':
+        validator = z.array(z.string());
+        break;
+      case 'record':
+        validator = z.record(z.string(), z.unknown());
+        break;
     }
 
-    return z.object(shape);
+    shape[slot.name] = slot.required ? validator : validator.optional();
+  }
+
+  return z.object(shape);
 }
 
 // ---------------------------------------------------------------------------
@@ -122,24 +120,24 @@ function buildSlotsSchema(
  * @returns Extracted props matching the template's slot surface.
  */
 function extractSlotProps(
-    intent: ComponentIntent,
-    slots: readonly ForgeTemplateSlot[],
+  intent: ComponentIntent,
+  slots: readonly ForgeTemplateSlot[],
 ): Readonly<Record<string, unknown>> {
-    const props: Record<string, unknown> = {};
+  const props: Record<string, unknown> = {};
 
-    for (const slot of slots) {
-        const intentValue: unknown = intent.props[slot.name];
+  for (const slot of slots) {
+    const intentValue: unknown = intent.props[slot.name];
 
-        if (intentValue !== undefined) {
-            props[slot.name] = intentValue;
-        } else if (slot.required) {
-            // Required slot with no intent value → use default
-            props[slot.name] = getSlotDefault(slot);
-        }
-        // Optional slot with no intent value → omit entirely
+    if (intentValue !== undefined) {
+      props[slot.name] = intentValue;
+    } else if (slot.required) {
+      // Required slot with no intent value → use default
+      props[slot.name] = getSlotDefault(slot);
     }
+    // Optional slot with no intent value → omit entirely
+  }
 
-    return props;
+  return props;
 }
 
 // ---------------------------------------------------------------------------
@@ -154,7 +152,7 @@ function extractSlotProps(
  * @returns The resolved aria label string.
  */
 function resolveAriaLabel(template: ForgeTemplate, componentName: string): string {
-    return template.accessibility.ariaLabel.replace('{name}', componentName);
+  return template.accessibility.ariaLabel.replace('{name}', componentName);
 }
 
 // ---------------------------------------------------------------------------
@@ -190,89 +188,89 @@ function resolveAriaLabel(template: ForgeTemplate, componentName: string): strin
  * @see Design Choice F13 — naming convention.
  */
 export function forgeLocal(
-    intent: ComponentIntent,
-    templateRegistry: TemplateRegistry,
-    constraints: ForgeConstraints,
-    category?: ComponentCategory,
+  intent: ComponentIntent,
+  templateRegistry: TemplateRegistry,
+  constraints: ForgeConstraints,
+  category?: ComponentCategory,
 ): ComponentContract | null {
-    // -----------------------------------------------------------------------
-    // Step 1: Determine the category to match against
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 1: Determine the category to match against
+  // -----------------------------------------------------------------------
 
-    // Use explicit category if provided, else derive from intent.
-    // Intent component names like "PatientVitals" suggest 'clinical',
-    // but without semantic analysis, we default to 'data-display'.
-    const targetCategory: ComponentCategory = category ?? 'data-display';
+  // Use explicit category if provided, else derive from intent.
+  // Intent component names like "PatientVitals" suggest 'clinical',
+  // but without semantic analysis, we default to 'data-display'.
+  const targetCategory: ComponentCategory = category ?? 'data-display';
 
-    // -----------------------------------------------------------------------
-    // Step 2: Query the template registry
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 2: Query the template registry
+  // -----------------------------------------------------------------------
 
-    const template = templateRegistry.matchTemplate(targetCategory);
+  const template = templateRegistry.matchTemplate(targetCategory);
 
-    if (template === undefined) {
-        // No matching template — caller should escalate to CloudForge.
-        return null;
-    }
+  if (template === undefined) {
+    // No matching template — caller should escalate to CloudForge.
+    return null;
+  }
 
-    // -----------------------------------------------------------------------
-    // Step 3: Guard against disallowed patterns
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 3: Guard against disallowed patterns
+  // -----------------------------------------------------------------------
 
-    const allowedPatterns = constraints.componentPatterns as readonly string[];
-    if (!allowedPatterns.includes(template.name)) {
-        // Template exists but is not in the allowed pattern list — skip.
-        return null;
-    }
+  const allowedPatterns = constraints.componentPatterns as readonly string[];
+  if (!allowedPatterns.includes(template.name)) {
+    // Template exists but is not in the allowed pattern list — skip.
+    return null;
+  }
 
-    // -----------------------------------------------------------------------
-    // Step 4: Extract props from intent → template slots
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 4: Extract props from intent → template slots
+  // -----------------------------------------------------------------------
 
-    const extractedProps = extractSlotProps(intent, template.slots);
+  const extractedProps = extractSlotProps(intent, template.slots);
 
-    // -----------------------------------------------------------------------
-    // Step 5: Generate forged name
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 5: Generate forged name
+  // -----------------------------------------------------------------------
 
-    const forgedName = generateForgedName(intent.component);
+  const forgedName = generateForgedName(intent.component);
 
-    // -----------------------------------------------------------------------
-    // Step 6: Build the Zod schema for the contract's props
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 6: Build the Zod schema for the contract's props
+  // -----------------------------------------------------------------------
 
-    const propsSchema = buildSlotsSchema(template.slots);
+  const propsSchema = buildSlotsSchema(template.slots);
 
-    // -----------------------------------------------------------------------
-    // Step 7: Assemble the ComponentContract
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 7: Assemble the ComponentContract
+  // -----------------------------------------------------------------------
 
-    const contract: ComponentContract = {
-        name: forgedName,
-        id: createComponentId(forgedName),
-        description: `Forged ${template.name} component for "${intent.component}".`,
-        category: targetCategory,
-        tags: ['forged', template.name, intent.component],
-        props: propsSchema,
-        tokens: { ...template.tokens },
-        accessibility: {
-            role: template.accessibility.role,
-            ariaLabel: resolveAriaLabel(template, intent.component),
-            announceOnUpdate: template.accessibility.announceOnUpdate,
-        },
-        states: { ...template.states },
-        examples: [
-            {
-                intent: intent.component,
-                props: extractedProps,
-            },
-        ],
-        _meta: {
-            forged: true,
-            version: '0.0.0',
-            createdAt: new Date().toISOString(),
-        },
-    };
+  const contract: ComponentContract = {
+    name: forgedName,
+    id: createComponentId(forgedName),
+    description: `Forged ${template.name} component for "${intent.component}".`,
+    category: targetCategory,
+    tags: ['forged', template.name, intent.component],
+    props: propsSchema,
+    tokens: { ...template.tokens },
+    accessibility: {
+      role: template.accessibility.role,
+      ariaLabel: resolveAriaLabel(template, intent.component),
+      announceOnUpdate: template.accessibility.announceOnUpdate,
+    },
+    states: { ...template.states },
+    examples: [
+      {
+        intent: intent.component,
+        props: extractedProps,
+      },
+    ],
+    _meta: {
+      forged: true,
+      version: '0.0.0',
+      createdAt: new Date().toISOString(),
+    },
+  };
 
-    return Object.freeze(contract);
+  return Object.freeze(contract);
 }

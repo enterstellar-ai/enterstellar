@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration
+ * @module @enterstellar/migration
  * @description Enterstellar migration pipeline — converts existing component libraries
  * into the Enterstellar `ComponentContract` standard.
  *
@@ -8,15 +8,15 @@
  * 2. **Enrichment** — Opt-in LLM enrichment via `EnrichmentProvider`
  * 3. **Assembly** — `StructuralManifest` + `SemanticOverlay` → `.contract.ts`
  *
- * The CLI (`@enterstellar-ai/cli`) provides command routing and terminal output.
- * The cloud (`@enterstellar-ai/cloud`) imports `extractManifest()` for server-side use.
+ * The CLI (`@enterstellar/cli`) provides command routing and terminal output.
+ * The cloud (`@enterstellar/cloud`) imports `extractManifest()` for server-side use.
  *
  * **L15 compliance:** Zero framework imports.
  *
  * @example
  * ```ts
- * import { extractManifest } from '@enterstellar-ai/migration';
- * import type { StructuralManifest, ExtractResult } from '@enterstellar-ai/migration';
+ * import { extractManifest } from '@enterstellar/migration';
+ * import type { StructuralManifest, ExtractResult } from '@enterstellar/migration';
  *
  * const result: ExtractResult = extractManifest(sourceCode, 'Button.tsx');
  * // result.manifest — the StructuralManifest for the component
@@ -32,10 +32,7 @@
 // ---------------------------------------------------------------------------
 // Phase 1: Extraction
 // ---------------------------------------------------------------------------
-export {
-    extractManifest,
-    createExtractionProject
-} from './extract/index.js';
+export { extractManifest, createExtractionProject } from './extract/index.js';
 
 // ---------------------------------------------------------------------------
 // Phase 1a: Lightweight Scan (for `enterstellar init` existing-project detection)
@@ -47,59 +44,55 @@ export type { ComponentScanResult } from './extract/scan-lightweight.js';
 // Phase 2: Enrichment
 // ---------------------------------------------------------------------------
 export type {
-    EnrichmentProvider,
-    EnrichmentErrorCode,
-    EnrichmentConfig,
+  EnrichmentProvider,
+  EnrichmentErrorCode,
+  EnrichmentConfig,
 } from './enrichment/index.js';
 export {
-    EnrichmentError,
-    resolveProvider,
-    enrichManifest,
-    mergeOverlay,
-    ENRICHABLE_FIELD_KEYS,
+  EnrichmentError,
+  resolveProvider,
+  enrichManifest,
+  mergeOverlay,
+  ENRICHABLE_FIELD_KEYS,
 } from './enrichment/index.js';
 
 // ---------------------------------------------------------------------------
 // Phase 3: Assembly
 // ---------------------------------------------------------------------------
-export {
-    assembleContract,
-    assembleTest,
-    generateExampleProps,
-} from './assembly/index.js';
+export { assembleContract, assembleTest, generateExampleProps } from './assembly/index.js';
 export type { ContractAssemblyResult } from './assembly/index.js';
 
 // ---------------------------------------------------------------------------
 // Pipeline Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    ManifestFieldSource,
-    SourceLocation,
-    EnrichableField,
-    GenericParam,
-    StructuralManifest,
-    EnrichableFieldKey,
-    EnrichedFieldPatch,
-    SemanticOverlay,
-    EnrichDiagnostic,
-    EnrichResult,
-    ExtractDiagnostic,
-    ExtractResult,
-    MigrationOutcome,
-    MigrationProvenance,
-    MigrationResult,
-    MigrateBatchSummary,
-    AssemblyOptions,
-    ServerExtractRequest,
-    ServerExtractResponse,
+  ManifestFieldSource,
+  SourceLocation,
+  EnrichableField,
+  GenericParam,
+  StructuralManifest,
+  EnrichableFieldKey,
+  EnrichedFieldPatch,
+  SemanticOverlay,
+  EnrichDiagnostic,
+  EnrichResult,
+  ExtractDiagnostic,
+  ExtractResult,
+  MigrationOutcome,
+  MigrationProvenance,
+  MigrationResult,
+  MigrateBatchSummary,
+  AssemblyOptions,
+  ServerExtractRequest,
+  ServerExtractResponse,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Zod Schemas (public — for JSON serialization validation)
 // ---------------------------------------------------------------------------
 export {
-    MigrationResultSchema,
-    MigrateBatchSummarySchema,
-    SemanticOverlaySchema,
-    ServerExtractRequestSchema,
+  MigrationResultSchema,
+  MigrateBatchSummarySchema,
+  SemanticOverlaySchema,
+  ServerExtractRequestSchema,
 } from './types.js';

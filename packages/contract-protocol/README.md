@@ -1,8 +1,8 @@
-# @enterstellar-ai/contract-protocol
+# @enterstellar/contract-protocol
 
 > Language-agnostic JSON Schema definitions of Enterstellar's core data contracts — the Enterstellar Protocol Spec for non-TypeScript renderers.
 
-This package is the interoperability bridge. It publishes 8 JSON Schemas (Draft-07) that formalize the Enterstellar pipeline contracts: `ComponentContract`, `ComponentIntent`, `CompilationResult`, `AgentTrace`, `ForgeSignal`, `UserSignal`, `ZoneConfig`, and `DesignTokens (DTCG)`. Every schema is auto-generated from `@enterstellar-ai/types` Zod schemas (except DTCG, which is hand-crafted per CP9). Non-TypeScript environments (Swift, Kotlin, Python, Rust) use these schemas directly — no `@enterstellar-ai/types` dependency required.
+This package is the interoperability bridge. It publishes 8 JSON Schemas (Draft-07) that formalize the Enterstellar pipeline contracts: `ComponentContract`, `ComponentIntent`, `CompilationResult`, `AgentTrace`, `ForgeSignal`, `UserSignal`, `ZoneConfig`, and `DesignTokens (DTCG)`. Every schema is auto-generated from `@enterstellar/types` Zod schemas (except DTCG, which is hand-crafted per CP9). Non-TypeScript environments (Swift, Kotlin, Python, Rust) use these schemas directly — no `@enterstellar/types` dependency required.
 
 ## Quick Start
 
@@ -10,10 +10,10 @@ This package is the interoperability bridge. It publishes 8 JSON Schemas (Draft-
 
 ```bash
 # Validate a contract file against the schema
-npx @enterstellar-ai/contract-protocol validate component-contract my-contract.json
+npx @enterstellar/contract-protocol validate component-contract my-contract.json
 
 # Validate a telemetry signal
-npx @enterstellar-ai/contract-protocol validate forge-signal signal.json
+npx @enterstellar/contract-protocol validate forge-signal signal.json
 ```
 
 **Python — runtime validation:**
@@ -137,14 +137,14 @@ This package has no runtime configuration. It ships static JSON files only.
 **Schema generation:**
 
 ```bash
-# Regenerate all schemas from @enterstellar-ai/types Zod schemas
-pnpm --filter @enterstellar-ai/contract-protocol run generate
+# Regenerate all schemas from @enterstellar/types Zod schemas
+pnpm --filter @enterstellar/contract-protocol run generate
 
 # Verify no drift (CI check)
-pnpm --filter @enterstellar-ai/contract-protocol run generate && git diff --exit-code schemas/
+pnpm --filter @enterstellar/contract-protocol run generate && git diff --exit-code schemas/
 ```
 
-**Versioning:** Schema versions are locked to `@enterstellar-ai/types` — when `@enterstellar-ai/types` is `1.2.0`, `@enterstellar-ai/contract-protocol` is `1.2.0` (CP1).
+**Versioning:** Schema versions are locked to `@enterstellar/types` — when `@enterstellar/types` is `1.2.0`, `@enterstellar/contract-protocol` is `1.2.0` (CP1).
 
 ## See Also
 

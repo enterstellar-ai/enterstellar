@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/__tests__/parse-annotations
+ * @module @enterstellar/cli/__tests__/parse-annotations
  * @description Unit tests for the annotation parser.
  *
  * Validates:
@@ -96,112 +96,110 @@ export const Header = defineContract({
 // ---------------------------------------------------------------------------
 
 describe('parseAnnotations', () => {
-    it('parses a single-line @enterstellar-review annotation', () => {
-        const result = parseAnnotations(SINGLE_REVIEW, 'Button.contract.ts');
+  it('parses a single-line @enterstellar-review annotation', () => {
+    const result = parseAnnotations(SINGLE_REVIEW, 'Button.contract.ts');
 
-        expect(result.filePath).toBe('Button.contract.ts');
-        expect(result.annotations).toHaveLength(1);
+    expect(result.filePath).toBe('Button.contract.ts');
+    expect(result.annotations).toHaveLength(1);
 
-        const ann = result.annotations[0];
-        expect(ann).toBeDefined();
-        expect(ann!.type).toBe('review');
-        expect(ann!.rule).toBe('GENERIC_TYPE');
-        expect(ann!.field).toBe('props');
-        expect(ann!.reason).toBe(
-            'Component has generic type parameters: <T>. Generated schema uses placeholder types.',
-        );
-        expect(ann!.line).toBe(2); // 1-indexed, annotation is on line 2 of trimmed content
-    });
+    const ann = result.annotations[0];
+    expect(ann).toBeDefined();
+    expect(ann!.type).toBe('review');
+    expect(ann!.rule).toBe('GENERIC_TYPE');
+    expect(ann!.field).toBe('props');
+    expect(ann!.reason).toBe(
+      'Component has generic type parameters: <T>. Generated schema uses placeholder types.',
+    );
+    expect(ann!.line).toBe(2); // 1-indexed, annotation is on line 2 of trimmed content
+  });
 
-    it('parses a single-line @enterstellar-warn annotation (no rule= field, Audit E1)', () => {
-        const result = parseAnnotations(SINGLE_WARN, 'Card.contract.ts');
+  it('parses a single-line @enterstellar-warn annotation (no rule= field, Audit E1)', () => {
+    const result = parseAnnotations(SINGLE_WARN, 'Card.contract.ts');
 
-        expect(result.annotations).toHaveLength(1);
+    expect(result.annotations).toHaveLength(1);
 
-        const ann = result.annotations[0];
-        expect(ann).toBeDefined();
-        expect(ann!.type).toBe('warn');
-        expect(ann!.field).toBe('description');
-        expect(ann!.reason).toBe(
-            'Description derived from heuristics. Review and refine.',
-        );
+    const ann = result.annotations[0];
+    expect(ann).toBeDefined();
+    expect(ann!.type).toBe('warn');
+    expect(ann!.field).toBe('description');
+    expect(ann!.reason).toBe('Description derived from heuristics. Review and refine.');
 
-        // Audit M6: rule is absent (not undefined) for @enterstellar-warn.
-        // With exactOptionalPropertyTypes, checking 'rule' in ann
-        // verifies absence vs. explicit undefined.
-        expect('rule' in ann!).toBe(false);
-    });
+    // Audit M6: rule is absent (not undefined) for @enterstellar-warn.
+    // With exactOptionalPropertyTypes, checking 'rule' in ann
+    // verifies absence vs. explicit undefined.
+    expect('rule' in ann!).toBe(false);
+  });
 
-    it('parses a multi-line @enterstellar-review annotation with // continuation (Audit M3)', () => {
-        const result = parseAnnotations(MULTI_LINE_REVIEW, 'DataTable.contract.ts');
+  it('parses a multi-line @enterstellar-review annotation with // continuation (Audit M3)', () => {
+    const result = parseAnnotations(MULTI_LINE_REVIEW, 'DataTable.contract.ts');
 
-        expect(result.annotations).toHaveLength(1);
+    expect(result.annotations).toHaveLength(1);
 
-        const ann = result.annotations[0];
-        expect(ann).toBeDefined();
-        expect(ann!.type).toBe('review');
-        expect(ann!.rule).toBe('GENERIC_TYPE');
-        expect(ann!.field).toBe('props.data');
-        // Multi-line reason is joined with spaces.
-        expect(ann!.reason).toContain('Generic type parameter');
-        expect(ann!.reason).toContain('cannot be statically expressed');
-        expect(ann!.reason).toContain('placeholder.');
-    });
+    const ann = result.annotations[0];
+    expect(ann).toBeDefined();
+    expect(ann!.type).toBe('review');
+    expect(ann!.rule).toBe('GENERIC_TYPE');
+    expect(ann!.field).toBe('props.data');
+    // Multi-line reason is joined with spaces.
+    expect(ann!.reason).toContain('Generic type parameter');
+    expect(ann!.reason).toContain('cannot be statically expressed');
+    expect(ann!.reason).toContain('placeholder.');
+  });
 
-    it('parses mixed @enterstellar-review and @enterstellar-warn annotations in one file', () => {
-        const result = parseAnnotations(MIXED_ANNOTATIONS, 'Form.contract.ts');
+  it('parses mixed @enterstellar-review and @enterstellar-warn annotations in one file', () => {
+    const result = parseAnnotations(MIXED_ANNOTATIONS, 'Form.contract.ts');
 
-        expect(result.annotations).toHaveLength(3);
+    expect(result.annotations).toHaveLength(3);
 
-        // First: @enterstellar-review
-        const review = result.annotations[0];
-        expect(review).toBeDefined();
-        expect(review!.type).toBe('review');
-        expect(review!.rule).toBe('GENERIC_TYPE');
-        expect(review!.field).toBe('props.fields');
+    // First: @enterstellar-review
+    const review = result.annotations[0];
+    expect(review).toBeDefined();
+    expect(review!.type).toBe('review');
+    expect(review!.rule).toBe('GENERIC_TYPE');
+    expect(review!.field).toBe('props.fields');
 
-        // Second: @enterstellar-warn (description)
-        const warn1 = result.annotations[1];
-        expect(warn1).toBeDefined();
-        expect(warn1!.type).toBe('warn');
-        expect(warn1!.field).toBe('description');
-        expect('rule' in warn1!).toBe(false);
+    // Second: @enterstellar-warn (description)
+    const warn1 = result.annotations[1];
+    expect(warn1).toBeDefined();
+    expect(warn1!.type).toBe('warn');
+    expect(warn1!.field).toBe('description');
+    expect('rule' in warn1!).toBe(false);
 
-        // Third: @enterstellar-warn (category)
-        const warn2 = result.annotations[2];
-        expect(warn2).toBeDefined();
-        expect(warn2!.type).toBe('warn');
-        expect(warn2!.field).toBe('category');
-    });
+    // Third: @enterstellar-warn (category)
+    const warn2 = result.annotations[2];
+    expect(warn2).toBeDefined();
+    expect(warn2!.type).toBe('warn');
+    expect(warn2!.field).toBe('category');
+  });
 
-    it('skips malformed annotations gracefully (missing field= key)', () => {
-        const result = parseAnnotations(MALFORMED, 'Widget.contract.ts');
+  it('skips malformed annotations gracefully (missing field= key)', () => {
+    const result = parseAnnotations(MALFORMED, 'Widget.contract.ts');
 
-        // The malformed annotation (missing field=) should be skipped.
-        expect(result.annotations).toHaveLength(0);
-    });
+    // The malformed annotation (missing field=) should be skipped.
+    expect(result.annotations).toHaveLength(0);
+  });
 
-    it('returns empty annotations array for files with no annotations', () => {
-        const result = parseAnnotations(NO_ANNOTATIONS, 'SimpleButton.contract.ts');
+  it('returns empty annotations array for files with no annotations', () => {
+    const result = parseAnnotations(NO_ANNOTATIONS, 'SimpleButton.contract.ts');
 
-        expect(result.filePath).toBe('SimpleButton.contract.ts');
-        expect(result.annotations).toHaveLength(0);
-    });
+    expect(result.filePath).toBe('SimpleButton.contract.ts');
+    expect(result.annotations).toHaveLength(0);
+  });
 
-    it('parses multiple @enterstellar-warn annotations correctly', () => {
-        const result = parseAnnotations(MULTIPLE_WARNS, 'Header.contract.ts');
+  it('parses multiple @enterstellar-warn annotations correctly', () => {
+    const result = parseAnnotations(MULTIPLE_WARNS, 'Header.contract.ts');
 
-        expect(result.annotations).toHaveLength(3);
+    expect(result.annotations).toHaveLength(3);
 
-        // All should be 'warn' type with no rule.
-        for (const ann of result.annotations) {
-            expect(ann.type).toBe('warn');
-            expect('rule' in ann).toBe(false);
-        }
+    // All should be 'warn' type with no rule.
+    for (const ann of result.annotations) {
+      expect(ann.type).toBe('warn');
+      expect('rule' in ann).toBe(false);
+    }
 
-        // Verify field paths.
-        expect(result.annotations[0]!.field).toBe('description');
-        expect(result.annotations[1]!.field).toBe('tags');
-        expect(result.annotations[2]!.field).toBe('tokens');
-    });
+    // Verify field paths.
+    expect(result.annotations[0]!.field).toBe('description');
+    expect(result.annotations[1]!.field).toBe('tags');
+    expect(result.annotations[2]!.field).toBe('tokens');
+  });
 });

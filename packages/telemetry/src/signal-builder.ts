@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/signal-builder
+ * @module @enterstellar/telemetry/signal-builder
  * @description Builds a complete `ForgeSignal` from partial input.
  *
  * The signal builder is the central assembly point:
@@ -12,8 +12,8 @@
  * @see Design Choice TL8 — targeted PII check on componentName.
  */
 
-import type { ForgeSignal, SignalPlatform } from '@enterstellar-ai/types';
-import { ENTERSTELLAR_TYPES_VERSION } from '@enterstellar-ai/types';
+import type { ForgeSignal, SignalPlatform } from '@enterstellar/types';
+import { ENTERSTELLAR_TYPES_VERSION } from '@enterstellar/types';
 
 import { hashIntent } from './hash.js';
 import { checkComponentNamePii } from './pii-guard.js';
@@ -28,11 +28,11 @@ import type { ForgeSignalInput } from './types.js';
  * These values do not change per-signal and are set by the collector factory.
  */
 export type SignalBuilderConfig = {
-    /** Platform identifier. Auto-detected by the renderer package. */
-    readonly platform: SignalPlatform;
+  /** Platform identifier. Auto-detected by the renderer package. */
+  readonly platform: SignalPlatform;
 
-    /** Number of components in the registry at creation time. */
-    readonly registrySize: number;
+  /** Number of components in the registry at creation time. */
+  readonly registrySize: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -79,35 +79,35 @@ export type SignalBuilderConfig = {
  * @see Design Choice TL3
  */
 export async function buildSignal(
-    input: ForgeSignalInput,
-    config: SignalBuilderConfig,
+  input: ForgeSignalInput,
+  config: SignalBuilderConfig,
 ): Promise<ForgeSignal> {
-    // TL3: Hash the raw intent — PII never leaves the device.
-    const intentHash = await hashIntent(input.rawIntent);
+  // TL3: Hash the raw intent — PII never leaves the device.
+  const intentHash = await hashIntent(input.rawIntent);
 
-    // TL8: Targeted PII check on componentName.
-    const piiResult = checkComponentNamePii(input.componentName);
-    if (piiResult.flagged) {
-        // Log a warning — do NOT throw. Telemetry must not crash the app.
-        console.warn(`[@enterstellar-ai/telemetry] PII guard: ${piiResult.reason ?? 'unknown reason'}`);
-    }
+  // TL8: Targeted PII check on componentName.
+  const piiResult = checkComponentNamePii(input.componentName);
+  if (piiResult.flagged) {
+    // Log a warning — do NOT throw. Telemetry must not crash the app.
+    console.warn(`[@enterstellar/telemetry] PII guard: ${piiResult.reason ?? 'unknown reason'}`);
+  }
 
-    // TL2: Build the full signal, auto-filling common fields.
-    const signal: ForgeSignal = {
-        intentHash,
-        componentName: piiResult.name,
-        intentCategory: input.intentCategory,
-        compilationStatus: input.compilationStatus,
-        forgeMode: input.forgeMode,
-        forgeUsed: input.forgeUsed,
-        latencyMs: input.latencyMs,
-        selfCorrectionAttempts: input.selfCorrectionAttempts,
-        correctionTokensUsed: input.correctionTokensUsed,
-        timestamp: new Date().toISOString(),
-        sdkVersion: ENTERSTELLAR_TYPES_VERSION,
-        platform: config.platform,
-        registrySize: config.registrySize,
-    };
+  // TL2: Build the full signal, auto-filling common fields.
+  const signal: ForgeSignal = {
+    intentHash,
+    componentName: piiResult.name,
+    intentCategory: input.intentCategory,
+    compilationStatus: input.compilationStatus,
+    forgeMode: input.forgeMode,
+    forgeUsed: input.forgeUsed,
+    latencyMs: input.latencyMs,
+    selfCorrectionAttempts: input.selfCorrectionAttempts,
+    correctionTokensUsed: input.correctionTokensUsed,
+    timestamp: new Date().toISOString(),
+    sdkVersion: ENTERSTELLAR_TYPES_VERSION,
+    platform: config.platform,
+    registrySize: config.registrySize,
+  };
 
-    return signal;
+  return signal;
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/review/parse-annotations
+ * @module @enterstellar/cli/review/parse-annotations
  * @description Parses `@enterstellar-review` and `@enterstellar-warn` structured annotations
  * from `.contract.ts` file content.
  *
@@ -44,28 +44,28 @@
  * or absent — never `undefined`.
  */
 export type ParsedAnnotation = {
-    /** The annotation type: `'review'` or `'warn'`. */
-    readonly type: 'review' | 'warn';
-    /**
-     * 1-indexed line number where the annotation starts in the source file.
-     * For multi-line annotations, this is the line of the opening marker.
-     */
-    readonly line: number;
-    /**
-     * The rule ID (e.g., `'GENERIC_TYPE'`).
-     *
-     * Present for `@enterstellar-review` annotations, absent for `@enterstellar-warn`.
-     * With `exactOptionalPropertyTypes` (Tier 3), this is `string` or
-     * absent — never explicitly `undefined`.
-     *
-     * @see Audit E1 — `@enterstellar-warn` has no `rule=` field
-     * @see Audit M6 — `rule` must be optional
-     */
-    readonly rule?: string;
-    /** The field path (e.g., `'props.data'`, `'category'`, `'description'`). */
-    readonly field: string;
-    /** Human-readable reason string (may span multiple source lines). */
-    readonly reason: string;
+  /** The annotation type: `'review'` or `'warn'`. */
+  readonly type: 'review' | 'warn';
+  /**
+   * 1-indexed line number where the annotation starts in the source file.
+   * For multi-line annotations, this is the line of the opening marker.
+   */
+  readonly line: number;
+  /**
+   * The rule ID (e.g., `'GENERIC_TYPE'`).
+   *
+   * Present for `@enterstellar-review` annotations, absent for `@enterstellar-warn`.
+   * With `exactOptionalPropertyTypes` (Tier 3), this is `string` or
+   * absent — never explicitly `undefined`.
+   *
+   * @see Audit E1 — `@enterstellar-warn` has no `rule=` field
+   * @see Audit M6 — `rule` must be optional
+   */
+  readonly rule?: string;
+  /** The field path (e.g., `'props.data'`, `'category'`, `'description'`). */
+  readonly field: string;
+  /** Human-readable reason string (may span multiple source lines). */
+  readonly reason: string;
 };
 
 /**
@@ -75,10 +75,10 @@ export type ParsedAnnotation = {
  * Files with zero annotations produce `{ filePath, annotations: [] }`.
  */
 export type FileAnnotations = {
-    /** Relative file path (as passed to the parser). */
-    readonly filePath: string;
-    /** All annotations found in this file, in source order. */
-    readonly annotations: readonly ParsedAnnotation[];
+  /** Relative file path (as passed to the parser). */
+  readonly filePath: string;
+  /** All annotations found in this file, in source order. */
+  readonly annotations: readonly ParsedAnnotation[];
 };
 
 // ---------------------------------------------------------------------------
@@ -145,84 +145,73 @@ const WARN_PATTERN = /\/\/ @enterstellar-warn: field=(\S+) reason="(.*)$/;
  * @see Audit E1 — dual-format parsing
  * @see Audit M3 — multi-line continuation algorithm
  */
-export function parseAnnotations(
-    content: string,
-    filePath: string,
-): FileAnnotations {
-    const lines = content.split('\n');
-    const annotations: ParsedAnnotation[] = [];
-    let lineIndex = 0;
+export function parseAnnotations(content: string, filePath: string): FileAnnotations {
+  const lines = content.split('\n');
+  const annotations: ParsedAnnotation[] = [];
+  let lineIndex = 0;
 
-    while (lineIndex < lines.length) {
-        const line = lines[lineIndex];
+  while (lineIndex < lines.length) {
+    const line = lines[lineIndex];
 
-        // noUncheckedIndexedAccess: `line` is `string | undefined` from array access.
-        // The while condition guarantees `lineIndex < lines.length`, but TS
-        // doesn't narrow this. Guard explicitly.
-        if (line === undefined) {
-            lineIndex++;
-            continue;
-        }
-
-        // --- Try @enterstellar-review first (has rule=) ---
-        const reviewMatch = REVIEW_PATTERN.exec(line);
-        if (reviewMatch !== null) {
-            // noUncheckedIndexedAccess: capture groups may be undefined.
-            const rule = reviewMatch[1];
-            const field = reviewMatch[2];
-            const reasonFragment = reviewMatch[3];
-
-            if (rule !== undefined && field !== undefined && reasonFragment !== undefined) {
-                const { reason, linesConsumed } = resolveReason(
-                    reasonFragment,
-                    lines,
-                    lineIndex,
-                );
-
-                annotations.push({
-                    type: 'review',
-                    line: lineIndex + 1, // 1-indexed
-                    rule,
-                    field,
-                    reason,
-                });
-
-                lineIndex += linesConsumed;
-                continue;
-            }
-        }
-
-        // --- Try @enterstellar-warn (no rule=) ---
-        const warnMatch = WARN_PATTERN.exec(line);
-        if (warnMatch !== null) {
-            const field = warnMatch[1];
-            const reasonFragment = warnMatch[2];
-
-            if (field !== undefined && reasonFragment !== undefined) {
-                const { reason, linesConsumed } = resolveReason(
-                    reasonFragment,
-                    lines,
-                    lineIndex,
-                );
-
-                // exactOptionalPropertyTypes: omit `rule` entirely for @enterstellar-warn.
-                // Do NOT set `rule: undefined` — that violates the constraint.
-                annotations.push({
-                    type: 'warn',
-                    line: lineIndex + 1,
-                    field,
-                    reason,
-                });
-
-                lineIndex += linesConsumed;
-                continue;
-            }
-        }
-
-        lineIndex++;
+    // noUncheckedIndexedAccess: `line` is `string | undefined` from array access.
+    // The while condition guarantees `lineIndex < lines.length`, but TS
+    // doesn't narrow this. Guard explicitly.
+    if (line === undefined) {
+      lineIndex++;
+      continue;
     }
 
-    return { filePath, annotations };
+    // --- Try @enterstellar-review first (has rule=) ---
+    const reviewMatch = REVIEW_PATTERN.exec(line);
+    if (reviewMatch !== null) {
+      // noUncheckedIndexedAccess: capture groups may be undefined.
+      const rule = reviewMatch[1];
+      const field = reviewMatch[2];
+      const reasonFragment = reviewMatch[3];
+
+      if (rule !== undefined && field !== undefined && reasonFragment !== undefined) {
+        const { reason, linesConsumed } = resolveReason(reasonFragment, lines, lineIndex);
+
+        annotations.push({
+          type: 'review',
+          line: lineIndex + 1, // 1-indexed
+          rule,
+          field,
+          reason,
+        });
+
+        lineIndex += linesConsumed;
+        continue;
+      }
+    }
+
+    // --- Try @enterstellar-warn (no rule=) ---
+    const warnMatch = WARN_PATTERN.exec(line);
+    if (warnMatch !== null) {
+      const field = warnMatch[1];
+      const reasonFragment = warnMatch[2];
+
+      if (field !== undefined && reasonFragment !== undefined) {
+        const { reason, linesConsumed } = resolveReason(reasonFragment, lines, lineIndex);
+
+        // exactOptionalPropertyTypes: omit `rule` entirely for @enterstellar-warn.
+        // Do NOT set `rule: undefined` — that violates the constraint.
+        annotations.push({
+          type: 'warn',
+          line: lineIndex + 1,
+          field,
+          reason,
+        });
+
+        lineIndex += linesConsumed;
+        continue;
+      }
+    }
+
+    lineIndex++;
+  }
+
+  return { filePath, annotations };
 }
 
 // ---------------------------------------------------------------------------
@@ -242,54 +231,54 @@ export function parseAnnotations(
  * @returns The complete reason string and total lines consumed.
  */
 function resolveReason(
-    fragment: string,
-    allLines: readonly string[],
-    startLineIndex: number,
+  fragment: string,
+  allLines: readonly string[],
+  startLineIndex: number,
 ): { readonly reason: string; readonly linesConsumed: number } {
-    // Single-line: reason ends with closing `"` on the same line.
-    if (fragment.endsWith('"')) {
-        return {
-            reason: fragment.slice(0, -1), // Strip the trailing `"`
-            linesConsumed: 1,
-        };
-    }
-
-    // Multi-line: collect continuation lines until closing `"`.
-    const parts: string[] = [fragment];
-    let consumed = 1;
-    let nextIndex = startLineIndex + 1;
-
-    while (nextIndex < allLines.length) {
-        const nextLine = allLines[nextIndex];
-
-        // noUncheckedIndexedAccess: guard against undefined.
-        if (nextLine === undefined) {
-            break;
-        }
-
-        // Continuation lines must start with `//` (after optional whitespace).
-        const trimmed = nextLine.trimStart();
-        if (!trimmed.startsWith('//')) {
-            // Not a continuation — stop collecting.
-            break;
-        }
-
-        // Strip the `//` prefix and leading whitespace from the content.
-        const continuationContent = trimmed.slice(2).trimStart();
-        consumed++;
-
-        // Check if this continuation line contains the closing `"`.
-        if (continuationContent.endsWith('"')) {
-            parts.push(continuationContent.slice(0, -1));
-            break;
-        }
-
-        parts.push(continuationContent);
-        nextIndex++;
-    }
-
+  // Single-line: reason ends with closing `"` on the same line.
+  if (fragment.endsWith('"')) {
     return {
-        reason: parts.join(' '),
-        linesConsumed: consumed,
+      reason: fragment.slice(0, -1), // Strip the trailing `"`
+      linesConsumed: 1,
     };
+  }
+
+  // Multi-line: collect continuation lines until closing `"`.
+  const parts: string[] = [fragment];
+  let consumed = 1;
+  let nextIndex = startLineIndex + 1;
+
+  while (nextIndex < allLines.length) {
+    const nextLine = allLines[nextIndex];
+
+    // noUncheckedIndexedAccess: guard against undefined.
+    if (nextLine === undefined) {
+      break;
+    }
+
+    // Continuation lines must start with `//` (after optional whitespace).
+    const trimmed = nextLine.trimStart();
+    if (!trimmed.startsWith('//')) {
+      // Not a continuation — stop collecting.
+      break;
+    }
+
+    // Strip the `//` prefix and leading whitespace from the content.
+    const continuationContent = trimmed.slice(2).trimStart();
+    consumed++;
+
+    // Check if this continuation line contains the closing `"`.
+    if (continuationContent.endsWith('"')) {
+      parts.push(continuationContent.slice(0, -1));
+      break;
+    }
+
+    parts.push(continuationContent);
+    nextIndex++;
+  }
+
+  return {
+    reason: parts.join(' '),
+    linesConsumed: consumed,
+  };
 }

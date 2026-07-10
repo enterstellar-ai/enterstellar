@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/provenance-badge
+ * @module @enterstellar/react/provenance-badge
  * @description Trust indicator showing component origin, agent, and compile time.
  *
  * The provenance badge is a small, absolute-positioned element inside the
@@ -29,7 +29,7 @@
  * ```
  */
 
-import type { CompilationProvenance, CompilationStatus } from '@enterstellar-ai/types';
+import type { CompilationProvenance, CompilationStatus } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -41,18 +41,18 @@ import type { CompilationProvenance, CompilationStatus } from '@enterstellar-ai/
  * @see Design Choice RE7 — absolute-positioned trust indicator.
  */
 export type ProvenanceBadgeProps = {
-    /** Provenance data from the `CompilationResult`. */
-    readonly provenance: CompilationProvenance;
-    /**
-     * Compilation status (`'pass'`, `'corrected'`, or `'fail'`).
-     * Drives the status indicator dot color.
-     *
-     * Passed separately because `CompilationProvenance` does not carry
-     * the compilation status — that lives on `CompilationResult.status`.
-     */
-    readonly status: CompilationStatus;
-    /** Whether the badge should be visible. */
-    readonly visible: boolean;
+  /** Provenance data from the `CompilationResult`. */
+  readonly provenance: CompilationProvenance;
+  /**
+   * Compilation status (`'pass'`, `'corrected'`, or `'fail'`).
+   * Drives the status indicator dot color.
+   *
+   * Passed separately because `CompilationProvenance` does not carry
+   * the compilation status — that lives on `CompilationResult.status`.
+   */
+  readonly status: CompilationStatus;
+  /** Whether the badge should be visible. */
+  readonly visible: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -73,23 +73,23 @@ export type ProvenanceBadgeProps = {
  * @internal
  */
 const BADGE_STYLES: React.CSSProperties = {
-    position: 'absolute',
-    top: 'var(--enterstellar-provenance-offset, 4px)',
-    right: 'var(--enterstellar-provenance-offset, 4px)',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 'var(--enterstellar-provenance-gap, 4px)',
-    padding: 'var(--enterstellar-provenance-padding, 2px 6px)',
-    fontSize: 'var(--enterstellar-provenance-font-size, 10px)',
-    fontFamily: 'var(--enterstellar-provenance-font-family, system-ui, -apple-system, sans-serif)',
-    lineHeight: 'var(--enterstellar-provenance-line-height, 1.4)',
-    color: 'var(--enterstellar-provenance-text, rgba(255, 255, 255, 0.9))',
-    backgroundColor: 'var(--enterstellar-provenance-bg, rgba(0, 0, 0, 0.65))',
-    borderRadius: 'var(--enterstellar-provenance-radius, 4px)',
-    pointerEvents: 'none',
-    userSelect: 'none',
-    zIndex: 9999,
-    whiteSpace: 'nowrap',
+  position: 'absolute',
+  top: 'var(--enterstellar-provenance-offset, 4px)',
+  right: 'var(--enterstellar-provenance-offset, 4px)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 'var(--enterstellar-provenance-gap, 4px)',
+  padding: 'var(--enterstellar-provenance-padding, 2px 6px)',
+  fontSize: 'var(--enterstellar-provenance-font-size, 10px)',
+  fontFamily: 'var(--enterstellar-provenance-font-family, system-ui, -apple-system, sans-serif)',
+  lineHeight: 'var(--enterstellar-provenance-line-height, 1.4)',
+  color: 'var(--enterstellar-provenance-text, rgba(255, 255, 255, 0.9))',
+  backgroundColor: 'var(--enterstellar-provenance-bg, rgba(0, 0, 0, 0.65))',
+  borderRadius: 'var(--enterstellar-provenance-radius, 4px)',
+  pointerEvents: 'none',
+  userSelect: 'none',
+  zIndex: 9999,
+  whiteSpace: 'nowrap',
 } as const;
 
 /**
@@ -103,9 +103,9 @@ const BADGE_STYLES: React.CSSProperties = {
  * @internal
  */
 const STATUS_COLORS: Readonly<Record<CompilationStatus, string>> = {
-    pass: 'var(--enterstellar-status-pass, #22c55e)',
-    corrected: 'var(--enterstellar-status-corrected, #f59e0b)',
-    fail: 'var(--enterstellar-status-fail, #ef4444)',
+  pass: 'var(--enterstellar-status-pass, #22c55e)',
+  corrected: 'var(--enterstellar-status-corrected, #f59e0b)',
+  fail: 'var(--enterstellar-status-fail, #ef4444)',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -126,51 +126,51 @@ const STATUS_COLORS: Readonly<Record<CompilationStatus, string>> = {
  * @see Principle L4 — every render is traceable.
  */
 export function ProvenanceBadge(props: ProvenanceBadgeProps): React.JSX.Element | null {
-    const { provenance, status, visible } = props;
+  const { provenance, status, visible } = props;
 
-    if (!visible) {
-        return null;
+  if (!visible) {
+    return null;
+  }
+
+  const statusColor = STATUS_COLORS[status];
+  const forgeLabel = provenance.forgeMode !== undefined ? ` · ${provenance.forgeMode}` : '';
+
+  /**
+   * Format compile time for display.
+   * Uses `compiledAt` ISO string, showing HH:MM:SS.
+   */
+  const compileTime = (() => {
+    try {
+      const date = new Date(provenance.compiledAt);
+      return date.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    } catch {
+      return '—';
     }
+  })();
 
-    const statusColor = STATUS_COLORS[status];
-    const forgeLabel = provenance.forgeMode !== undefined ? ` · ${provenance.forgeMode}` : '';
-
-    /**
-     * Format compile time for display.
-     * Uses `compiledAt` ISO string, showing HH:MM:SS.
-     */
-    const compileTime = (() => {
-        try {
-            const date = new Date(provenance.compiledAt);
-            return date.toLocaleTimeString(undefined, {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            });
-        } catch {
-            return '—';
-        }
-    })();
-
-    return (
-        <span
-            data-enterstellar-provenance
-            style={BADGE_STYLES}
-            aria-hidden="true"
-            title={`Agent: ${provenance.agent} · Registry: ${provenance.registry} · Status: ${status} · Compiled: ${provenance.compiledAt}${forgeLabel}`}
-        >
-            <span
-                style={{
-                    width: 'var(--enterstellar-provenance-dot-size, 6px)',
-                    height: 'var(--enterstellar-provenance-dot-size, 6px)',
-                    borderRadius: '50%',
-                    backgroundColor: statusColor,
-                    display: 'inline-block',
-                    flexShrink: 0,
-                }}
-                aria-hidden="true"
-            />
-            {provenance.agent} · {compileTime}
-        </span>
-    );
+  return (
+    <span
+      data-enterstellar-provenance
+      style={BADGE_STYLES}
+      aria-hidden="true"
+      title={`Agent: ${provenance.agent} · Registry: ${provenance.registry} · Status: ${status} · Compiled: ${provenance.compiledAt}${forgeLabel}`}
+    >
+      <span
+        style={{
+          width: 'var(--enterstellar-provenance-dot-size, 6px)',
+          height: 'var(--enterstellar-provenance-dot-size, 6px)',
+          borderRadius: '50%',
+          backgroundColor: statusColor,
+          display: 'inline-block',
+          flexShrink: 0,
+        }}
+        aria-hidden="true"
+      />
+      {provenance.agent} · {compileTime}
+    </span>
+  );
 }

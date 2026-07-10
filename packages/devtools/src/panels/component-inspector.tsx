@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/panels/component-inspector
+ * @module @enterstellar/devtools/panels/component-inspector
  * @description P0 Tab 2 — Detailed inspection of a selected trace.
  *
  * The Component Inspector shows the full pipeline record for a single
@@ -25,7 +25,7 @@
  * @internal
  */
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 
 import { JsonViewer } from '../components/json-viewer.js';
 import { StatusBadge } from '../components/status-badge.js';
@@ -41,11 +41,11 @@ import { inspectorStyles } from '../styles.js';
  * @internal
  */
 type ComponentInspectorProps = {
-    /**
-     * The currently selected trace to inspect.
-     * `null` when no trace is selected — renders empty state.
-     */
-    readonly selectedTrace: ZoneTrace | null;
+  /**
+   * The currently selected trace to inspect.
+   * `null` when no trace is selected — renders empty state.
+   */
+  readonly selectedTrace: ZoneTrace | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -58,10 +58,10 @@ type ComponentInspectorProps = {
  * @internal
  */
 type InspectorSectionProps = {
-    /** Section title displayed in the header. */
-    readonly title: string;
-    /** Section content. */
-    readonly children: React.ReactNode;
+  /** Section title displayed in the header. */
+  readonly title: string;
+  /** Section content. */
+  readonly children: React.ReactNode;
 };
 
 /**
@@ -73,18 +73,14 @@ type InspectorSectionProps = {
  * @internal
  */
 function InspectorSection(props: InspectorSectionProps): React.JSX.Element {
-    const { title, children } = props;
+  const { title, children } = props;
 
-    return (
-        <div style={inspectorStyles['section']}>
-            <div style={inspectorStyles['sectionHeader']}>
-                {title}
-            </div>
-            <div style={inspectorStyles['sectionBody']}>
-                {children}
-            </div>
-        </div>
-    );
+  return (
+    <div style={inspectorStyles['section']}>
+      <div style={inspectorStyles['sectionHeader']}>{title}</div>
+      <div style={inspectorStyles['sectionBody']}>{children}</div>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -97,17 +93,17 @@ function InspectorSection(props: InspectorSectionProps): React.JSX.Element {
  * @internal
  */
 function InspectorField(props: {
-    readonly label: string;
-    readonly value: string | number | boolean;
+  readonly label: string;
+  readonly value: string | number | boolean;
 }): React.JSX.Element {
-    const { label, value } = props;
+  const { label, value } = props;
 
-    return (
-        <div style={inspectorStyles['field']}>
-            <span style={inspectorStyles['fieldLabel']}>{label}</span>
-            <span style={inspectorStyles['fieldValue']}>{String(value)}</span>
-        </div>
-    );
+  return (
+    <div style={inspectorStyles['field']}>
+      <span style={inspectorStyles['fieldLabel']}>{label}</span>
+      <span style={inspectorStyles['fieldValue']}>{String(value)}</span>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -128,106 +124,92 @@ function InspectorField(props: {
  * @internal
  */
 export function ComponentInspector(props: ComponentInspectorProps): React.JSX.Element {
-    const { selectedTrace } = props;
+  const { selectedTrace } = props;
 
-    // -----------------------------------------------------------------------
-    // Empty State
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Empty State
+  // -----------------------------------------------------------------------
 
-    if (selectedTrace === null) {
-        return (
-            <div
-                style={inspectorStyles['emptyState']}
-                data-enterstellar-devtools-panel="component-inspector"
-            >
-                Select a trace in the Timeline to inspect its pipeline.
-            </div>
-        );
-    }
-
-    // -----------------------------------------------------------------------
-    // Populated State
-    // -----------------------------------------------------------------------
-
-    const { intent, compilation, provenance, metrics } = selectedTrace;
-
+  if (selectedTrace === null) {
     return (
-        <div
-            style={inspectorStyles['container']}
-            data-enterstellar-devtools-panel="component-inspector"
-        >
-            {/* ─── Trace Header ─────────────────────────────────── */}
-            <InspectorSection title="Trace">
-                <InspectorField label="ID" value={selectedTrace.id} />
-                <InspectorField label="Timestamp" value={selectedTrace.timestamp} />
-            </InspectorSection>
-
-            {/* ─── Intent ───────────────────────────────────────── */}
-            <InspectorSection title="Intent">
-                <InspectorField label="Component" value={intent.component} />
-                <InspectorField label="Confidence" value={intent.confidence} />
-                {intent.mode !== undefined && (
-                    <InspectorField label="Mode" value={intent.mode} />
-                )}
-                {intent.interaction !== undefined && (
-                    <InspectorField label="Interaction" value={intent.interaction} />
-                )}
-                <div style={{ marginTop: 8 }}>
-                    <JsonViewer
-                        data={intent.props}
-                        label="props"
-                        defaultExpanded={true}
-                    />
-                </div>
-            </InspectorSection>
-
-            {/* ─── Compilation ──────────────────────────────────── */}
-            <InspectorSection title="Compilation">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                    <span style={inspectorStyles['fieldLabel']}>Status</span>
-                    <StatusBadge status={compilation.status} />
-                </div>
-                <InspectorField label="Error Count" value={compilation.errors.length} />
-                <InspectorField
-                    label="Self-Correction Attempts"
-                    value={compilation.selfCorrectionAttempts}
-                />
-                {compilation.errors.length > 0 && (
-                    <div style={{ marginTop: 8 }}>
-                        <JsonViewer
-                            data={compilation.errors}
-                            label="errors"
-                            defaultExpanded={true}
-                        />
-                    </div>
-                )}
-            </InspectorSection>
-
-            {/* ─── Provenance ──────────────────────────────────── */}
-            <InspectorSection title="Provenance">
-                <InspectorField label="Agent" value={provenance.agent} />
-                <InspectorField label="Registry" value={provenance.registry} />
-                <InspectorField label="Compiler Version" value={provenance.compilerVersion} />
-                <InspectorField label="Compiled At" value={provenance.compiledAt} />
-                {provenance.forgeMode !== undefined && (
-                    <InspectorField label="Forge Mode" value={provenance.forgeMode} />
-                )}
-            </InspectorSection>
-
-            {/* ─── Performance ─────────────────────────────────── */}
-            <InspectorSection title="Performance">
-                <InspectorField label="Total Latency" value={`${String(metrics.totalMs)}ms`} />
-                <InspectorField label="Retry Attempt" value={metrics.retryAttempt} />
-            </InspectorSection>
-
-            {/* ─── Full Trace (Raw JSON) ──────────────────────── */}
-            <InspectorSection title="Full Trace (JSON)">
-                <JsonViewer
-                    data={selectedTrace}
-                    label="trace"
-                    defaultExpanded={false}
-                />
-            </InspectorSection>
-        </div>
+      <div
+        style={inspectorStyles['emptyState']}
+        data-enterstellar-devtools-panel="component-inspector"
+      >
+        Select a trace in the Timeline to inspect its pipeline.
+      </div>
     );
+  }
+
+  // -----------------------------------------------------------------------
+  // Populated State
+  // -----------------------------------------------------------------------
+
+  const { intent, compilation, provenance, metrics } = selectedTrace;
+
+  return (
+    <div
+      style={inspectorStyles['container']}
+      data-enterstellar-devtools-panel="component-inspector"
+    >
+      {/* ─── Trace Header ─────────────────────────────────── */}
+      <InspectorSection title="Trace">
+        <InspectorField label="ID" value={selectedTrace.id} />
+        <InspectorField label="Timestamp" value={selectedTrace.timestamp} />
+      </InspectorSection>
+
+      {/* ─── Intent ───────────────────────────────────────── */}
+      <InspectorSection title="Intent">
+        <InspectorField label="Component" value={intent.component} />
+        <InspectorField label="Confidence" value={intent.confidence} />
+        {intent.mode !== undefined && <InspectorField label="Mode" value={intent.mode} />}
+        {intent.interaction !== undefined && (
+          <InspectorField label="Interaction" value={intent.interaction} />
+        )}
+        <div style={{ marginTop: 8 }}>
+          <JsonViewer data={intent.props} label="props" defaultExpanded={true} />
+        </div>
+      </InspectorSection>
+
+      {/* ─── Compilation ──────────────────────────────────── */}
+      <InspectorSection title="Compilation">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <span style={inspectorStyles['fieldLabel']}>Status</span>
+          <StatusBadge status={compilation.status} />
+        </div>
+        <InspectorField label="Error Count" value={compilation.errors.length} />
+        <InspectorField
+          label="Self-Correction Attempts"
+          value={compilation.selfCorrectionAttempts}
+        />
+        {compilation.errors.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <JsonViewer data={compilation.errors} label="errors" defaultExpanded={true} />
+          </div>
+        )}
+      </InspectorSection>
+
+      {/* ─── Provenance ──────────────────────────────────── */}
+      <InspectorSection title="Provenance">
+        <InspectorField label="Agent" value={provenance.agent} />
+        <InspectorField label="Registry" value={provenance.registry} />
+        <InspectorField label="Compiler Version" value={provenance.compilerVersion} />
+        <InspectorField label="Compiled At" value={provenance.compiledAt} />
+        {provenance.forgeMode !== undefined && (
+          <InspectorField label="Forge Mode" value={provenance.forgeMode} />
+        )}
+      </InspectorSection>
+
+      {/* ─── Performance ─────────────────────────────────── */}
+      <InspectorSection title="Performance">
+        <InspectorField label="Total Latency" value={`${String(metrics.totalMs)}ms`} />
+        <InspectorField label="Retry Attempt" value={metrics.retryAttempt} />
+      </InspectorSection>
+
+      {/* ─── Full Trace (Raw JSON) ──────────────────────── */}
+      <InspectorSection title="Full Trace (JSON)">
+        <JsonViewer data={selectedTrace} label="trace" defaultExpanded={false} />
+      </InspectorSection>
+    </div>
+  );
 }

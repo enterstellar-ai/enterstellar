@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli
+ * @module @enterstellar/cli
  * @description Public API for the Enterstellar CLI.
  *
  * This barrel exports the CLI's programmatic API for use in build scripts,
@@ -79,45 +79,45 @@ export { CLI_VERSION } from './version.js';
 export { resolveSourceFiles } from './migrate/resolve-source-files.js';
 export type { FileDiscoveryResult } from './migrate/resolve-source-files.js';
 export {
-    determineOutcome,
-    patchContractContent,
-    reconstructProvenance,
+  determineOutcome,
+  patchContractContent,
+  reconstructProvenance,
 } from './migrate/determine-outcome.js';
 export { formatBatchSummaryText, formatResultText } from './migrate/format-text.js';
 export { formatBatchSummaryJson } from './migrate/format-json.js';
 
 // ---------------------------------------------------------------------------
-// Migration: Re-Exported Types from @enterstellar-ai/migration (Finding A2 + Audit M3)
+// Migration: Re-Exported Types from @enterstellar/migration (Finding A2 + Audit M3)
 // ---------------------------------------------------------------------------
 
 export type {
-    ManifestFieldSource,
-    SourceLocation,
-    EnrichableField,
-    GenericParam,
-    StructuralManifest,
-    EnrichableFieldKey,
-    EnrichedFieldPatch,
-    SemanticOverlay,
-    ExtractDiagnostic,
-    ExtractResult,
-    MigrationOutcome,
-    MigrationProvenance,
-    MigrationResult,
-    MigrateBatchSummary,
-    EnrichmentProvider,
-    EnrichmentErrorCode,
-    // Audit M3: assembly types used by orchestrator and external consumers.
-    ContractAssemblyResult,
-    AssemblyOptions,
-} from '@enterstellar-ai/migration';
+  ManifestFieldSource,
+  SourceLocation,
+  EnrichableField,
+  GenericParam,
+  StructuralManifest,
+  EnrichableFieldKey,
+  EnrichedFieldPatch,
+  SemanticOverlay,
+  ExtractDiagnostic,
+  ExtractResult,
+  MigrationOutcome,
+  MigrationProvenance,
+  MigrationResult,
+  MigrateBatchSummary,
+  EnrichmentProvider,
+  EnrichmentErrorCode,
+  // Audit M3: assembly types used by orchestrator and external consumers.
+  ContractAssemblyResult,
+  AssemblyOptions,
+} from '@enterstellar/migration';
 
 export {
-    extractManifest,
-    EnrichmentError,
-    MigrationResultSchema,
-    MigrateBatchSummarySchema,
-} from '@enterstellar-ai/migration';
+  extractManifest,
+  EnrichmentError,
+  MigrationResultSchema,
+  MigrateBatchSummarySchema,
+} from '@enterstellar/migration';
 
 export type { MigrateFlags, MigrateFormat } from './migrate/flags.js';
 export { parseMigrateFlags } from './migrate/flags.js';

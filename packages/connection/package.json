@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/connection",
+  "name": "@enterstellar/connection",
   "description": "Agent connection factory — WebSocket/SSE/polling with auto-reconnect and backpressure.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,9 +54,9 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*"
+    "@enterstellar/types": "workspace:*"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*"
+    "@enterstellar/types": "workspace:*"
   }
 }

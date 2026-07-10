@@ -81,7 +81,7 @@
   },
   "origin": {
     "registryUrl": "https://registry.enterstellar.dev/components/medication-schedule",
-    "publisher": "@enterstellar-ai/clinical-components",
+    "publisher": "@enterstellar/clinical-components",
     "verifiedAt": "2026-02-01T00:00:00.000Z"
   },
   "_meta": {

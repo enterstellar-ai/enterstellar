@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/hash
+ * @module @enterstellar/telemetry/hash
  * @description SHA-256 hashing for intent strings.
  *
  * Converts a raw intent string into a hex-encoded SHA-256 digest.
@@ -26,15 +26,15 @@
  * @returns Hex-encoded string (64 chars for SHA-256).
  */
 function bufferToHex(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
-    const hexParts: string[] = [];
+  const bytes = new Uint8Array(buffer);
+  const hexParts: string[] = [];
 
-    for (let i = 0; i < bytes.length; i++) {
-        // biome-ignore lint: Uint8Array index access is safe within bounds
-        hexParts.push((bytes[i] as number).toString(16).padStart(2, '0'));
-    }
+  for (let i = 0; i < bytes.length; i++) {
+    // biome-ignore lint: Uint8Array index access is safe within bounds
+    hexParts.push((bytes[i] as number).toString(16).padStart(2, '0'));
+  }
 
-    return hexParts.join('');
+  return hexParts.join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -60,21 +60,21 @@ function bufferToHex(buffer: ArrayBuffer): string {
  * @see Design Choice TL3
  */
 export async function hashIntent(rawIntent: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(rawIntent);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(rawIntent);
 
-    // Web Crypto API is available in browsers, Cloudflare Workers, and Node 18+.
-    // TypeScript types assume crypto always exists, but SSR / legacy Node may not have it.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (globalThis.crypto?.subtle !== undefined) {
-        const digest = await globalThis.crypto.subtle.digest('SHA-256', data);
-        return bufferToHex(digest);
-    }
+  // Web Crypto API is available in browsers, Cloudflare Workers, and Node 18+.
+  // TypeScript types assume crypto always exists, but SSR / legacy Node may not have it.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (globalThis.crypto?.subtle !== undefined) {
+    const digest = await globalThis.crypto.subtle.digest('SHA-256', data);
+    return bufferToHex(digest);
+  }
 
-    // This branch should never be reached in supported environments.
-    // All target runtimes (browser, Workers, Node 18+) provide crypto.subtle.
-    throw new Error(
-        '@enterstellar-ai/telemetry: Web Crypto API (crypto.subtle) is unavailable. ' +
-        'Enterstellar requires a runtime with Web Crypto support (browser, Node 18+, Cloudflare Workers).',
-    );
+  // This branch should never be reached in supported environments.
+  // All target runtimes (browser, Workers, Node 18+) provide crypto.subtle.
+  throw new Error(
+    '@enterstellar/telemetry: Web Crypto API (crypto.subtle) is unavailable. ' +
+      'Enterstellar requires a runtime with Web Crypto support (browser, Node 18+, Cloudflare Workers).',
+  );
 }

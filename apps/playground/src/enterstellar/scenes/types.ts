@@ -28,7 +28,7 @@
  * independently. Crash isolation (RE16) is zone-scoped: if one zone
  * errors, the others continue rendering.
  *
- * @see @enterstellar-ai/react Zone — the React component that renders a zone
+ * @see @enterstellar/react Zone — the React component that renders a zone
  * @see implementation_plan.md §2.5.2 — ZoneDefinition interface
  */
 export type ZoneDefinition = {
@@ -221,7 +221,7 @@ export type PlaygroundScene = {
    * When `mode === 'hallucinating'`, these zones render alongside the
    * standard `zones` in a dual-grid layout (65/35 visual hierarchy).
    * The hallucinated intents from the LLM are dispatched **HERE** —
-   * through the **real `@enterstellar-ai/compiler`**. This proves Enterstellar's value:
+   * through the **real `@enterstellar/compiler`**. This proves Enterstellar's value:
    * the compiler catches invented component names, wrong prop types,
    * and missing accessibility attributes, producing `GenericCard`
    * fallbacks with real `ENS-*` error codes.
@@ -261,14 +261,14 @@ export type PlaygroundScene = {
  * A single zone's intent output from the LLM.
  *
  * The API route returns `ZoneIntent[]` — one per zone in the scene.
- * Each entry is then parsed into a `ComponentIntent` from `@enterstellar-ai/types`
+ * Each entry is then parsed into a `ComponentIntent` from `@enterstellar/types`
  * and dispatched to the corresponding `<Zone>`.
  *
  * This type represents the **raw LLM output format** before it becomes
  * a proper `ComponentIntent`. The `LiveAgentConnection` handles the
  * conversion.
  *
- * @see ComponentIntent from @enterstellar-ai/types — the canonical intent type
+ * @see ComponentIntent from @enterstellar/types — the canonical intent type
  */
 export type ZoneIntent = {
   /** Zone name — must match a `ZoneDefinition.name` in the active scene. */

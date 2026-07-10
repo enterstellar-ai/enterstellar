@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/lifecycle
+ * @module @enterstellar/lifecycle
  * @description Framework-agnostic lifecycle state machine for Enterstellar zones.
  *
  * Manages the lifecycle of zone content: `idle → loading → streaming → ready`,
@@ -7,12 +7,12 @@
  * structured event for observability (L4).
  *
  * This is an **engine package** (L15) — zero framework dependencies.
- * `@enterstellar-ai/react` wraps the lifecycle manager in React hooks.
+ * `@enterstellar/react` wraps the lifecycle manager in React hooks.
  *
  * ## Quick Start
  *
  * ```ts
- * import { createLifecycleManager, createStreamingAssembler } from '@enterstellar-ai/lifecycle';
+ * import { createLifecycleManager, createStreamingAssembler } from '@enterstellar/lifecycle';
  * import { z } from 'zod';
  *
  * // Create a lifecycle manager with default config (30s timeout, 3 retries)
@@ -64,14 +64,14 @@ export { createStreamingAssembler } from './streaming-assembler.js';
 // Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    LifecycleState,
-    LifecycleEvent,
-    LifecycleTransitionContext,
-    LifecycleListener,
-    LifecycleManagerConfig,
-    PropFragment,
-    LifecycleManager,
-    StreamingAssembler,
+  LifecycleState,
+  LifecycleEvent,
+  LifecycleTransitionContext,
+  LifecycleListener,
+  LifecycleManagerConfig,
+  PropFragment,
+  LifecycleManager,
+  StreamingAssembler,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -83,11 +83,11 @@ export { VALID_TRANSITIONS, DEFAULT_TIMEOUT_MS, DEFAULT_MAX_RETRIES } from './co
 // Error Factories (for custom integrations and testing)
 // ---------------------------------------------------------------------------
 export {
-    createAgentTimeoutError,
-    createInvalidTransitionError,
-    createStreamingAssemblyError,
-    createDisposedError,
-    createMaxRetriesExceededError,
+  createAgentTimeoutError,
+  createInvalidTransitionError,
+  createStreamingAssemblyError,
+  createDisposedError,
+  createMaxRetriesExceededError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------

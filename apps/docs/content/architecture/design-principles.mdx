@@ -76,7 +76,7 @@ The TypeScript of GenUI is only the TypeScript of GenUI if it's as easy to add t
 
 > *Rule: Enterstellar consumes `ComponentIntent` objects. It does not care whether they came from AG-UI, A2UI, MCP, WebSocket, or a unit test.*
 
-The Normalizer (`@enterstellar-ai/normalizer`) handles protocol conversion. The rest of the engine is `ComponentIntent`-native. This means Enterstellar works with any agent backend without a rewrite.
+The Normalizer (`@enterstellar/normalizer`) handles protocol conversion. The rest of the engine is `ComponentIntent`-native. This means Enterstellar works with any agent backend without a rewrite.
 
 **L7: Infrastructure-Agnostic**
 
@@ -88,7 +88,7 @@ Enterstellar is opinionated about UI compilation (that's the moat). It is delibe
 
 > *Rule: No package in the engine layer may import `react`, `react-dom`, `react-native`, or any framework-specific dependency. CI-enforced.*
 
-The packages `@enterstellar-ai/registry`, `@enterstellar-ai/compiler`, `@enterstellar-ai/cache`, `@enterstellar-ai/semantic-index`, `@enterstellar-ai/lifecycle`, `@enterstellar-ai/normalizer`, `@enterstellar-ai/forge`, `@enterstellar-ai/state`, `@enterstellar-ai/telemetry`, `@enterstellar-ai/adapters`, `@enterstellar-ai/agent-sdk`, and `@enterstellar-ai/cloud` all have zero framework imports. This is enforced by a custom ESLint rule in CI. If it fails, the build fails.
+The packages `@enterstellar/registry`, `@enterstellar/compiler`, `@enterstellar/cache`, `@enterstellar/semantic-index`, `@enterstellar/lifecycle`, `@enterstellar/normalizer`, `@enterstellar/forge`, `@enterstellar/state`, `@enterstellar/telemetry`, `@enterstellar/adapters`, `@enterstellar/agent-sdk`, and `@enterstellar/cloud` all have zero framework imports. This is enforced by a custom ESLint rule in CI. If it fails, the build fails.
 
 ---
 

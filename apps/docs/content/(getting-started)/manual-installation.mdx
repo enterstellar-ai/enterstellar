@@ -15,7 +15,7 @@ This guide is for existing React or Next.js apps. Starting fresh? Use the [Quick
 ## Install the package
 
 ```npm
-npm install @enterstellar-ai/react @enterstellar-ai/registry
+npm install @enterstellar/react @enterstellar/registry
 ```
 
 </Step>
@@ -27,7 +27,7 @@ npm install @enterstellar-ai/react @enterstellar-ai/registry
 Create `enterstellar/registry.ts` in your project root. The registry is your component deck — the closed set of components the AI can select from.
 
 ```ts
-import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+import { createRegistry, defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 const StatusCard = defineComponent({
@@ -71,10 +71,10 @@ export const registry = createRegistry({
 
 ## Connect your agent
 
-Create `enterstellar/connection.ts`. This connects Enterstellar to your AI backend via the `createAgentConnection()` factory from `@enterstellar-ai/connection`.
+Create `enterstellar/connection.ts`. This connects Enterstellar to your AI backend via the `createAgentConnection()` factory from `@enterstellar/connection`.
 
 ```ts
-import { createAgentConnection } from '@enterstellar-ai/connection';
+import { createAgentConnection } from '@enterstellar/connection';
 
 export const connection = createAgentConnection({
   url: process.env.NEXT_PUBLIC_AGENT_URL!,
@@ -90,7 +90,7 @@ export const connection = createAgentConnection({
 Add `Provider` at your app root and place a `Zone` wherever you want the AI to render components.
 
 ```tsx
-import { Provider, Zone } from '@enterstellar-ai/react';
+import { Provider, Zone } from '@enterstellar/react';
 import { registry } from './enterstellar/registry';
 import { connection } from './enterstellar/connection';
 

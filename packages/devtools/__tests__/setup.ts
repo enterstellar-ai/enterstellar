@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/devtools/__tests__/setup
- * @description Test setup file for `@enterstellar-ai/devtools`.
+ * @module @enterstellar/devtools/__tests__/setup
+ * @description Test setup file for `@enterstellar/devtools`.
  *
  * Registers `@testing-library/jest-dom` matchers (e.g., `toHaveAttribute`,
  * `toHaveTextContent`) with Vitest's `expect`.

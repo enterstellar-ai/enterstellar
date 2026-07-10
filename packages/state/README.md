@@ -1,10 +1,10 @@
-# @enterstellar-ai/state
+# @enterstellar/state
 
 > Framework-agnostic persistent state management for Enterstellar OS.
 
 ## Purpose
 
-`@enterstellar-ai/state` provides `createEnterstellarStore()` — the OS's memory. It implements the `EnterstellarStore` interface from `@enterstellar-ai/types` as a closure-based factory (no class, no prototype chain). The store manages zone state, trace history, session metadata, and typed extensions with pluggable persistence, optional AES-GCM encryption, semver schema versioning, and write-behind debounce.
+`@enterstellar/state` provides `createEnterstellarStore()` — the OS's memory. It implements the `EnterstellarStore` interface from `@enterstellar/types` as a closure-based factory (no class, no prototype chain). The store manages zone state, trace history, session metadata, and typed extensions with pluggable persistence, optional AES-GCM encryption, semver schema versioning, and write-behind debounce.
 
 **Key properties:**
 
@@ -24,7 +24,7 @@
 ## Quick Start
 
 ```ts
-import { createEnterstellarStore } from '@enterstellar-ai/state';
+import { createEnterstellarStore } from '@enterstellar/state';
 import { z } from 'zod';
 
 // Create a store with IndexedDB persistence
@@ -101,7 +101,7 @@ export { createEmptyState } from './snapshot.js';
 // Config types
 export type { EnterstellarStoreConfig, PersistenceAdapter, EncryptionConfig } from './types.js';
 
-// Convenience re-exports from @enterstellar-ai/types
+// Convenience re-exports from @enterstellar/types
 export type {
   EnterstellarStore,
   SerializedState,
@@ -110,7 +110,7 @@ export type {
   MigrationConfig,
   PersistenceStrategy,
   SyncConfig,
-} from '@enterstellar-ai/types';
+} from '@enterstellar/types';
 ```
 
 ---

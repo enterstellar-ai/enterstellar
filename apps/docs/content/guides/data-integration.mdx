@@ -18,10 +18,10 @@ icon: DatabaseZap
 
 ## Quickstart: Supabase
 
-`@enterstellar-ai/adapter-supabase` provides ready-made factories for Supabase:
+`@enterstellar/adapter-supabase` provides ready-made factories for Supabase:
 
 ```bash
-npm install @enterstellar-ai/adapter-supabase @supabase/supabase-js
+npm install @enterstellar/adapter-supabase @supabase/supabase-js
 ```
 
 ```tsx
@@ -29,8 +29,8 @@ import { createClient } from '@supabase/supabase-js';
 import {
   createSupabaseAuthAdapter,
   createSupabaseDataAdapter,
-} from '@enterstellar-ai/adapter-supabase';
-import { Provider, Zone } from '@enterstellar-ai/react';
+} from '@enterstellar/adapter-supabase';
+import { Provider, Zone } from '@enterstellar/react';
 import { registry } from './enterstellar/registry';
 
 const supabase = createClient(
@@ -59,7 +59,7 @@ export default function App() {
 For any backend, implement the 3-method interface via `createDataAdapter()`:
 
 ```ts
-import { createDataAdapter } from '@enterstellar-ai/adapters';
+import { createDataAdapter } from '@enterstellar/adapters';
 
 const data = createDataAdapter({
   name: 'my-api',
@@ -94,7 +94,7 @@ const data = createDataAdapter({
 ## Write a Contract with a Data Source
 
 ```ts
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 export const TaskList = defineComponent({
@@ -130,7 +130,7 @@ export const TaskList = defineComponent({
 The `DataAdapter` doesn't automatically inject data into your components. It's available to your renderers via the `useEnterstellarAdapters()` hook:
 
 ```tsx
-import { useEnterstellarAdapters } from '@enterstellar-ai/react';
+import { useEnterstellarAdapters } from '@enterstellar/react';
 import { useEffect, useState } from 'react';
 import type { TaskListProps } from './TaskList.contract';
 
@@ -163,18 +163,18 @@ This is the payoff: to swap Supabase for Firebase, replace the adapter. The cont
 
 ```ts
 // Before: Supabase
-import { createSupabaseDataAdapter } from '@enterstellar-ai/adapter-supabase';
+import { createSupabaseDataAdapter } from '@enterstellar/adapter-supabase';
 const data = createSupabaseDataAdapter({ client: supabase });
 
 // After: Firebase
-import { createFirebaseDataAdapter } from '@enterstellar-ai/adapter-firebase';
+import { createFirebaseDataAdapter } from '@enterstellar/adapter-firebase';
 const data = createFirebaseDataAdapter({ app: firebaseApp });
 
 // Pass to Provider — nothing else changes
 <Provider adapters={{ data }} ... />
 ```
 
-`@enterstellar-ai/adapter-firebase` follows the same pattern as `@enterstellar-ai/adapter-supabase`.
+`@enterstellar/adapter-firebase` follows the same pattern as `@enterstellar/adapter-supabase`.
 
 ## Scenario: Connecting Tasks to Supabase
 

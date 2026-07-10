@@ -1,8 +1,8 @@
 /**
- * @module @enterstellar-ai/connection/store-sync
+ * @module @enterstellar/connection/store-sync
  * @description Runtime wiring for cross-device `EnterstellarStore` synchronization.
  *
- * This module implements the sync layer deferred from `@enterstellar-ai/state` (M0.4):
+ * This module implements the sync layer deferred from `@enterstellar/state` (M0.4):
  * the `createEnterstellarStore()` factory accepts `SyncConfig` in its config, but
  * the actual push/pull sync loop lives here — where transport infrastructure
  * (WebSocket, SSE, polling) exists.
@@ -26,17 +26,14 @@
  * @see L15 — Zero framework imports
  */
 
-import type { EnterstellarStore, SyncConfig, SerializedState } from '@enterstellar-ai/types';
-import { EnterstellarError, SerializedStateSchema } from '@enterstellar-ai/types';
+import type { EnterstellarStore, SyncConfig, SerializedState } from '@enterstellar/types';
+import { EnterstellarError, SerializedStateSchema } from '@enterstellar/types';
 
 import type { Transport } from './transports/transport.js';
 import { createWebSocketTransport } from './transports/websocket-transport.js';
 import { createSSETransport } from './transports/sse-transport.js';
 import { createPollingTransport } from './transports/polling-transport.js';
-import {
-    AUTO_WS_TIMEOUT_MS,
-    POLLING_INTERVAL_MS,
-} from './types.js';
+import { AUTO_WS_TIMEOUT_MS, POLLING_INTERVAL_MS } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Public Types
@@ -49,14 +46,14 @@ import {
  * `connected` getter for observability.
  */
 export type StoreSyncRuntime = {
-    /** Whether the sync transport is currently connected. */
-    readonly connected: boolean;
+  /** Whether the sync transport is currently connected. */
+  readonly connected: boolean;
 
-    /**
-     * Tears down the sync runtime: disconnects the transport, unsubscribes
-     * from store changes, and cancels any pending debounce timers.
-     */
-    readonly destroy: () => void;
+  /**
+   * Tears down the sync runtime: disconnects the transport, unsubscribes
+   * from store changes, and cancels any pending debounce timers.
+   */
+  readonly destroy: () => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -68,24 +65,24 @@ export type StoreSyncRuntime = {
  * The sync endpoint URL may be HTTP(S) or WS(S).
  */
 async function createSyncTransport(endpoint: string): Promise<Transport> {
-    // Tier 1: WebSocket (1s timeout).
+  // Tier 1: WebSocket (1s timeout).
+  try {
+    const ws = createWebSocketTransport(endpoint, AUTO_WS_TIMEOUT_MS);
+    await ws.connect();
+    return ws;
+  } catch {
+    // Tier 2: SSE.
     try {
-        const ws = createWebSocketTransport(endpoint, AUTO_WS_TIMEOUT_MS);
-        await ws.connect();
-        return ws;
+      const sse = createSSETransport(endpoint);
+      await sse.connect();
+      return sse;
     } catch {
-        // Tier 2: SSE.
-        try {
-            const sse = createSSETransport(endpoint);
-            await sse.connect();
-            return sse;
-        } catch {
-            // Tier 3: Polling (30s interval).
-            const poll = createPollingTransport(endpoint, POLLING_INTERVAL_MS);
-            await poll.connect();
-            return poll;
-        }
+      // Tier 3: Polling (30s interval).
+      const poll = createPollingTransport(endpoint, POLLING_INTERVAL_MS);
+      await poll.connect();
+      return poll;
     }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -112,8 +109,8 @@ async function createSyncTransport(endpoint: string): Promise<Transport> {
  *
  * @example
  * ```ts
- * import { createStoreSyncRuntime } from '@enterstellar-ai/connection';
- * import { createEnterstellarStore } from '@enterstellar-ai/state';
+ * import { createStoreSyncRuntime } from '@enterstellar/connection';
+ * import { createEnterstellarStore } from '@enterstellar/state';
  *
  * const store = createEnterstellarStore({
  *   persistence: 'indexed-db',
@@ -128,137 +125,134 @@ async function createSyncTransport(endpoint: string): Promise<Transport> {
  * ```
  */
 export async function createStoreSyncRuntime(
-    store: EnterstellarStore,
-    syncConfig: SyncConfig,
+  store: EnterstellarStore,
+  syncConfig: SyncConfig,
 ): Promise<StoreSyncRuntime> {
-    // 1. Validate config.
-    if (!syncConfig.enabled) {
-        throw new EnterstellarError(
-            'ENS-3001',
-            'connection',
-            'Cannot create sync runtime: sync is not enabled in SyncConfig.',
-            false,
-        );
+  // 1. Validate config.
+  if (!syncConfig.enabled) {
+    throw new EnterstellarError(
+      'ENS-3001',
+      'connection',
+      'Cannot create sync runtime: sync is not enabled in SyncConfig.',
+      false,
+    );
+  }
+
+  if (syncConfig.endpoint.length === 0) {
+    throw new EnterstellarError(
+      'ENS-3001',
+      'connection',
+      'Cannot create sync runtime: sync endpoint URL is empty.',
+      false,
+    );
+  }
+
+  // 2. Fetch initial state via REST GET.
+  try {
+    const response = await fetch(syncConfig.endpoint);
+    if (response.ok) {
+      const body: unknown = (await response.json()) as unknown;
+      // Validate against SerializedStateSchema before restoring.
+      // Cast via `as SerializedState` post-safeParse to reconcile
+      // Zod-inferred optional types with `exactOptionalPropertyTypes`.
+      // (Established pattern: see @enterstellar/state/snapshot.ts lines 242, 256.)
+      const parsed = SerializedStateSchema.safeParse(body);
+      if (parsed.success) {
+        store.restore(parsed.data as SerializedState);
+      }
+      // Invalid shape is silently ignored — the store starts with
+      // its current local state and syncs when valid data arrives.
+    }
+    // Non-OK responses on initial fetch are non-fatal — the store
+    // starts with its current local state and syncs when possible.
+  } catch {
+    // Initial fetch failure is non-fatal — local state is authoritative
+    // until a sync connection is established.
+  }
+
+  // 3. Open transport for incremental updates.
+  const transport = await createSyncTransport(syncConfig.endpoint);
+
+  // 4. Feedback loop guard.
+  let isRestoringFromRemote = false;
+
+  // 5. Inbound: on transport message → validate and restore store.
+  transport.onMessage((data: unknown) => {
+    // Validate inbound data against SerializedStateSchema.
+    // Cast via `as SerializedState` post-safeParse to reconcile
+    // Zod-inferred optional types with `exactOptionalPropertyTypes`.
+    const parsed = SerializedStateSchema.safeParse(data);
+    if (parsed.success) {
+      isRestoringFromRemote = true;
+      try {
+        store.restore(parsed.data as SerializedState);
+      } finally {
+        // Reset after restore to allow the store.subscribe()
+        // callback to fire (and be suppressed) synchronously.
+        isRestoringFromRemote = false;
+      }
+    }
+    // Invalid messages are silently ignored — only validated state
+    // snapshots trigger restores.
+  });
+
+  // 6. Outbound: on store change → debounced POST.
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const unsubscribe = store.subscribe(() => {
+    // Suppress pushes caused by inbound restores.
+    if (isRestoringFromRemote) {
+      return;
     }
 
-    if (syncConfig.endpoint.length === 0) {
-        throw new EnterstellarError(
-            'ENS-3001',
-            'connection',
-            'Cannot create sync runtime: sync endpoint URL is empty.',
-            false,
-        );
+    // Debounce outbound pushes.
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer);
     }
 
-    // 2. Fetch initial state via REST GET.
-    try {
-        const response = await fetch(syncConfig.endpoint);
-        if (response.ok) {
-            const body: unknown = (await response.json()) as unknown;
-            // Validate against SerializedStateSchema before restoring.
-            // Cast via `as SerializedState` post-safeParse to reconcile
-            // Zod-inferred optional types with `exactOptionalPropertyTypes`.
-            // (Established pattern: see @enterstellar-ai/state/snapshot.ts lines 242, 256.)
-            const parsed = SerializedStateSchema.safeParse(body);
-            if (parsed.success) {
-                store.restore(parsed.data as SerializedState);
-            }
-            // Invalid shape is silently ignored — the store starts with
-            // its current local state and syncs when valid data arrives.
-        }
-        // Non-OK responses on initial fetch are non-fatal — the store
-        // starts with its current local state and syncs when possible.
-    } catch {
-        // Initial fetch failure is non-fatal — local state is authoritative
-        // until a sync connection is established.
-    }
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
 
-    // 3. Open transport for incremental updates.
-    const transport = await createSyncTransport(syncConfig.endpoint);
+      const snapshot = store.snapshot();
 
-    // 4. Feedback loop guard.
-    let isRestoringFromRemote = false;
+      // Fire-and-forget POST — errors are logged, not thrown.
+      void fetch(syncConfig.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(snapshot),
+      }).catch((error: unknown) => {
+        console.error('[@enterstellar/connection] Sync push failed:', error);
+      });
+    }, syncConfig.debounceMs);
+  });
 
-    // 5. Inbound: on transport message → validate and restore store.
-    transport.onMessage((data: unknown) => {
-        // Validate inbound data against SerializedStateSchema.
-        // Cast via `as SerializedState` post-safeParse to reconcile
-        // Zod-inferred optional types with `exactOptionalPropertyTypes`.
-        const parsed = SerializedStateSchema.safeParse(data);
-        if (parsed.success) {
-            isRestoringFromRemote = true;
-            try {
-                store.restore(parsed.data as SerializedState);
-            } finally {
-                // Reset after restore to allow the store.subscribe()
-                // callback to fire (and be suppressed) synchronously.
-                isRestoringFromRemote = false;
-            }
-        }
-        // Invalid messages are silently ignored — only validated state
-        // snapshots trigger restores.
-    });
+  // 7. Handle transport close — could log or attempt reconnect.
+  transport.onClose(() => {
+    console.warn(
+      '[@enterstellar/connection] Sync transport disconnected. State changes will accumulate locally.',
+    );
+  });
 
-    // 6. Outbound: on store change → debounced POST.
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  // 8. Build runtime.
+  const runtime: StoreSyncRuntime = {
+    get connected(): boolean {
+      return transport.connected;
+    },
 
-    const unsubscribe = store.subscribe(() => {
-        // Suppress pushes caused by inbound restores.
-        if (isRestoringFromRemote) {
-            return;
-        }
+    destroy(): void {
+      // Unsubscribe from store changes.
+      unsubscribe();
 
-        // Debounce outbound pushes.
-        if (debounceTimer !== null) {
-            clearTimeout(debounceTimer);
-        }
+      // Clear debounce timer.
+      if (debounceTimer !== null) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
 
-        debounceTimer = setTimeout(() => {
-            debounceTimer = null;
+      // Disconnect transport.
+      transport.disconnect();
+    },
+  };
 
-            const snapshot = store.snapshot();
-
-            // Fire-and-forget POST — errors are logged, not thrown.
-            void fetch(syncConfig.endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(snapshot),
-            }).catch((error: unknown) => {
-                console.error(
-                    '[@enterstellar-ai/connection] Sync push failed:',
-                    error,
-                );
-            });
-        }, syncConfig.debounceMs);
-    });
-
-    // 7. Handle transport close — could log or attempt reconnect.
-    transport.onClose(() => {
-        console.warn(
-            '[@enterstellar-ai/connection] Sync transport disconnected. State changes will accumulate locally.',
-        );
-    });
-
-    // 8. Build runtime.
-    const runtime: StoreSyncRuntime = {
-        get connected(): boolean {
-            return transport.connected;
-        },
-
-        destroy(): void {
-            // Unsubscribe from store changes.
-            unsubscribe();
-
-            // Clear debounce timer.
-            if (debounceTimer !== null) {
-                clearTimeout(debounceTimer);
-                debounceTimer = null;
-            }
-
-            // Disconnect transport.
-            transport.disconnect();
-        },
-    };
-
-    return runtime;
+  return runtime;
 }

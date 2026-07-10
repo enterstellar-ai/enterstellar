@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/create-global-index
+ * @module @enterstellar/global-index/create-global-index
  * @description Factory function for creating a `GlobalIndex` client instance.
  *
  * `createGlobalIndex(config)` is the sole public entry point for this package.
@@ -21,32 +21,21 @@
  * @see Design Choices GI1–GI5
  */
 
-import type { ComponentContract } from '@enterstellar-ai/types';
+import type { ComponentContract } from '@enterstellar/types';
 
 import { createConfigError, createDisposedError } from './errors.js';
-import {
-    listRegistries,
-    refreshRegistry,
-    registerRegistry,
-} from './discovery/registry-crawler.js';
-import {
-    getContract,
-    getFeatured,
-    searchContracts,
-} from './discovery/search-index.js';
-import {
-    getPublisherStats,
-    publishContract,
-} from './publishing/publish-handler.js';
+import { listRegistries, refreshRegistry, registerRegistry } from './discovery/registry-crawler.js';
+import { getContract, getFeatured, searchContracts } from './discovery/search-index.js';
+import { getPublisherStats, publishContract } from './publishing/publish-handler.js';
 import type { TransportConfig } from './transport.js';
 import type {
-    FederatedRegistry,
-    GlobalIndex,
-    GlobalIndexConfig,
-    GlobalSearchOptions,
-    GlobalSearchResult,
-    PublishEarnings,
-    RegistryRegistration,
+  FederatedRegistry,
+  GlobalIndex,
+  GlobalIndexConfig,
+  GlobalSearchOptions,
+  GlobalSearchResult,
+  PublishEarnings,
+  RegistryRegistration,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -73,54 +62,48 @@ const DEFAULT_TIMEOUT_MS = 10_000;
  * @internal
  */
 function resolveConfig(config: GlobalIndexConfig): TransportConfig {
-    // -----------------------------------------------------------------------
-    // apiKey — required, non-empty
-    // -----------------------------------------------------------------------
-    if (typeof config.apiKey !== 'string' || config.apiKey.trim() === '') {
-        throw createConfigError(
-            'apiKey is required and must be a non-empty string.',
-        );
-    }
+  // -----------------------------------------------------------------------
+  // apiKey — required, non-empty
+  // -----------------------------------------------------------------------
+  if (typeof config.apiKey !== 'string' || config.apiKey.trim() === '') {
+    throw createConfigError('apiKey is required and must be a non-empty string.');
+  }
 
-    // -----------------------------------------------------------------------
-    // cloudClient — required, must have getUsage method
-    // Runtime guard: TypeScript types guarantee this at compile time, but
-    // consumers may bypass types via `as unknown as`, so we validate.
-    // -----------------------------------------------------------------------
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!config.cloudClient) {
-        throw createConfigError(
-            'cloudClient is required. Pass an EnterstellarCloudClient instance.',
-        );
-    }
+  // -----------------------------------------------------------------------
+  // cloudClient — required, must have getUsage method
+  // Runtime guard: TypeScript types guarantee this at compile time, but
+  // consumers may bypass types via `as unknown as`, so we validate.
+  // -----------------------------------------------------------------------
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!config.cloudClient) {
+    throw createConfigError('cloudClient is required. Pass an EnterstellarCloudClient instance.');
+  }
 
-    if (typeof config.cloudClient.getUsage !== 'function') {
-        throw createConfigError(
-            'cloudClient must have a getUsage() method. Pass a valid EnterstellarCloudClient instance.',
-        );
-    }
+  if (typeof config.cloudClient.getUsage !== 'function') {
+    throw createConfigError(
+      'cloudClient must have a getUsage() method. Pass a valid EnterstellarCloudClient instance.',
+    );
+  }
 
-    // -----------------------------------------------------------------------
-    // endpoint — optional, default to https://index.enterstellar.dev
-    // -----------------------------------------------------------------------
-    const endpoint = config.endpoint ?? DEFAULT_ENDPOINT;
+  // -----------------------------------------------------------------------
+  // endpoint — optional, default to https://index.enterstellar.dev
+  // -----------------------------------------------------------------------
+  const endpoint = config.endpoint ?? DEFAULT_ENDPOINT;
 
-    // -----------------------------------------------------------------------
-    // timeoutMs — optional, must be positive if provided
-    // -----------------------------------------------------------------------
-    const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  // -----------------------------------------------------------------------
+  // timeoutMs — optional, must be positive if provided
+  // -----------------------------------------------------------------------
+  const timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-    if (timeoutMs <= 0) {
-        throw createConfigError(
-            `timeoutMs must be a positive number. Received: ${String(timeoutMs)}.`,
-        );
-    }
+  if (timeoutMs <= 0) {
+    throw createConfigError(`timeoutMs must be a positive number. Received: ${String(timeoutMs)}.`);
+  }
 
-    return Object.freeze({
-        endpoint,
-        apiKey: config.apiKey,
-        timeoutMs,
-    });
+  return Object.freeze({
+    endpoint,
+    apiKey: config.apiKey,
+    timeoutMs,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -130,7 +113,7 @@ function resolveConfig(config: GlobalIndexConfig): TransportConfig {
 /**
  * Creates a new `GlobalIndex` client instance.
  *
- * This is the **sole public entry point** for the `@enterstellar-ai/global-index` package.
+ * This is the **sole public entry point** for the `@enterstellar/global-index` package.
  * It validates configuration, creates the internal HTTP transport, and wires
  * all internal modules into the `GlobalIndex` interface.
  *
@@ -140,8 +123,8 @@ function resolveConfig(config: GlobalIndexConfig): TransportConfig {
  *
  * @example
  * ```ts
- * import { createGlobalIndex } from '@enterstellar-ai/global-index';
- * import { createEnterstellarCloudClient } from '@enterstellar-ai/cloud';
+ * import { createGlobalIndex } from '@enterstellar/global-index';
+ * import { createEnterstellarCloudClient } from '@enterstellar/cloud';
  *
  * const cloud = createEnterstellarCloudClient({ apiKey: 'cloud-key', tier: 'pro' });
  * const index = createGlobalIndex({
@@ -163,124 +146,117 @@ function resolveConfig(config: GlobalIndexConfig): TransportConfig {
  * @see Design Choices GI1–GI5
  */
 export function createGlobalIndex(config: GlobalIndexConfig): GlobalIndex {
-    // -----------------------------------------------------------------------
-    // Validate config and resolve defaults
-    // -----------------------------------------------------------------------
-    const transportConfig = resolveConfig(config);
+  // -----------------------------------------------------------------------
+  // Validate config and resolve defaults
+  // -----------------------------------------------------------------------
+  const transportConfig = resolveConfig(config);
 
-    // -----------------------------------------------------------------------
-    // Dispose state
-    // -----------------------------------------------------------------------
-    let disposed = false;
+  // -----------------------------------------------------------------------
+  // Dispose state
+  // -----------------------------------------------------------------------
+  let disposed = false;
 
-    /**
-     * Guard function that throws `ENS-5031` if the client has been disposed.
-     * Called at the top of every public method.
-     *
-     * @throws {EnterstellarError} `ENS-5031` if disposed.
-     */
-    function ensureNotDisposed(): void {
-        if (disposed) {
-            throw createDisposedError();
-        }
+  /**
+   * Guard function that throws `ENS-5031` if the client has been disposed.
+   * Called at the top of every public method.
+   *
+   * @throws {EnterstellarError} `ENS-5031` if disposed.
+   */
+  function ensureNotDisposed(): void {
+    if (disposed) {
+      throw createDisposedError();
     }
+  }
 
-    // -----------------------------------------------------------------------
-    // Build the GlobalIndex interface
-    // -----------------------------------------------------------------------
-    const globalIndex: GlobalIndex = {
-        // -------------------------------------------------------------------
-        // Search (GI5)
-        // -------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Build the GlobalIndex interface
+  // -----------------------------------------------------------------------
+  const globalIndex: GlobalIndex = {
+    // -------------------------------------------------------------------
+    // Search (GI5)
+    // -------------------------------------------------------------------
 
-        async search(
-            query: string,
-            options?: GlobalSearchOptions,
-        ): Promise<readonly GlobalSearchResult[]> {
-            ensureNotDisposed();
-            return searchContracts(transportConfig, query, options);
-        },
+    async search(
+      query: string,
+      options?: GlobalSearchOptions,
+    ): Promise<readonly GlobalSearchResult[]> {
+      ensureNotDisposed();
+      return searchContracts(transportConfig, query, options);
+    },
 
-        // -------------------------------------------------------------------
-        // Get Contract
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Get Contract
+    // -------------------------------------------------------------------
 
-        async getContract(
-            name: string,
-            registryUrl: string,
-        ): Promise<GlobalSearchResult | null> {
-            ensureNotDisposed();
-            return getContract(transportConfig, name, registryUrl);
-        },
+    async getContract(name: string, registryUrl: string): Promise<GlobalSearchResult | null> {
+      ensureNotDisposed();
+      return getContract(transportConfig, name, registryUrl);
+    },
 
-        // -------------------------------------------------------------------
-        // Featured
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Featured
+    // -------------------------------------------------------------------
 
-        async featured(): Promise<readonly GlobalSearchResult[]> {
-            ensureNotDisposed();
-            return getFeatured(transportConfig);
-        },
+    async featured(): Promise<readonly GlobalSearchResult[]> {
+      ensureNotDisposed();
+      return getFeatured(transportConfig);
+    },
 
-        // -------------------------------------------------------------------
-        // Register Registry (GI1)
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Register Registry (GI1)
+    // -------------------------------------------------------------------
 
-        async registerRegistry(
-            registration: RegistryRegistration,
-        ): Promise<FederatedRegistry> {
-            ensureNotDisposed();
-            return registerRegistry(transportConfig, registration);
-        },
+    async registerRegistry(registration: RegistryRegistration): Promise<FederatedRegistry> {
+      ensureNotDisposed();
+      return registerRegistry(transportConfig, registration);
+    },
 
-        // -------------------------------------------------------------------
-        // List Registries (GI1)
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // List Registries (GI1)
+    // -------------------------------------------------------------------
 
-        async listRegistries(): Promise<readonly FederatedRegistry[]> {
-            ensureNotDisposed();
-            return listRegistries(transportConfig);
-        },
+    async listRegistries(): Promise<readonly FederatedRegistry[]> {
+      ensureNotDisposed();
+      return listRegistries(transportConfig);
+    },
 
-        // -------------------------------------------------------------------
-        // Refresh Registry (GI2)
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Refresh Registry (GI2)
+    // -------------------------------------------------------------------
 
-        async refreshRegistry(registryId: string): Promise<FederatedRegistry> {
-            ensureNotDisposed();
-            return refreshRegistry(transportConfig, registryId);
-        },
+    async refreshRegistry(registryId: string): Promise<FederatedRegistry> {
+      ensureNotDisposed();
+      return refreshRegistry(transportConfig, registryId);
+    },
 
-        // -------------------------------------------------------------------
-        // Publish Contract
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Publish Contract
+    // -------------------------------------------------------------------
 
-        async publishContract(
-            contract: ComponentContract,
-        ): Promise<GlobalSearchResult> {
-            ensureNotDisposed();
-            return publishContract(transportConfig, contract);
-        },
+    async publishContract(contract: ComponentContract): Promise<GlobalSearchResult> {
+      ensureNotDisposed();
+      return publishContract(transportConfig, contract);
+    },
 
-        // -------------------------------------------------------------------
-        // Publisher Stats (publish-to-earn)
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Publisher Stats (publish-to-earn)
+    // -------------------------------------------------------------------
 
-        async getPublisherStats(publisher: string): Promise<PublishEarnings> {
-            ensureNotDisposed();
-            return getPublisherStats(transportConfig, publisher);
-        },
+    async getPublisherStats(publisher: string): Promise<PublishEarnings> {
+      ensureNotDisposed();
+      return getPublisherStats(transportConfig, publisher);
+    },
 
-        // -------------------------------------------------------------------
-        // Dispose
-        // -------------------------------------------------------------------
+    // -------------------------------------------------------------------
+    // Dispose
+    // -------------------------------------------------------------------
 
-        dispose(): void {
-            // Idempotent — safe to call multiple times
-            disposed = true;
-        },
-    };
+    dispose(): void {
+      // Idempotent — safe to call multiple times
+      disposed = true;
+    },
+  };
 
-    // Freeze the returned object for defensive immutability
-    return Object.freeze(globalIndex);
+  // Freeze the returned object for defensive immutability
+  return Object.freeze(globalIndex);
 }

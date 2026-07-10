@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/forge-component
+ * @module @enterstellar/agent-sdk/tools/forge-component
  * @description Implements the `enterstellar_forge_component` MCP tool.
  *
  * Delegates to `ComponentForge.forge()` for runtime component generation
@@ -21,7 +21,7 @@
  * @see Principle L12 — ForgeSignal emitted inside forge.
  */
 
-import type { ForgeResult } from '@enterstellar-ai/types';
+import type { ForgeResult } from '@enterstellar/types';
 
 import type { AgentSDKForge } from '../types.js';
 import { searchFailedError } from '../errors.js';
@@ -53,42 +53,41 @@ import { searchFailedError } from '../errors.js';
  * ```
  */
 export async function executeForgeComponent(
-    forge: AgentSDKForge | undefined,
-    intent: string,
-    constraints?: Readonly<Record<string, unknown>>,
+  forge: AgentSDKForge | undefined,
+  intent: string,
+  constraints?: Readonly<Record<string, unknown>>,
 ): Promise<ForgeResult> {
-    // -----------------------------------------------------------------------
-    // Validate forge dependency
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Validate forge dependency
+  // -----------------------------------------------------------------------
 
-    if (forge === undefined) {
-        throw searchFailedError(
-            intent,
-            new Error(
-                'ComponentForge is not configured. ' +
-                'Provide it via createAgentSDK({ forge: ... }).',
-            ),
-        );
-    }
+  if (forge === undefined) {
+    throw searchFailedError(
+      intent,
+      new Error(
+        'ComponentForge is not configured. ' + 'Provide it via createAgentSDK({ forge: ... }).',
+      ),
+    );
+  }
 
-    // -----------------------------------------------------------------------
-    // Construct intent for the forge
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Construct intent for the forge
+  // -----------------------------------------------------------------------
 
-    const componentIntent: Readonly<Record<string, unknown>> = {
-        component: intent,
-        props: constraints ?? {},
-        confidence: 0.5,
-    };
+  const componentIntent: Readonly<Record<string, unknown>> = {
+    component: intent,
+    props: constraints ?? {},
+    confidence: 0.5,
+  };
 
-    // -----------------------------------------------------------------------
-    // Delegate to forge (F9 — should never throw)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Delegate to forge (F9 — should never throw)
+  // -----------------------------------------------------------------------
 
-    try {
-        return await forge.forge(componentIntent);
-    } catch (error: unknown) {
-        // F9 guarantees no hard-fail, but wrap any unexpected errors
-        throw searchFailedError(intent, error);
-    }
+  try {
+    return await forge.forge(componentIntent);
+  } catch (error: unknown) {
+    // F9 guarantees no hard-fail, but wrap any unexpected errors
+    throw searchFailedError(intent, error);
+  }
 }

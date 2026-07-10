@@ -1,0 +1,48 @@
+{
+  "name": "@enterstellar-ai/devtools",
+  "description": "DEPRECATED: This package has moved to @enterstellar. Update imports to the new scope.",
+  "version": "0.1.1",
+  "author": "Enterstellar",
+  "license": "Apache-2.0",
+  "homepage": "https://enterstellar.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enterstellar-ai/enterstellar.git",
+    "directory": "legacy/devtools"
+  },
+  "type": "module",
+  "private": false,
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@enterstellar/devtools": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

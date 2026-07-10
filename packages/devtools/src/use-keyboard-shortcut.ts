@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/use-keyboard-shortcut
+ * @module @enterstellar/devtools/use-keyboard-shortcut
  * @description React hook for detecting keyboard shortcut combos.
  *
  * Attaches a `keydown` listener to `document` and invokes the callback
@@ -35,16 +35,16 @@ import { useEffect, useRef } from 'react';
  * @internal
  */
 type ParsedShortcut = {
-    /** Whether `Ctrl` (or `Meta` on macOS) must be pressed. */
-    readonly ctrl: boolean;
-    /** Whether `Shift` must be pressed. */
-    readonly shift: boolean;
-    /** Whether `Alt` must be pressed. */
-    readonly alt: boolean;
-    /** Whether `Meta` (Cmd on macOS) must be pressed. */
-    readonly meta: boolean;
-    /** The non-modifier key (lowercase). */
-    readonly key: string;
+  /** Whether `Ctrl` (or `Meta` on macOS) must be pressed. */
+  readonly ctrl: boolean;
+  /** Whether `Shift` must be pressed. */
+  readonly shift: boolean;
+  /** Whether `Alt` must be pressed. */
+  readonly alt: boolean;
+  /** Whether `Meta` (Cmd on macOS) must be pressed. */
+  readonly meta: boolean;
+  /** The non-modifier key (lowercase). */
+  readonly key: string;
 };
 
 /**
@@ -56,17 +56,17 @@ type ParsedShortcut = {
  * @internal
  */
 export function parseShortcut(shortcut: string): ParsedShortcut {
-    const parts = shortcut.toLowerCase().split('+');
-    const modifiers = new Set(parts.slice(0, -1));
-    const lastPart = parts[parts.length - 1];
+  const parts = shortcut.toLowerCase().split('+');
+  const modifiers = new Set(parts.slice(0, -1));
+  const lastPart = parts[parts.length - 1];
 
-    return {
-        ctrl: modifiers.has('ctrl'),
-        shift: modifiers.has('shift'),
-        alt: modifiers.has('alt'),
-        meta: modifiers.has('meta'),
-        key: lastPart ?? '',
-    };
+  return {
+    ctrl: modifiers.has('ctrl'),
+    shift: modifiers.has('shift'),
+    alt: modifiers.has('alt'),
+    meta: modifiers.has('meta'),
+    key: lastPart ?? '',
+  };
 }
 
 /**
@@ -82,22 +82,18 @@ export function parseShortcut(shortcut: string): ParsedShortcut {
  * @internal
  */
 export function matchesShortcut(event: KeyboardEvent, parsed: ParsedShortcut): boolean {
-    // ctrl in shortcut matches either ctrlKey or metaKey (macOS Cmd)
-    const ctrlMatch = parsed.ctrl
-        ? (event.ctrlKey || event.metaKey)
-        : (!event.ctrlKey && !event.metaKey);
+  // ctrl in shortcut matches either ctrlKey or metaKey (macOS Cmd)
+  const ctrlMatch = parsed.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
 
-    const shiftMatch = parsed.shift === event.shiftKey;
-    const altMatch = parsed.alt === event.altKey;
+  const shiftMatch = parsed.shift === event.shiftKey;
+  const altMatch = parsed.alt === event.altKey;
 
-    // Meta is only checked independently if explicitly in the shortcut AND ctrl is not
-    const metaMatch = parsed.meta
-        ? event.metaKey
-        : true; // If meta is not required, we don't check it (ctrl already handles macOS)
+  // Meta is only checked independently if explicitly in the shortcut AND ctrl is not
+  const metaMatch = parsed.meta ? event.metaKey : true; // If meta is not required, we don't check it (ctrl already handles macOS)
 
-    const keyMatch = event.key.toLowerCase() === parsed.key;
+  const keyMatch = event.key.toLowerCase() === parsed.key;
 
-    return ctrlMatch && shiftMatch && altMatch && metaMatch && keyMatch;
+  return ctrlMatch && shiftMatch && altMatch && metaMatch && keyMatch;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,23 +115,23 @@ export function matchesShortcut(event: KeyboardEvent, parsed: ParsedShortcut): b
  * @internal
  */
 export function useKeyboardShortcut(shortcut: string, callback: () => void): void {
-    const callbackRef = useRef(callback);
-    callbackRef.current = callback;
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
 
-    useEffect(() => {
-        const parsed = parseShortcut(shortcut);
+  useEffect(() => {
+    const parsed = parseShortcut(shortcut);
 
-        function handleKeyDown(event: KeyboardEvent): void {
-            if (matchesShortcut(event, parsed)) {
-                event.preventDefault();
-                callbackRef.current();
-            }
-        }
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (matchesShortcut(event, parsed)) {
+        event.preventDefault();
+        callbackRef.current();
+      }
+    }
 
-        document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
 
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [shortcut]);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [shortcut]);
 }

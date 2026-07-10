@@ -31,7 +31,7 @@
  *
  * **Important:** This file contains ONLY contracts (pure data). Renderers
  * are in `renderers.tsx` per Design Choice R6. The split ensures
- * `@enterstellar-ai/registry` has zero framework imports.
+ * `@enterstellar/registry` has zero framework imports.
  *
  * @see Bible §5.1 — defineComponent specification
  * @see Design Choices R1–R12 — registration rules
@@ -40,8 +40,8 @@
 
 import { z } from 'zod';
 
-import { defineComponent, createRegistry } from '@enterstellar-ai/registry';
-import type { EnterstellarRegistry } from '@enterstellar-ai/registry';
+import { defineComponent, createRegistry } from '@enterstellar/registry';
+import type { EnterstellarRegistry } from '@enterstellar/registry';
 
 // Domain-specific component contracts (30 components)
 import {
@@ -134,16 +134,16 @@ const DataTable = defineComponent({
   category: 'data-display',
   tags: ['table', 'data', 'grid', 'list', 'sortable'],
   props: z.object({
-    columns: z.array(
-      z.object({
-        key: z.string().min(1),
-        label: z.string().min(1),
-        align: z.enum(['left', 'center', 'right']).optional(),
-      }),
-    ).min(1, 'At least one column is required.'),
-    rows: z.array(
-      z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
-    ),
+    columns: z
+      .array(
+        z.object({
+          key: z.string().min(1),
+          label: z.string().min(1),
+          align: z.enum(['left', 'center', 'right']).optional(),
+        }),
+      )
+      .min(1, 'At least one column is required.'),
+    rows: z.array(z.record(z.string(), z.union([z.string(), z.number(), z.boolean()]))),
     sortable: z.boolean().optional(),
   }),
   tokens: {
@@ -176,7 +176,12 @@ const DataTable = defineComponent({
           { key: 'status', label: 'Status' },
         ],
         rows: [
-          { date: '2026-04-10', description: 'Wire Transfer', amount: '$12,400', status: 'Completed' },
+          {
+            date: '2026-04-10',
+            description: 'Wire Transfer',
+            amount: '$12,400',
+            status: 'Completed',
+          },
           { date: '2026-04-09', description: 'Invoice #1042', amount: '$3,200', status: 'Pending' },
           { date: '2026-04-08', description: 'Subscription', amount: '$99', status: 'Completed' },
         ],
@@ -257,12 +262,14 @@ const UserProfile = defineComponent({
     name: z.string().min(1, 'User name is required.'),
     role: z.string().min(1, 'Role is required.'),
     avatar: z.string().optional(),
-    stats: z.array(
-      z.object({
-        label: z.string().min(1),
-        value: z.union([z.string(), z.number()]),
-      }),
-    ).optional(),
+    stats: z
+      .array(
+        z.object({
+          label: z.string().min(1),
+          value: z.union([z.string(), z.number()]),
+        }),
+      )
+      .optional(),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -316,13 +323,15 @@ const ActivityFeed = defineComponent({
   category: 'data-display',
   tags: ['activity', 'feed', 'timeline', 'events', 'log'],
   props: z.object({
-    entries: z.array(
-      z.object({
-        timestamp: z.string().min(1),
-        action: z.string().min(1),
-        user: z.string().min(1),
-      }),
-    ).min(1, 'At least one entry is required.'),
+    entries: z
+      .array(
+        z.object({
+          timestamp: z.string().min(1),
+          action: z.string().min(1),
+          user: z.string().min(1),
+        }),
+      )
+      .min(1, 'At least one entry is required.'),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -350,7 +359,11 @@ const ActivityFeed = defineComponent({
         entries: [
           { timestamp: '2 min ago', action: 'Deployed v2.4.1 to production', user: 'Sarah Chen' },
           { timestamp: '15 min ago', action: 'Merged PR #847: Fix auth flow', user: 'Alex Kim' },
-          { timestamp: '1 hour ago', action: 'Created branch feature/dashboard', user: 'Jordan Lee' },
+          {
+            timestamp: '1 hour ago',
+            action: 'Created branch feature/dashboard',
+            user: 'Jordan Lee',
+          },
           { timestamp: '3 hours ago', action: 'Updated CI pipeline config', user: 'Sarah Chen' },
         ],
       },
@@ -459,7 +472,8 @@ const AlertBanner = defineComponent({
       props: {
         severity: 'critical',
         title: 'Security Alert',
-        message: 'Unusual login activity detected from IP 192.168.1.42. Please verify your recent sessions.',
+        message:
+          'Unusual login activity detected from IP 192.168.1.42. Please verify your recent sessions.',
         dismissible: true,
       },
     },
@@ -493,14 +507,16 @@ const CommandPalette = defineComponent({
   category: 'navigation',
   tags: ['command', 'palette', 'search', 'navigation', 'keyboard', 'menu'],
   props: z.object({
-    commands: z.array(
-      z.object({
-        label: z.string().min(1),
-        action: z.string().min(1),
-        shortcut: z.string().optional(),
-        group: z.string().optional(),
-      }),
-    ).min(1, 'At least one command is required.'),
+    commands: z
+      .array(
+        z.object({
+          label: z.string().min(1),
+          action: z.string().min(1),
+          shortcut: z.string().optional(),
+          group: z.string().optional(),
+        }),
+      )
+      .min(1, 'At least one command is required.'),
     placeholder: z.string().optional(),
   }),
   tokens: {
@@ -528,8 +544,18 @@ const CommandPalette = defineComponent({
       intent: 'Show available admin commands',
       props: {
         commands: [
-          { label: 'Deploy to Production', action: 'deploy:prod', shortcut: '⌘⇧D', group: 'Deployment' },
-          { label: 'Rollback Release', action: 'deploy:rollback', shortcut: '⌘⇧R', group: 'Deployment' },
+          {
+            label: 'Deploy to Production',
+            action: 'deploy:prod',
+            shortcut: '⌘⇧D',
+            group: 'Deployment',
+          },
+          {
+            label: 'Rollback Release',
+            action: 'deploy:rollback',
+            shortcut: '⌘⇧R',
+            group: 'Deployment',
+          },
           { label: 'View Logs', action: 'logs:view', shortcut: '⌘L', group: 'Monitoring' },
           { label: 'Clear Cache', action: 'cache:clear', group: 'Maintenance' },
           { label: 'Invite Team Member', action: 'team:invite', group: 'Team' },
@@ -568,13 +594,15 @@ const GenericCard = defineComponent({
     // Compiler fallback instrumentation (C6)
     originalComponent: z.string().optional(),
     originalProps: z.record(z.string(), z.unknown()).optional(),
-    errors: z.array(
-      z.object({
-        code: z.string(),
-        message: z.string(),
-        path: z.string(),
-      })
-    ).optional(),
+    errors: z
+      .array(
+        z.object({
+          code: z.string(),
+          message: z.string(),
+          path: z.string(),
+        }),
+      )
+      .optional(),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -642,11 +670,11 @@ export const playgroundRegistry: EnterstellarRegistry = createRegistry({
     'card-border': 'token:card-border',
     'text-primary': 'token:text-primary',
     'text-secondary': 'token:text-secondary',
-    'surface': 'token:surface',
-    'accent': 'token:accent',
-    'success': 'token:success',
-    'danger': 'token:danger',
-    'warning': 'token:warning',
+    surface: 'token:surface',
+    accent: 'token:accent',
+    success: 'token:success',
+    danger: 'token:danger',
+    warning: 'token:warning',
   },
 });
 

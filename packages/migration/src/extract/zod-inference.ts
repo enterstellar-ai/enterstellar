@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/extract/zod-inference
+ * @module @enterstellar/migration/extract/zod-inference
  * @description TypeScript type → Zod schema mapping.
  *
  * Converts TypeScript interface/type declarations into runtime Zod schemas.
@@ -74,7 +74,7 @@ const MAX_DEPTH = 10;
  * @returns `true` if every type is a string literal.
  */
 export function isAllStringLiterals(types: readonly Type[]): boolean {
-    return types.length > 0 && types.every((t) => t.isStringLiteral());
+  return types.length > 0 && types.every((t) => t.isStringLiteral());
 }
 
 // ---------------------------------------------------------------------------
@@ -101,86 +101,86 @@ export function isAllStringLiterals(types: readonly Type[]): boolean {
  * @see Correction 1 — Generic constraint → placeholder mapping table
  */
 export function typeToZodSchema(
-    type: Type,
-    diagnostics: ExtractDiagnostic[],
-    depth: number = 0,
+  type: Type,
+  diagnostics: ExtractDiagnostic[],
+  depth: number = 0,
 ): z.ZodType {
-    // --- Depth guard ---
-    if (depth >= MAX_DEPTH) {
-        diagnostics.push({
-            level: 'warning',
-            message: `Max recursion depth (${String(MAX_DEPTH)}) reached for type "${type.getText()}". Using z.unknown().`,
-            field: 'props',
-        });
-        return z.unknown();
-    }
-
-    // --- Primitives ---
-    if (type.isString()) return z.string();
-    if (type.isNumber()) return z.number();
-    if (type.isBoolean()) return z.boolean();
-    if (type.isNull()) return z.null();
-    if (type.isUndefined()) return z.undefined();
-
-    // --- Literals ---
-    if (type.isStringLiteral()) return z.literal(type.getLiteralValueOrThrow() as string);
-    if (type.isNumberLiteral()) return z.literal(type.getLiteralValueOrThrow() as number);
-    if (type.isBooleanLiteral()) {
-        const value = type.getText() === 'true';
-        return z.literal(value);
-    }
-
-    // --- Unions (must come before object check — union members may be objects) ---
-    if (type.isUnion()) {
-        return handleUnion(type.getUnionTypes(), diagnostics, depth);
-    }
-
-    // --- Intersections ---
-    if (type.isIntersection()) {
-        return handleIntersection(type.getIntersectionTypes(), diagnostics, depth);
-    }
-
-    // --- Arrays ---
-    if (type.isArray()) {
-        const elementType = type.getArrayElementTypeOrThrow();
-        return z.array(typeToZodSchema(elementType, diagnostics, depth + 1));
-    }
-
-    // --- Tuples ---
-    if (type.isTuple()) {
-        const elements = type.getTupleElements();
-        const schemas = elements.map((el) => typeToZodSchema(el, diagnostics, depth + 1));
-        return z.tuple(schemas as [z.ZodType, ...z.ZodType[]]);
-    }
-
-    // --- Functions (callback props) ---
-    if (type.getCallSignatures().length > 0 && type.getProperties().length === 0) {
-        return z.function();
-    }
-
-    // --- Objects / Interfaces ---
-    if (type.isObject()) {
-        return handleObject(type, diagnostics, depth);
-    }
-
-    // --- Enum types ---
-    if (type.isEnum()) {
-        const enumMembers = type.getUnionTypes();
-        if (isAllStringLiterals(enumMembers)) {
-            const values = enumMembers.map((m) => m.getLiteralValueOrThrow() as string);
-            return z.enum(values as [string, ...string[]]);
-        }
-        // Mixed enum — map as union
-        return handleUnion(enumMembers, diagnostics, depth);
-    }
-
-    // --- Fallback: unresolvable (generics, utility types, etc.) ---
+  // --- Depth guard ---
+  if (depth >= MAX_DEPTH) {
     diagnostics.push({
-        level: 'warning',
-        message: `Unresolvable type "${type.getText()}". Using z.unknown(). This may be a generic type parameter.`,
-        field: 'props',
+      level: 'warning',
+      message: `Max recursion depth (${String(MAX_DEPTH)}) reached for type "${type.getText()}". Using z.unknown().`,
+      field: 'props',
     });
     return z.unknown();
+  }
+
+  // --- Primitives ---
+  if (type.isString()) return z.string();
+  if (type.isNumber()) return z.number();
+  if (type.isBoolean()) return z.boolean();
+  if (type.isNull()) return z.null();
+  if (type.isUndefined()) return z.undefined();
+
+  // --- Literals ---
+  if (type.isStringLiteral()) return z.literal(type.getLiteralValueOrThrow() as string);
+  if (type.isNumberLiteral()) return z.literal(type.getLiteralValueOrThrow() as number);
+  if (type.isBooleanLiteral()) {
+    const value = type.getText() === 'true';
+    return z.literal(value);
+  }
+
+  // --- Unions (must come before object check — union members may be objects) ---
+  if (type.isUnion()) {
+    return handleUnion(type.getUnionTypes(), diagnostics, depth);
+  }
+
+  // --- Intersections ---
+  if (type.isIntersection()) {
+    return handleIntersection(type.getIntersectionTypes(), diagnostics, depth);
+  }
+
+  // --- Arrays ---
+  if (type.isArray()) {
+    const elementType = type.getArrayElementTypeOrThrow();
+    return z.array(typeToZodSchema(elementType, diagnostics, depth + 1));
+  }
+
+  // --- Tuples ---
+  if (type.isTuple()) {
+    const elements = type.getTupleElements();
+    const schemas = elements.map((el) => typeToZodSchema(el, diagnostics, depth + 1));
+    return z.tuple(schemas as [z.ZodType, ...z.ZodType[]]);
+  }
+
+  // --- Functions (callback props) ---
+  if (type.getCallSignatures().length > 0 && type.getProperties().length === 0) {
+    return z.function();
+  }
+
+  // --- Objects / Interfaces ---
+  if (type.isObject()) {
+    return handleObject(type, diagnostics, depth);
+  }
+
+  // --- Enum types ---
+  if (type.isEnum()) {
+    const enumMembers = type.getUnionTypes();
+    if (isAllStringLiterals(enumMembers)) {
+      const values = enumMembers.map((m) => m.getLiteralValueOrThrow() as string);
+      return z.enum(values as [string, ...string[]]);
+    }
+    // Mixed enum — map as union
+    return handleUnion(enumMembers, diagnostics, depth);
+  }
+
+  // --- Fallback: unresolvable (generics, utility types, etc.) ---
+  diagnostics.push({
+    level: 'warning',
+    message: `Unresolvable type "${type.getText()}". Using z.unknown(). This may be a generic type parameter.`,
+    field: 'props',
+  });
+  return z.unknown();
 }
 
 // ---------------------------------------------------------------------------
@@ -195,58 +195,54 @@ export function typeToZodSchema(
  * 2. Extracts `null` members → `.nullable()`
  * 3. All-string-literal remainder → `z.enum()` instead of `z.union()`
  */
-function handleUnion(
-    members: Type[],
-    diagnostics: ExtractDiagnostic[],
-    depth: number,
-): z.ZodType {
-    // Separate undefined and null from the union
-    let hasUndefined = false;
-    let hasNull = false;
-    const remaining: Type[] = [];
+function handleUnion(members: Type[], diagnostics: ExtractDiagnostic[], depth: number): z.ZodType {
+  // Separate undefined and null from the union
+  let hasUndefined = false;
+  let hasNull = false;
+  const remaining: Type[] = [];
 
-    for (const member of members) {
-        if (member.isUndefined()) {
-            hasUndefined = true;
-        } else if (member.isNull()) {
-            hasNull = true;
-        } else {
-            remaining.push(member);
-        }
-    }
-
-    // Build the core schema from remaining types
-    let schema: z.ZodType;
-
-    if (remaining.length === 0) {
-        // Union was only undefined/null
-        schema = z.unknown();
-    } else if (remaining.length === 1) {
-        const single = remaining[0];
-        if (single !== undefined) {
-            schema = typeToZodSchema(single, diagnostics, depth + 1);
-        } else {
-            schema = z.unknown();
-        }
-    } else if (isAllStringLiterals(remaining)) {
-        // Optimization: string literal union → z.enum()
-        const values = remaining.map((m) => m.getLiteralValueOrThrow() as string);
-        schema = z.enum(values as [string, ...string[]]);
+  for (const member of members) {
+    if (member.isUndefined()) {
+      hasUndefined = true;
+    } else if (member.isNull()) {
+      hasNull = true;
     } else {
-        // Mixed union → z.union()
-        const schemas = remaining.map((m) => typeToZodSchema(m, diagnostics, depth + 1));
-        schema = z.union(schemas as [z.ZodType, z.ZodType, ...z.ZodType[]]);
+      remaining.push(member);
     }
+  }
 
-    // Apply optional/nullable wrappers
-    if (hasNull) {
-        schema = schema.nullable();
-    }
-    if (hasUndefined) {
-        schema = schema.optional();
-    }
+  // Build the core schema from remaining types
+  let schema: z.ZodType;
 
-    return schema;
+  if (remaining.length === 0) {
+    // Union was only undefined/null
+    schema = z.unknown();
+  } else if (remaining.length === 1) {
+    const single = remaining[0];
+    if (single !== undefined) {
+      schema = typeToZodSchema(single, diagnostics, depth + 1);
+    } else {
+      schema = z.unknown();
+    }
+  } else if (isAllStringLiterals(remaining)) {
+    // Optimization: string literal union → z.enum()
+    const values = remaining.map((m) => m.getLiteralValueOrThrow() as string);
+    schema = z.enum(values as [string, ...string[]]);
+  } else {
+    // Mixed union → z.union()
+    const schemas = remaining.map((m) => typeToZodSchema(m, diagnostics, depth + 1));
+    schema = z.union(schemas as [z.ZodType, z.ZodType, ...z.ZodType[]]);
+  }
+
+  // Apply optional/nullable wrappers
+  if (hasNull) {
+    schema = schema.nullable();
+  }
+  if (hasUndefined) {
+    schema = schema.optional();
+  }
+
+  return schema;
 }
 
 // ---------------------------------------------------------------------------
@@ -260,23 +256,23 @@ function handleUnion(
  * we nest: `z.intersection(z.intersection(A, B), C)`.
  */
 function handleIntersection(
-    members: Type[],
-    diagnostics: ExtractDiagnostic[],
-    depth: number,
+  members: Type[],
+  diagnostics: ExtractDiagnostic[],
+  depth: number,
 ): z.ZodType {
-    if (members.length === 0) return z.unknown();
+  if (members.length === 0) return z.unknown();
 
-    const first = members[0];
-    if (first === undefined) return z.unknown();
-    let result = typeToZodSchema(first, diagnostics, depth + 1);
+  const first = members[0];
+  if (first === undefined) return z.unknown();
+  let result = typeToZodSchema(first, diagnostics, depth + 1);
 
-    for (let i = 1; i < members.length; i++) {
-        const member = members[i];
-        if (member === undefined) continue;
-        result = z.intersection(result, typeToZodSchema(member, diagnostics, depth + 1));
-    }
+  for (let i = 1; i < members.length; i++) {
+    const member = members[i];
+    if (member === undefined) continue;
+    result = z.intersection(result, typeToZodSchema(member, diagnostics, depth + 1));
+  }
 
-    return result;
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,37 +285,33 @@ function handleIntersection(
  * Recursively maps each property to its Zod equivalent. Detects
  * `Record<K, V>` pattern via index signatures and maps to `z.record()`.
  */
-function handleObject(
-    type: Type,
-    diagnostics: ExtractDiagnostic[],
-    depth: number,
-): z.ZodType {
-    // Check for Record/Map pattern — has string index signature, no named props
-    const numberIndexType = type.getNumberIndexType();
-    const stringIndexType = type.getStringIndexType();
-    const properties = type.getProperties();
+function handleObject(type: Type, diagnostics: ExtractDiagnostic[], depth: number): z.ZodType {
+  // Check for Record/Map pattern — has string index signature, no named props
+  const numberIndexType = type.getNumberIndexType();
+  const stringIndexType = type.getStringIndexType();
+  const properties = type.getProperties();
 
-    if (stringIndexType !== undefined && properties.length === 0) {
-        return z.record(z.string(), typeToZodSchema(stringIndexType, diagnostics, depth + 1));
-    }
-    if (numberIndexType !== undefined && properties.length === 0) {
-        return z.record(z.number(), typeToZodSchema(numberIndexType, diagnostics, depth + 1));
-    }
+  if (stringIndexType !== undefined && properties.length === 0) {
+    return z.record(z.string(), typeToZodSchema(stringIndexType, diagnostics, depth + 1));
+  }
+  if (numberIndexType !== undefined && properties.length === 0) {
+    return z.record(z.number(), typeToZodSchema(numberIndexType, diagnostics, depth + 1));
+  }
 
-    // Standard object — map each property
-    const shape: Record<string, z.ZodType> = {};
-    for (const prop of properties) {
-        const propName = prop.getName();
-        const propType = prop.getValueDeclarationOrThrow().getType();
-        const isOptional = prop.isOptional();
+  // Standard object — map each property
+  const shape: Record<string, z.ZodType> = {};
+  for (const prop of properties) {
+    const propName = prop.getName();
+    const propType = prop.getValueDeclarationOrThrow().getType();
+    const isOptional = prop.isOptional();
 
-        let propSchema = typeToZodSchema(propType, diagnostics, depth + 1);
-        if (isOptional) {
-            propSchema = propSchema.optional();
-        }
-
-        shape[propName] = propSchema;
+    let propSchema = typeToZodSchema(propType, diagnostics, depth + 1);
+    if (isOptional) {
+      propSchema = propSchema.optional();
     }
 
-    return z.object(shape);
+    shape[propName] = propSchema;
+  }
+
+  return z.object(shape);
 }

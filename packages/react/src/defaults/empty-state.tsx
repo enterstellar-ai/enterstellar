@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/defaults/enterstellar-empty-state
+ * @module @enterstellar/react/defaults/enterstellar-empty-state
  * @description Default empty state component for Enterstellar zones.
  *
  * Rendered by `<LifecycleWrapper>` when the zone is in `empty` state
@@ -21,7 +21,7 @@
  *
  * @example
  * ```tsx
- * import { EnterstellarEmptyState } from '@enterstellar-ai/react';
+ * import { EnterstellarEmptyState } from '@enterstellar/react';
  *
  * // Used automatically by LifecycleWrapper:
  * <LifecycleWrapper state="empty" ... />
@@ -43,16 +43,17 @@ import type { CSSProperties } from 'react';
  * @internal
  */
 const EMPTY_CONTAINER_STYLES: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 'var(--enterstellar-empty-gap, 8px)',
-    padding: 'var(--enterstellar-empty-padding, 24px 16px)',
-    width: '100%',
-    boxSizing: 'border-box',
-    textAlign: 'center',
-    fontFamily: 'var(--enterstellar-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 'var(--enterstellar-empty-gap, 8px)',
+  padding: 'var(--enterstellar-empty-padding, 24px 16px)',
+  width: '100%',
+  boxSizing: 'border-box',
+  textAlign: 'center',
+  fontFamily:
+    'var(--enterstellar-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)',
 } as const;
 
 /**
@@ -64,17 +65,17 @@ const EMPTY_CONTAINER_STYLES: CSSProperties = {
  * @internal
  */
 const EMPTY_ICON_STYLES: CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 'var(--enterstellar-empty-icon-size, 40px)',
-    height: 'var(--enterstellar-empty-icon-size, 40px)',
-    borderRadius: '50%',
-    backgroundColor: 'var(--enterstellar-empty-icon-bg, #f3f4f6)',
-    color: 'var(--enterstellar-empty-icon-color, #9ca3af)',
-    fontSize: 'var(--enterstellar-empty-icon-font-size, 18px)',
-    lineHeight: '1',
-    flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 'var(--enterstellar-empty-icon-size, 40px)',
+  height: 'var(--enterstellar-empty-icon-size, 40px)',
+  borderRadius: '50%',
+  backgroundColor: 'var(--enterstellar-empty-icon-bg, #f3f4f6)',
+  color: 'var(--enterstellar-empty-icon-color, #9ca3af)',
+  fontSize: 'var(--enterstellar-empty-icon-font-size, 18px)',
+  lineHeight: '1',
+  flexShrink: 0,
 } as const;
 
 /**
@@ -83,10 +84,10 @@ const EMPTY_ICON_STYLES: CSSProperties = {
  * @internal
  */
 const EMPTY_MESSAGE_STYLES: CSSProperties = {
-    fontSize: 'var(--enterstellar-empty-font-size, 13px)',
-    lineHeight: 'var(--enterstellar-empty-line-height, 1.5)',
-    color: 'var(--enterstellar-empty-color, #6b7280)',
-    margin: 0,
+  fontSize: 'var(--enterstellar-empty-font-size, 13px)',
+  lineHeight: 'var(--enterstellar-empty-line-height, 1.5)',
+  color: 'var(--enterstellar-empty-color, #6b7280)',
+  margin: 0,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -110,21 +111,15 @@ const EMPTY_MESSAGE_STYLES: CSSProperties = {
  * @see Principle L9 — every component has loading, error, empty, ready states.
  */
 export function EnterstellarEmptyState(): React.JSX.Element {
-    return (
-        <div
-            role="status"
-            data-enterstellar-empty-state
-            style={EMPTY_CONTAINER_STYLES}
-        >
-            {/* Empty state icon — circle with dash */}
-            <span style={EMPTY_ICON_STYLES} aria-hidden="true">
-                —
-            </span>
+  return (
+    <div role="status" data-enterstellar-empty-state style={EMPTY_CONTAINER_STYLES}>
+      {/* Empty state icon — circle with dash */}
+      <span style={EMPTY_ICON_STYLES} aria-hidden="true">
+        —
+      </span>
 
-            {/* Empty state message */}
-            <p style={EMPTY_MESSAGE_STYLES}>
-                No content available
-            </p>
-        </div>
-    );
+      {/* Empty state message */}
+      <p style={EMPTY_MESSAGE_STYLES}>No content available</p>
+    </div>
+  );
 }

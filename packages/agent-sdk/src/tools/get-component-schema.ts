@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/get-component-schema
+ * @module @enterstellar/agent-sdk/tools/get-component-schema
  * @description Implements the `enterstellar_get_component_schema` MCP tool.
  *
  * Retrieves a registered component's props schema in JSON Schema format.
@@ -48,17 +48,17 @@ import { componentSchemaNotFoundError } from '../errors.js';
  * ```
  */
 export function executeGetComponentSchema(
-    registry: AgentSDKRegistry,
-    componentName: string,
+  registry: AgentSDKRegistry,
+  componentName: string,
 ): ComponentSchemaResult {
-    const contract = registry.get(componentName);
+  const contract = registry.get(componentName);
 
-    if (contract === undefined) {
-        throw componentSchemaNotFoundError(componentName);
-    }
+  if (contract === undefined) {
+    throw componentSchemaNotFoundError(componentName);
+  }
 
-    return {
-        componentName: contract.name,
-        schema: contract.props,
-    };
+  return {
+    componentName: contract.name,
+    schema: contract.props,
+  };
 }

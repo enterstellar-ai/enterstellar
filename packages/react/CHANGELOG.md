@@ -1,4 +1,21 @@
-# @enterstellar-ai/react
+# @enterstellar/react
+
+## 0.1.1
+
+### Patch Changes
+
+- Migrate the npm scope from `@enterstellar-ai` to `@enterstellar`. Public API is unchanged — consumers must update `package.json` dependencies and import paths. Legacy `@enterstellar-ai/*` proxy packages (v0.1.1) re-export the new scope during the transition period.
+
+- Updated dependencies []:
+  - @enterstellar/adapters@0.1.1
+  - @enterstellar/cache@0.1.1
+  - @enterstellar/compiler@0.1.1
+  - @enterstellar/connection@0.1.1
+  - @enterstellar/lifecycle@0.1.1
+  - @enterstellar/registry@0.1.1
+  - @enterstellar/state@0.1.1
+  - @enterstellar/telemetry@0.1.1
+  - @enterstellar/types@0.1.1
 
 ## 0.1.0
 
@@ -9,12 +26,12 @@
 ### Patch Changes
 
 - Updated dependencies [[`e4898c2`](https://github.com/enterstellar-ai/enterstellar/commit/e4898c275757d904655b3dc1f2190a5edf67e43a)]:
-  - @enterstellar-ai/adapters@0.1.0
-  - @enterstellar-ai/cache@0.1.0
-  - @enterstellar-ai/compiler@0.1.0
-  - @enterstellar-ai/connection@0.1.0
-  - @enterstellar-ai/lifecycle@0.1.0
-  - @enterstellar-ai/registry@0.1.0
-  - @enterstellar-ai/state@0.1.0
-  - @enterstellar-ai/telemetry@0.1.0
-  - @enterstellar-ai/types@0.1.0
+  - @enterstellar/adapters@0.1.0
+  - @enterstellar/cache@0.1.0
+  - @enterstellar/compiler@0.1.0
+  - @enterstellar/connection@0.1.0
+  - @enterstellar/lifecycle@0.1.0
+  - @enterstellar/registry@0.1.0
+  - @enterstellar/state@0.1.0
+  - @enterstellar/telemetry@0.1.0
+  - @enterstellar/types@0.1.0

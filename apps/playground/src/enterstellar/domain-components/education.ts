@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 // ---------------------------------------------------------------------------
 // 1. CourseProgress
 // ---------------------------------------------------------------------------
@@ -34,24 +34,57 @@ import { defineComponent } from '@enterstellar-ai/registry';
  */
 export const CourseProgress = defineComponent({
   name: 'CourseProgress',
-  description: 'Course completion tracker with module breakdown, completion percentage, and time-to-complete.',
+  description:
+    'Course completion tracker with module breakdown, completion percentage, and time-to-complete.',
   category: 'data-display',
   tags: ['education', 'course', 'progress', 'learning', 'modules'],
   props: z.object({
     courseName: z.string().min(1),
     instructor: z.string().min(1),
     completionPercentage: z.number().min(0).max(100),
-    modules: z.array(z.object({
-      name: z.string().min(1),
-      status: z.enum(['completed', 'in-progress', 'locked', 'not-started']),
-      durationMinutes: z.number().int().min(0),
-    })).min(1),
+    modules: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          status: z.enum(['completed', 'in-progress', 'locked', 'not-started']),
+          durationMinutes: z.number().int().min(0),
+        }),
+      )
+      .min(1),
     estimatedTimeRemaining: z.string().nullish(),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent', success: 'token:success' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+    success: 'token:success',
+  },
   accessibility: { role: 'progressbar', ariaLabel: 'Course progress', announceOnUpdate: true },
-  states: { loading: 'CourseProgressLoading', error: 'CourseProgressError', empty: 'CourseProgressEmpty', ready: 'CourseProgress' },
-  examples: [{ intent: 'Show progress for Machine Learning Fundamentals course', props: { courseName: 'Machine Learning Fundamentals', instructor: 'Dr. Priya Patel', completionPercentage: 68, modules: [{ name: 'Introduction to ML', status: 'completed', durationMinutes: 45 }, { name: 'Supervised Learning', status: 'completed', durationMinutes: 90 }, { name: 'Neural Networks', status: 'in-progress', durationMinutes: 120 }, { name: 'Deep Learning', status: 'locked', durationMinutes: 150 }], estimatedTimeRemaining: '4h 30m' } }],
+  states: {
+    loading: 'CourseProgressLoading',
+    error: 'CourseProgressError',
+    empty: 'CourseProgressEmpty',
+    ready: 'CourseProgress',
+  },
+  examples: [
+    {
+      intent: 'Show progress for Machine Learning Fundamentals course',
+      props: {
+        courseName: 'Machine Learning Fundamentals',
+        instructor: 'Dr. Priya Patel',
+        completionPercentage: 68,
+        modules: [
+          { name: 'Introduction to ML', status: 'completed', durationMinutes: 45 },
+          { name: 'Supervised Learning', status: 'completed', durationMinutes: 90 },
+          { name: 'Neural Networks', status: 'in-progress', durationMinutes: 120 },
+          { name: 'Deep Learning', status: 'locked', durationMinutes: 150 },
+        ],
+        estimatedTimeRemaining: '4h 30m',
+      },
+    },
+  ],
 });
 // ---------------------------------------------------------------------------
 // 2. StudentAnalytics
@@ -68,7 +101,8 @@ export const CourseProgress = defineComponent({
  */
 export const StudentAnalytics = defineComponent({
   name: 'StudentAnalytics',
-  description: 'Student performance analytics with GPA, course completion rate, engagement score, and streak.',
+  description:
+    'Student performance analytics with GPA, course completion rate, engagement score, and streak.',
   category: 'data-display',
   tags: ['education', 'analytics', 'student', 'performance', 'metrics'],
   props: z.object({
@@ -81,16 +115,51 @@ export const StudentAnalytics = defineComponent({
       engagementScore: z.number().min(0).max(100),
       currentStreak: z.number().int().min(0),
     }),
-    recentGrades: z.array(z.object({
-      course: z.string().min(1),
-      grade: z.string().min(1),
-      score: z.number().min(0).max(100),
-    })).nullish(),
+    recentGrades: z
+      .array(
+        z.object({
+          course: z.string().min(1),
+          grade: z.string().min(1),
+          score: z.number().min(0).max(100),
+        }),
+      )
+      .nullish(),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent', success: 'token:success' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+    success: 'token:success',
+  },
   accessibility: { role: 'region', ariaLabel: 'Student analytics', announceOnUpdate: false },
-  states: { loading: 'StudentAnalyticsLoading', error: 'StudentAnalyticsError', empty: 'StudentAnalyticsEmpty', ready: 'StudentAnalytics' },
-  examples: [{ intent: 'Show analytics for student Alex Torres', props: { studentName: 'Alex Torres', enrollmentDate: '2023-09-01', metrics: { gpa: 3.7, coursesCompleted: 8, coursesEnrolled: 12, engagementScore: 87, currentStreak: 14 }, recentGrades: [{ course: 'Data Structures', grade: 'A', score: 94 }, { course: 'Database Design', grade: 'B+', score: 88 }] } }],
+  states: {
+    loading: 'StudentAnalyticsLoading',
+    error: 'StudentAnalyticsError',
+    empty: 'StudentAnalyticsEmpty',
+    ready: 'StudentAnalytics',
+  },
+  examples: [
+    {
+      intent: 'Show analytics for student Alex Torres',
+      props: {
+        studentName: 'Alex Torres',
+        enrollmentDate: '2023-09-01',
+        metrics: {
+          gpa: 3.7,
+          coursesCompleted: 8,
+          coursesEnrolled: 12,
+          engagementScore: 87,
+          currentStreak: 14,
+        },
+        recentGrades: [
+          { course: 'Data Structures', grade: 'A', score: 94 },
+          { course: 'Database Design', grade: 'B+', score: 88 },
+        ],
+      },
+    },
+  ],
 });
 // ---------------------------------------------------------------------------
 // 3. AssessmentResults
@@ -107,7 +176,8 @@ export const StudentAnalytics = defineComponent({
  */
 export const AssessmentResults = defineComponent({
   name: 'AssessmentResults',
-  description: 'Assessment results card with overall score, time taken, question breakdown, and pass/fail status.',
+  description:
+    'Assessment results card with overall score, time taken, question breakdown, and pass/fail status.',
   category: 'data-display',
   tags: ['education', 'assessment', 'quiz', 'results', 'grading'],
   props: z.object({
@@ -117,17 +187,51 @@ export const AssessmentResults = defineComponent({
     passingScore: z.number().min(0).max(100),
     passed: z.boolean(),
     timeTaken: z.string().min(1),
-    questionBreakdown: z.array(z.object({
-      section: z.string().min(1),
-      correct: z.number().int().min(0),
-      total: z.number().int().min(1),
-    })).nullish(),
+    questionBreakdown: z
+      .array(
+        z.object({
+          section: z.string().min(1),
+          correct: z.number().int().min(0),
+          total: z.number().int().min(1),
+        }),
+      )
+      .nullish(),
     submittedAt: z.string().min(1),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', success: 'token:success', danger: 'token:danger' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    success: 'token:success',
+    danger: 'token:danger',
+  },
   accessibility: { role: 'region', ariaLabel: 'Assessment results', announceOnUpdate: true },
-  states: { loading: 'AssessmentResultsLoading', error: 'AssessmentResultsError', empty: 'AssessmentResultsEmpty', ready: 'AssessmentResults' },
-  examples: [{ intent: 'Show assessment results for Neural Networks quiz', props: { assessmentName: 'Neural Networks Mid-Term', courseName: 'Machine Learning Fundamentals', score: 92, passingScore: 70, passed: true, timeTaken: '42 minutes', questionBreakdown: [{ section: 'Theory', correct: 18, total: 20 }, { section: 'Implementation', correct: 14, total: 15 }, { section: 'Case Study', correct: 6, total: 8 }], submittedAt: '2024-03-15T14:30:00Z' } }],
+  states: {
+    loading: 'AssessmentResultsLoading',
+    error: 'AssessmentResultsError',
+    empty: 'AssessmentResultsEmpty',
+    ready: 'AssessmentResults',
+  },
+  examples: [
+    {
+      intent: 'Show assessment results for Neural Networks quiz',
+      props: {
+        assessmentName: 'Neural Networks Mid-Term',
+        courseName: 'Machine Learning Fundamentals',
+        score: 92,
+        passingScore: 70,
+        passed: true,
+        timeTaken: '42 minutes',
+        questionBreakdown: [
+          { section: 'Theory', correct: 18, total: 20 },
+          { section: 'Implementation', correct: 14, total: 15 },
+          { section: 'Case Study', correct: 6, total: 8 },
+        ],
+        submittedAt: '2024-03-15T14:30:00Z',
+      },
+    },
+  ],
 });
 
 // ---------------------------------------------------------------------------
@@ -149,21 +253,26 @@ export const AssessmentResults = defineComponent({
  */
 export const CurriculumMap = defineComponent({
   name: 'CurriculumMap',
-  description: 'Learning path curriculum map with prerequisite chains, mastery levels, and unlock conditions.',
+  description:
+    'Learning path curriculum map with prerequisite chains, mastery levels, and unlock conditions.',
   category: 'data-display',
   tags: ['education', 'curriculum', 'learning-path', 'prerequisites', 'mastery'],
   props: z.object({
     pathName: z.string().min(1),
     description: z.string().nullish(),
     totalHours: z.number().min(0),
-    topics: z.array(z.object({
-      name: z.string().min(1),
-      mastery: z.enum(['novice', 'intermediate', 'proficient', 'expert', 'not-started']),
-      estimatedHours: z.number().min(0),
-      prerequisites: z.array(z.string()).nullish(),
-      unlocked: z.boolean(),
-      completedAt: z.string().nullish(),
-    })).min(2, 'A curriculum requires at least two topics.'),
+    topics: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          mastery: z.enum(['novice', 'intermediate', 'proficient', 'expert', 'not-started']),
+          estimatedHours: z.number().min(0),
+          prerequisites: z.array(z.string()).nullish(),
+          unlocked: z.boolean(),
+          completedAt: z.string().nullish(),
+        }),
+      )
+      .min(2, 'A curriculum requires at least two topics.'),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -190,14 +299,46 @@ export const CurriculumMap = defineComponent({
       intent: 'Show the Data Science learning path curriculum',
       props: {
         pathName: 'Data Science Specialization',
-        description: 'Complete learning path from statistics fundamentals to production ML deployment.',
+        description:
+          'Complete learning path from statistics fundamentals to production ML deployment.',
         totalHours: 120,
         topics: [
-          { name: 'Statistics Fundamentals', mastery: 'proficient', estimatedHours: 20, unlocked: true, completedAt: '2024-02-15' },
-          { name: 'Python for Data Science', mastery: 'proficient', estimatedHours: 25, prerequisites: ['Statistics Fundamentals'], unlocked: true, completedAt: '2024-03-01' },
-          { name: 'Machine Learning', mastery: 'intermediate', estimatedHours: 30, prerequisites: ['Python for Data Science', 'Statistics Fundamentals'], unlocked: true },
-          { name: 'Deep Learning', mastery: 'not-started', estimatedHours: 25, prerequisites: ['Machine Learning'], unlocked: false },
-          { name: 'MLOps & Deployment', mastery: 'not-started', estimatedHours: 20, prerequisites: ['Deep Learning'], unlocked: false },
+          {
+            name: 'Statistics Fundamentals',
+            mastery: 'proficient',
+            estimatedHours: 20,
+            unlocked: true,
+            completedAt: '2024-02-15',
+          },
+          {
+            name: 'Python for Data Science',
+            mastery: 'proficient',
+            estimatedHours: 25,
+            prerequisites: ['Statistics Fundamentals'],
+            unlocked: true,
+            completedAt: '2024-03-01',
+          },
+          {
+            name: 'Machine Learning',
+            mastery: 'intermediate',
+            estimatedHours: 30,
+            prerequisites: ['Python for Data Science', 'Statistics Fundamentals'],
+            unlocked: true,
+          },
+          {
+            name: 'Deep Learning',
+            mastery: 'not-started',
+            estimatedHours: 25,
+            prerequisites: ['Machine Learning'],
+            unlocked: false,
+          },
+          {
+            name: 'MLOps & Deployment',
+            mastery: 'not-started',
+            estimatedHours: 20,
+            prerequisites: ['Deep Learning'],
+            unlocked: false,
+          },
         ],
       },
     },
@@ -228,13 +369,19 @@ export const EngagementHeatmap = defineComponent({
   props: z.object({
     title: z.string().min(1),
     period: z.string().min(1),
-    grid: z.array(z.object({
-      day: z.enum(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']),
-      hours: z.array(z.object({
-        hour: z.number().int().min(0).max(23),
-        intensity: z.number().min(0).max(100),
-      })),
-    })).min(1, 'At least one day of data is required.'),
+    grid: z
+      .array(
+        z.object({
+          day: z.enum(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']),
+          hours: z.array(
+            z.object({
+              hour: z.number().int().min(0).max(23),
+              intensity: z.number().min(0).max(100),
+            }),
+          ),
+        }),
+      )
+      .min(1, 'At least one day of data is required.'),
     metrics: z.object({
       totalSessions: z.number().int().min(0),
       averageDurationMinutes: z.number().min(0),
@@ -268,11 +415,45 @@ export const EngagementHeatmap = defineComponent({
         title: 'Weekly Engagement',
         period: 'March 10–16, 2024',
         grid: [
-          { day: 'Mon', hours: [{ hour: 9, intensity: 75 }, { hour: 10, intensity: 90 }, { hour: 14, intensity: 60 }, { hour: 20, intensity: 45 }] },
-          { day: 'Tue', hours: [{ hour: 9, intensity: 80 }, { hour: 11, intensity: 85 }, { hour: 15, intensity: 50 }] },
-          { day: 'Wed', hours: [{ hour: 10, intensity: 95 }, { hour: 14, intensity: 70 }, { hour: 19, intensity: 55 }] },
-          { day: 'Thu', hours: [{ hour: 9, intensity: 65 }, { hour: 13, intensity: 40 }] },
-          { day: 'Fri', hours: [{ hour: 10, intensity: 50 }, { hour: 16, intensity: 30 }] },
+          {
+            day: 'Mon',
+            hours: [
+              { hour: 9, intensity: 75 },
+              { hour: 10, intensity: 90 },
+              { hour: 14, intensity: 60 },
+              { hour: 20, intensity: 45 },
+            ],
+          },
+          {
+            day: 'Tue',
+            hours: [
+              { hour: 9, intensity: 80 },
+              { hour: 11, intensity: 85 },
+              { hour: 15, intensity: 50 },
+            ],
+          },
+          {
+            day: 'Wed',
+            hours: [
+              { hour: 10, intensity: 95 },
+              { hour: 14, intensity: 70 },
+              { hour: 19, intensity: 55 },
+            ],
+          },
+          {
+            day: 'Thu',
+            hours: [
+              { hour: 9, intensity: 65 },
+              { hour: 13, intensity: 40 },
+            ],
+          },
+          {
+            day: 'Fri',
+            hours: [
+              { hour: 10, intensity: 50 },
+              { hour: 16, intensity: 30 },
+            ],
+          },
         ],
         metrics: {
           totalSessions: 342,
@@ -304,25 +485,36 @@ export const EngagementHeatmap = defineComponent({
  */
 export const CertificationTracker = defineComponent({
   name: 'CertificationTracker',
-  description: 'Professional certification tracker with requirements, expiry dates, and CEU renewal progress.',
+  description:
+    'Professional certification tracker with requirements, expiry dates, and CEU renewal progress.',
   category: 'data-display',
   tags: ['education', 'certification', 'compliance', 'credentials', 'renewal'],
   props: z.object({
-    certifications: z.array(z.object({
-      name: z.string().min(1),
-      issuer: z.string().min(1),
-      status: z.enum(['active', 'expiring-soon', 'expired', 'in-progress', 'not-started']),
-      earnedDate: z.string().nullish(),
-      expiryDate: z.string().nullish(),
-      requirements: z.array(z.object({
-        description: z.string().min(1),
-        completed: z.boolean(),
-      })).min(1, 'At least one requirement is needed.'),
-      ceuProgress: z.object({
-        earned: z.number().min(0),
-        required: z.number().min(0),
-      }).nullish(),
-    })).min(1, 'At least one certification is required.'),
+    certifications: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          issuer: z.string().min(1),
+          status: z.enum(['active', 'expiring-soon', 'expired', 'in-progress', 'not-started']),
+          earnedDate: z.string().nullish(),
+          expiryDate: z.string().nullish(),
+          requirements: z
+            .array(
+              z.object({
+                description: z.string().min(1),
+                completed: z.boolean(),
+              }),
+            )
+            .min(1, 'At least one requirement is needed.'),
+          ceuProgress: z
+            .object({
+              earned: z.number().min(0),
+              required: z.number().min(0),
+            })
+            .nullish(),
+        }),
+      )
+      .min(1, 'At least one certification is required.'),
   }),
   tokens: {
     cardBg: 'token:card-bg',

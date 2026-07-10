@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/lifecycle/errors
+ * @module @enterstellar/lifecycle/errors
  * @description Factory functions for lifecycle-specific Enterstellar errors.
  *
  * Each factory returns an `EnterstellarError` with the correct error code,
@@ -15,7 +15,7 @@
  * @see Design Choice C14 — error code ranges.
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import type { LifecycleState } from './types.js';
 
@@ -39,14 +39,14 @@ import type { LifecycleState } from './types.js';
  * ```
  */
 export function createAgentTimeoutError(timeoutMs: number): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3002',
-        'lifecycle',
-        `Agent did not respond within ${String(timeoutMs)}ms. ` +
-        'The zone will render its fallback component. ' +
-        'Increase the timeout via the `timeoutMs` configuration option if this is expected.',
-        true, // recoverable — retry is possible
-    );
+  return new EnterstellarError(
+    'ENS-3002',
+    'lifecycle',
+    `Agent did not respond within ${String(timeoutMs)}ms. ` +
+      'The zone will render its fallback component. ' +
+      'Increase the timeout via the `timeoutMs` configuration option if this is expected.',
+    true, // recoverable — retry is possible
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -71,17 +71,17 @@ export function createAgentTimeoutError(timeoutMs: number): EnterstellarError {
  * ```
  */
 export function createInvalidTransitionError(
-    from: LifecycleState,
-    to: LifecycleState,
+  from: LifecycleState,
+  to: LifecycleState,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3003',
-        'lifecycle',
-        `Invalid lifecycle transition: "${from}" → "${to}". ` +
-        'Check the VALID_TRANSITIONS map in @enterstellar-ai/lifecycle/constants for permitted transitions. ' +
-        'If the zone is in "empty" state, call reset() before transitioning.',
-        false, // not recoverable — developer error
-    );
+  return new EnterstellarError(
+    'ENS-3003',
+    'lifecycle',
+    `Invalid lifecycle transition: "${from}" → "${to}". ` +
+      'Check the VALID_TRANSITIONS map in @enterstellar/lifecycle/constants for permitted transitions. ' +
+      'If the zone is in "empty" state, call reset() before transitioning.',
+    false, // not recoverable — developer error
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -106,12 +106,12 @@ export function createInvalidTransitionError(
  * ```
  */
 export function createStreamingAssemblyError(path: string, reason: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3004',
-        'lifecycle',
-        `Failed to apply streaming fragment at path "${path}". Reason: ${reason}`,
-        true, // recoverable — subsequent fragments may succeed
-    );
+  return new EnterstellarError(
+    'ENS-3004',
+    'lifecycle',
+    `Failed to apply streaming fragment at path "${path}". Reason: ${reason}`,
+    true, // recoverable — subsequent fragments may succeed
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -133,13 +133,13 @@ export function createStreamingAssemblyError(path: string, reason: string): Ente
  * ```
  */
 export function createDisposedError(): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3005',
-        'lifecycle',
-        'Cannot operate on a disposed LifecycleManager. ' +
-        'Create a new instance via createLifecycleManager() after disposal.',
-        false, // not recoverable — must re-create
-    );
+  return new EnterstellarError(
+    'ENS-3005',
+    'lifecycle',
+    'Cannot operate on a disposed LifecycleManager. ' +
+      'Create a new instance via createLifecycleManager() after disposal.',
+    false, // not recoverable — must re-create
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -163,11 +163,11 @@ export function createDisposedError(): EnterstellarError {
  * ```
  */
 export function createMaxRetriesExceededError(maxRetries: number): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3003',
-        'lifecycle',
-        `Maximum retry attempts (${String(maxRetries)}) exceeded. ` +
-        'The zone will remain in error state. Call reset() to start a fresh lifecycle.',
-        false, // not recoverable via retry
-    );
+  return new EnterstellarError(
+    'ENS-3003',
+    'lifecycle',
+    `Maximum retry attempts (${String(maxRetries)}) exceeded. ` +
+      'The zone will remain in error state. Call reset() to start a fresh lifecycle.',
+    false, // not recoverable via retry
+  );
 }

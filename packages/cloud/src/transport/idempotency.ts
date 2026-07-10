@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/transport/idempotency
+ * @module @enterstellar/cloud/transport/idempotency
  * @description Hand-rolled ULID generator for `X-Idempotency-Key` headers.
  *
  * Enterstellar Cloud requires an `X-Idempotency-Key` header on all IPU-consuming
@@ -57,18 +57,18 @@ const CROCKFORD_BASE32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ' as const;
  * @internal
  */
 function encodeTimestamp(timeMs: number): string {
-    let remaining = timeMs;
-    const chars: string[] = new Array<string>(10);
+  let remaining = timeMs;
+  const chars: string[] = new Array<string>(10);
 
-    // Extract 10 characters (5 bits each = 50 bits, but only 48 are used).
-    // Work from the least significant end to preserve leading zeros.
-    for (let i = 9; i >= 0; i--) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- CROCKFORD_BASE32 has 32 entries, index is always 0-31
-        chars[i] = CROCKFORD_BASE32[remaining & 0x1f]!;
-        remaining = Math.floor(remaining / 32);
-    }
+  // Extract 10 characters (5 bits each = 50 bits, but only 48 are used).
+  // Work from the least significant end to preserve leading zeros.
+  for (let i = 9; i >= 0; i--) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- CROCKFORD_BASE32 has 32 entries, index is always 0-31
+    chars[i] = CROCKFORD_BASE32[remaining & 0x1f]!;
+    remaining = Math.floor(remaining / 32);
+  }
 
-    return chars.join('');
+  return chars.join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -87,33 +87,33 @@ function encodeTimestamp(timeMs: number): string {
  * @internal
  */
 function encodeRandomness(): string {
-    const bytes = new Uint8Array(10);
-    crypto.getRandomValues(bytes);
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
 
-    const chars: string[] = new Array<string>(16);
+  const chars: string[] = new Array<string>(16);
 
-    // Convert 10 bytes (80 bits) into 16 Base32 characters (5 bits each).
-    // Process bytes as a big-endian bitstream, extracting 5-bit chunks.
-    // We use a sliding window approach over the byte array.
-    let bitBuffer = 0;
-    let bitsInBuffer = 0;
-    let charIndex = 0;
+  // Convert 10 bytes (80 bits) into 16 Base32 characters (5 bits each).
+  // Process bytes as a big-endian bitstream, extracting 5-bit chunks.
+  // We use a sliding window approach over the byte array.
+  let bitBuffer = 0;
+  let bitsInBuffer = 0;
+  let charIndex = 0;
 
-    for (let byteIndex = 0; byteIndex < 10; byteIndex++) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- byteIndex is bounded by loop
-        bitBuffer = (bitBuffer << 8) | bytes[byteIndex]!;
-        bitsInBuffer += 8;
+  for (let byteIndex = 0; byteIndex < 10; byteIndex++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- byteIndex is bounded by loop
+    bitBuffer = (bitBuffer << 8) | bytes[byteIndex]!;
+    bitsInBuffer += 8;
 
-        while (bitsInBuffer >= 5) {
-            bitsInBuffer -= 5;
-            const fiveBitValue = (bitBuffer >>> bitsInBuffer) & 0x1f;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fiveBitValue is always 0-31
-            chars[charIndex] = CROCKFORD_BASE32[fiveBitValue]!;
-            charIndex++;
-        }
+    while (bitsInBuffer >= 5) {
+      bitsInBuffer -= 5;
+      const fiveBitValue = (bitBuffer >>> bitsInBuffer) & 0x1f;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fiveBitValue is always 0-31
+      chars[charIndex] = CROCKFORD_BASE32[fiveBitValue]!;
+      charIndex++;
     }
+  }
 
-    return chars.join('');
+  return chars.join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -147,5 +147,5 @@ function encodeRandomness(): string {
  * @see Design Choice AM10 — universal idempotency on IPU-consuming requests.
  */
 export function generateIdempotencyKey(): string {
-    return encodeTimestamp(Date.now()) + encodeRandomness();
+  return encodeTimestamp(Date.now()) + encodeRandomness();
 }

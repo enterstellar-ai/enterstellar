@@ -2,7 +2,7 @@
  * @module playground/components/playground/playground-context
  * @description React context for the playground-specific `LiveAgentConnection`.
  *
- * The generic `EnterstellarAgentConnection` (from `@enterstellar-ai/types`) is wired through
+ * The generic `EnterstellarAgentConnection` (from `@enterstellar/types`) is wired through
  * `Provider` → `EnterstellarAgentContext`. But `PlaygroundShell` needs the
  * concrete `LiveAgentConnection` for `sendSceneIntent()` — a playground-only
  * method not on the generic interface.
@@ -32,8 +32,7 @@ import type { LiveAgentConnection } from '@/enterstellar/agent-connection';
  *
  * `null` sentinel = the context was consumed outside of `PlaygroundProviders`.
  */
-export const PlaygroundConnectionContext =
-  createContext<LiveAgentConnection | null>(null);
+export const PlaygroundConnectionContext = createContext<LiveAgentConnection | null>(null);
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -51,9 +50,7 @@ export const PlaygroundConnectionContext =
 export function usePlaygroundConnection(): LiveAgentConnection {
   const connection = useContext(PlaygroundConnectionContext);
   if (connection === null) {
-    throw new Error(
-      'usePlaygroundConnection() must be used inside <PlaygroundProviders>.',
-    );
+    throw new Error('usePlaygroundConnection() must be used inside <PlaygroundProviders>.');
   }
   return connection;
 }

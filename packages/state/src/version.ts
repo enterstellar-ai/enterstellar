@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/state/version
- * @description Schema version constant for `@enterstellar-ai/state`.
+ * @module @enterstellar/state/version
+ * @description Schema version constant for `@enterstellar/state`.
  *
  * This version tracks the shape of `SerializedState`. When the serialized
  * format changes, this version is bumped and a migration is registered
@@ -11,7 +11,7 @@
  */
 
 /**
- * Current schema version for `@enterstellar-ai/state` serialized state.
+ * Current schema version for `@enterstellar/state` serialized state.
  *
  * Uses semantic versioning:
  * - **Patch** (1.0.x): No migration needed, Zod validates only.

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/create-data-adapter
+ * @module @enterstellar/adapters/create-data-adapter
  * @description Factory functions for creating validated `DataAdapter` instances.
  *
  * - `createDataAdapter(config)` — wraps a consumer-provided implementation,
@@ -18,7 +18,7 @@
  * @see Design Choice AD5 — wrap into EnterstellarError
  */
 
-import type { DataAdapter } from '@enterstellar-ai/types';
+import type { DataAdapter } from '@enterstellar/types';
 
 import { adapterMethodError, adapterMutationError, adapterQueryError } from './errors.js';
 import type { DataAdapterConfig } from './types.js';
@@ -45,7 +45,7 @@ import { validateAdapterConfig } from './validate-adapter.js';
  *
  * @example
  * ```ts
- * import { createDataAdapter } from '@enterstellar-ai/adapters';
+ * import { createDataAdapter } from '@enterstellar/adapters';
  *
  * const data = createDataAdapter({
  *   name: 'supabase-data',
@@ -71,72 +71,72 @@ import { validateAdapterConfig } from './validate-adapter.js';
  * ```
  */
 export function createDataAdapter(config: DataAdapterConfig): DataAdapter {
-    // -----------------------------------------------------------------------
-    // Step 1: Validate config — throws ENS-7001 on failure
-    // -----------------------------------------------------------------------
-    validateAdapterConfig('data', config);
+  // -----------------------------------------------------------------------
+  // Step 1: Validate config — throws ENS-7001 on failure
+  // -----------------------------------------------------------------------
+  validateAdapterConfig('data', config);
 
-    const adapterName = config.name;
+  const adapterName = config.name;
 
-    // -----------------------------------------------------------------------
-    // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
-    // -----------------------------------------------------------------------
-    const adapter: DataAdapter = {
-        /**
-         * Wrapped `query()` — catches vendor errors → `ENS-7003`.
-         * Includes the queried resource name in the error for debugging.
-         */
-        async query(
-            resource: string,
-            params?: Readonly<Record<string, unknown>>,
-        ): Promise<readonly Record<string, unknown>[]> {
-            try {
-                return await config.query(resource, params);
-            } catch (error: unknown) {
-                throw adapterQueryError(adapterName, resource, error);
-            }
-        },
+  // -----------------------------------------------------------------------
+  // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
+  // -----------------------------------------------------------------------
+  const adapter: DataAdapter = {
+    /**
+     * Wrapped `query()` — catches vendor errors → `ENS-7003`.
+     * Includes the queried resource name in the error for debugging.
+     */
+    async query(
+      resource: string,
+      params?: Readonly<Record<string, unknown>>,
+    ): Promise<readonly Record<string, unknown>[]> {
+      try {
+        return await config.query(resource, params);
+      } catch (error: unknown) {
+        throw adapterQueryError(adapterName, resource, error);
+      }
+    },
 
-        /**
-         * Wrapped `mutate()` — catches vendor errors → `ENS-7004`.
-         * Includes the resource name and mutation action in the error for debugging.
-         */
-        async mutate(
-            resource: string,
-            action: 'create' | 'update' | 'delete',
-            data: Readonly<Record<string, unknown>>,
-        ): Promise<Record<string, unknown> | null> {
-            try {
-                return await config.mutate(resource, action, data);
-            } catch (error: unknown) {
-                throw adapterMutationError(adapterName, resource, action, error);
-            }
-        },
+    /**
+     * Wrapped `mutate()` — catches vendor errors → `ENS-7004`.
+     * Includes the resource name and mutation action in the error for debugging.
+     */
+    async mutate(
+      resource: string,
+      action: 'create' | 'update' | 'delete',
+      data: Readonly<Record<string, unknown>>,
+    ): Promise<Record<string, unknown> | null> {
+      try {
+        return await config.mutate(resource, action, data);
+      } catch (error: unknown) {
+        throw adapterMutationError(adapterName, resource, action, error);
+      }
+    },
 
-        /**
-         * Wrapped `subscribe()` — catches vendor errors → `ENS-7002`.
-         *
-         * Only the `subscribe()` invocation itself is wrapped. The consumer's
-         * callback is NOT wrapped — callback errors are the consumer's responsibility.
-         * The returned unsubscribe function is also NOT wrapped — unsubscribe
-         * failures are fire-and-forget cleanup operations.
-         */
-        subscribe(
-            resource: string,
-            callback: (data: readonly Record<string, unknown>[]) => void,
-        ): () => void {
-            try {
-                return config.subscribe(resource, callback);
-            } catch (error: unknown) {
-                throw adapterMethodError(adapterName, 'subscribe', error);
-            }
-        },
-    };
+    /**
+     * Wrapped `subscribe()` — catches vendor errors → `ENS-7002`.
+     *
+     * Only the `subscribe()` invocation itself is wrapped. The consumer's
+     * callback is NOT wrapped — callback errors are the consumer's responsibility.
+     * The returned unsubscribe function is also NOT wrapped — unsubscribe
+     * failures are fire-and-forget cleanup operations.
+     */
+    subscribe(
+      resource: string,
+      callback: (data: readonly Record<string, unknown>[]) => void,
+    ): () => void {
+      try {
+        return config.subscribe(resource, callback);
+      } catch (error: unknown) {
+        throw adapterMethodError(adapterName, 'subscribe', error);
+      }
+    },
+  };
 
-    // -----------------------------------------------------------------------
-    // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
-    // -----------------------------------------------------------------------
-    return Object.freeze(adapter);
+  // -----------------------------------------------------------------------
+  // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
+  // -----------------------------------------------------------------------
+  return Object.freeze(adapter);
 }
 
 // ---------------------------------------------------------------------------
@@ -155,7 +155,7 @@ export function createDataAdapter(config: DataAdapterConfig): DataAdapter {
  *
  * @example
  * ```ts
- * import { createNoopDataAdapter } from '@enterstellar-ai/adapters';
+ * import { createNoopDataAdapter } from '@enterstellar/adapters';
  *
  * const data = createNoopDataAdapter();
  * await data.query('patients.vitals'); // []
@@ -165,32 +165,32 @@ export function createDataAdapter(config: DataAdapterConfig): DataAdapter {
  * ```
  */
 export function createNoopDataAdapter(): DataAdapter {
-    const adapter: DataAdapter = {
-        query(
-            _resource: string,
-            _params?: Readonly<Record<string, unknown>>,
-        ): Promise<readonly Record<string, unknown>[]> {
-            return Promise.resolve([]);
-        },
+  const adapter: DataAdapter = {
+    query(
+      _resource: string,
+      _params?: Readonly<Record<string, unknown>>,
+    ): Promise<readonly Record<string, unknown>[]> {
+      return Promise.resolve([]);
+    },
 
-        mutate(
-            _resource: string,
-            _action: 'create' | 'update' | 'delete',
-            _data: Readonly<Record<string, unknown>>,
-        ): Promise<Record<string, unknown> | null> {
-            return Promise.resolve(null);
-        },
+    mutate(
+      _resource: string,
+      _action: 'create' | 'update' | 'delete',
+      _data: Readonly<Record<string, unknown>>,
+    ): Promise<Record<string, unknown> | null> {
+      return Promise.resolve(null);
+    },
 
-        subscribe(
-            _resource: string,
-            _callback: (data: readonly Record<string, unknown>[]) => void,
-        ): () => void {
-            // Return a no-op unsubscribe function.
-            return () => {
-                // No-op — no subscription to clean up.
-            };
-        },
-    };
+    subscribe(
+      _resource: string,
+      _callback: (data: readonly Record<string, unknown>[]) => void,
+    ): () => void {
+      // Return a no-op unsubscribe function.
+      return () => {
+        // No-op — no subscription to clean up.
+      };
+    },
+  };
 
-    return Object.freeze(adapter);
+  return Object.freeze(adapter);
 }

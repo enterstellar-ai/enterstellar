@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/utils/token-utils
+ * @module @enterstellar/compiler/utils/token-utils
  * @description Shared design token validation and matching utilities.
  *
  * Extracted from `pipeline/token-step.ts` to enable reuse across the pipeline
@@ -7,7 +7,7 @@
  * (Tier 1: token nearest-match strategy).
  *
  * These utilities operate exclusively on `DesignTokenSet` (a `Readonly<Record<string, string>>`
- * from `@enterstellar-ai/types`) and `token:*` string references. They contain no framework
+ * from `@enterstellar/types`) and `token:*` string references. They contain no framework
  * imports, no side effects, and no state — pure functions only.
  *
  * **L15 compliance:** Zero framework imports.
@@ -20,7 +20,7 @@
  * @see Design Choice SC-04 — Tier 1 includes `token-nearest` strategy.
  */
 
-import type { DesignTokenSet } from '@enterstellar-ai/types';
+import type { DesignTokenSet } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Token Reference Detection
@@ -45,7 +45,7 @@ import type { DesignTokenSet } from '@enterstellar-ai/types';
  * ```
  */
 export function isTokenReference(value: unknown): value is string {
-    return typeof value === 'string' && value.startsWith('token:');
+  return typeof value === 'string' && value.startsWith('token:');
 }
 
 // ---------------------------------------------------------------------------
@@ -70,20 +70,17 @@ export function isTokenReference(value: unknown): value is string {
  * tokenExists('token:unknown', tokens); // false
  * ```
  */
-export function tokenExists(
-    tokenRef: string,
-    designTokens: DesignTokenSet,
-): boolean {
-    // Token references in contracts use the `token:{name}` format.
-    // The DesignTokenSet keys may or may not include the `token:` prefix.
-    // Try both: with and without prefix.
-    if (tokenRef in designTokens) {
-        return true;
-    }
+export function tokenExists(tokenRef: string, designTokens: DesignTokenSet): boolean {
+  // Token references in contracts use the `token:{name}` format.
+  // The DesignTokenSet keys may or may not include the `token:` prefix.
+  // Try both: with and without prefix.
+  if (tokenRef in designTokens) {
+    return true;
+  }
 
-    // Strip prefix and check raw name
-    const rawName = tokenRef.replace(/^token:/, '');
-    return rawName in designTokens;
+  // Strip prefix and check raw name
+  const rawName = tokenRef.replace(/^token:/, '');
+  return rawName in designTokens;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,12 +109,12 @@ export function tokenExists(
  * ```
  */
 export function getTokenCategory(tokenRef: string): string {
-    const name = tokenRef.replace(/^token:/, '');
-    const dashIndex = name.indexOf('-');
-    if (dashIndex === -1) {
-        return name;
-    }
-    return name.substring(0, dashIndex);
+  const name = tokenRef.replace(/^token:/, '');
+  const dashIndex = name.indexOf('-');
+  if (dashIndex === -1) {
+    return name;
+  }
+  return name.substring(0, dashIndex);
 }
 
 // ---------------------------------------------------------------------------
@@ -164,33 +161,31 @@ export function getTokenCategory(tokenRef: string): string {
  * ```
  */
 export function findNearestToken(
-    invalidToken: string,
-    designTokens: DesignTokenSet,
+  invalidToken: string,
+  designTokens: DesignTokenSet,
 ): string | undefined {
-    const targetCategory = getTokenCategory(invalidToken);
-    const tokenKeys = Object.keys(designTokens);
+  const targetCategory = getTokenCategory(invalidToken);
+  const tokenKeys = Object.keys(designTokens);
 
-    // First pass: find tokens in the same semantic category
-    const categoryMatches = tokenKeys.filter((key) => {
-        const keyCategory = getTokenCategory(
-            key.startsWith('token:') ? key : `token:${key}`,
-        );
-        return keyCategory === targetCategory;
-    });
+  // First pass: find tokens in the same semantic category
+  const categoryMatches = tokenKeys.filter((key) => {
+    const keyCategory = getTokenCategory(key.startsWith('token:') ? key : `token:${key}`);
+    return keyCategory === targetCategory;
+  });
 
-    if (categoryMatches.length > 0) {
-        // Return the first category match (deterministic — insertion order)
-        const match = categoryMatches[0];
-        if (match !== undefined) {
-            return match.startsWith('token:') ? match : `token:${match}`;
-        }
+  if (categoryMatches.length > 0) {
+    // Return the first category match (deterministic — insertion order)
+    const match = categoryMatches[0];
+    if (match !== undefined) {
+      return match.startsWith('token:') ? match : `token:${match}`;
     }
+  }
 
-    // Second pass: no category match — return the first available token
-    const firstKey = tokenKeys[0];
-    if (firstKey !== undefined) {
-        return firstKey.startsWith('token:') ? firstKey : `token:${firstKey}`;
-    }
+  // Second pass: no category match — return the first available token
+  const firstKey = tokenKeys[0];
+  if (firstKey !== undefined) {
+    return firstKey.startsWith('token:') ? firstKey : `token:${firstKey}`;
+  }
 
-    return undefined;
+  return undefined;
 }

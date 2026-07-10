@@ -1,10 +1,10 @@
-# @enterstellar-ai/docs
+# @enterstellar/docs
 
 > Official documentation, technical specifications, architecture blueprints, and interactive API references for the Enterstellar OS ecosystem.
 
 ## Purpose
 
-`@enterstellar-ai/docs` is the developer portal and official specification hub for the Enterstellar OS. It operates entirely on the **Core UI** engine (formerly Fumadocs) and compiles human-readable Markdown/MDX into a fast, searchable web interface hosted on Vercel.
+`@enterstellar/docs` is the developer portal and official specification hub for the Enterstellar OS. It operates entirely on the **Core UI** engine (formerly Fumadocs) and compiles human-readable Markdown/MDX into a fast, searchable web interface hosted on Vercel.
 
 Beyond serving standard documentation, this application uniquely hosts **interactive Component Sandboxes** that live-demonstrate the Enterstellar Compiler pipeline. Users can witness strict Zod schema validation, deterministic coercion, and 3-tier self-correction cascading in real-time natively in the browser.
 
@@ -90,7 +90,7 @@ Orchestrates the Next.js bundle:
 - **`withMDX`**: Wraps the config to inject the Core MDX pipeline.
 - **`reactCompiler: true`**: Ahead-of-time React memoization.
 - **`@next/bundle-analyzer`**: Conditional bundle analysis (`ANALYZE=true`).
-- **ESM Transpilation**: Forces transpilation of internal `@enterstellar-ai/*` packages.
+- **ESM Transpilation**: Forces transpilation of internal `@enterstellar/*` packages.
 
 ---
 

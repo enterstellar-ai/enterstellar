@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/connection/backpressure
+ * @module @enterstellar/connection/backpressure
  * @description Inbound intent buffer with configurable drop strategy.
  *
  * Enforces per-connection capacity limits on pending `ComponentIntent` messages
@@ -17,7 +17,7 @@
  * @see Design Choice R1 — Plain objects with closures
  */
 
-import type { ComponentIntent } from '@enterstellar-ai/types';
+import type { ComponentIntent } from '@enterstellar/types';
 
 import type { BackpressureConfig } from './types.js';
 
@@ -33,10 +33,10 @@ import type { BackpressureConfig } from './types.js';
  * - `bypassed: true` — intent had `interaction: 'actionable'` and skipped the buffer.
  */
 export type PushResult = {
-    /** The intent that was dropped to make room, or `null` if none was dropped. */
-    readonly dropped: ComponentIntent | null;
-    /** Whether the intent bypassed the buffer entirely (actionable). */
-    readonly bypassed: boolean;
+  /** The intent that was dropped to make room, or `null` if none was dropped. */
+  readonly dropped: ComponentIntent | null;
+  /** Whether the intent bypassed the buffer entirely (actionable). */
+  readonly bypassed: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -52,45 +52,45 @@ export type PushResult = {
  * - `'newest'` — rejects the incoming intent (does not enqueue).
  */
 export type IntentBuffer = {
-    /**
-     * Pushes an intent into the buffer.
-     *
-     * If the intent has `interaction: 'actionable'`, it bypasses the buffer
-     * entirely — returned via `bypassed: true` in the result. The caller
-     * should process it immediately.
-     *
-     * If the buffer is full:
-     * - `'oldest'`: the oldest buffered intent is evicted and returned in `dropped`.
-     * - `'newest'`: the incoming intent is rejected and returned in `dropped`.
-     *
-     * @param intent - The `ComponentIntent` to buffer.
-     * @returns A `PushResult` describing what happened.
-     */
-    readonly push: (intent: ComponentIntent) => PushResult;
+  /**
+   * Pushes an intent into the buffer.
+   *
+   * If the intent has `interaction: 'actionable'`, it bypasses the buffer
+   * entirely — returned via `bypassed: true` in the result. The caller
+   * should process it immediately.
+   *
+   * If the buffer is full:
+   * - `'oldest'`: the oldest buffered intent is evicted and returned in `dropped`.
+   * - `'newest'`: the incoming intent is rejected and returned in `dropped`.
+   *
+   * @param intent - The `ComponentIntent` to buffer.
+   * @returns A `PushResult` describing what happened.
+   */
+  readonly push: (intent: ComponentIntent) => PushResult;
 
-    /**
-     * Drains all buffered intents and returns them in FIFO order.
-     * The buffer is empty after this call.
-     *
-     * @returns An array of buffered intents, oldest first.
-     */
-    readonly drain: () => readonly ComponentIntent[];
+  /**
+   * Drains all buffered intents and returns them in FIFO order.
+   * The buffer is empty after this call.
+   *
+   * @returns An array of buffered intents, oldest first.
+   */
+  readonly drain: () => readonly ComponentIntent[];
 
-    /**
-     * Returns the intent at the head of the buffer without removing it.
-     *
-     * @returns The oldest buffered intent, or `null` if the buffer is empty.
-     */
-    readonly peek: () => ComponentIntent | null;
+  /**
+   * Returns the intent at the head of the buffer without removing it.
+   *
+   * @returns The oldest buffered intent, or `null` if the buffer is empty.
+   */
+  readonly peek: () => ComponentIntent | null;
 
-    /** Current number of buffered intents. */
-    readonly size: number;
+  /** Current number of buffered intents. */
+  readonly size: number;
 
-    /** Whether the buffer is at maximum capacity. */
-    readonly full: boolean;
+  /** Whether the buffer is at maximum capacity. */
+  readonly full: boolean;
 
-    /** The maximum capacity of this buffer. */
-    readonly maxBuffer: number;
+  /** The maximum capacity of this buffer. */
+  readonly maxBuffer: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -119,57 +119,57 @@ export type IntentBuffer = {
  * ```
  */
 export function createIntentBuffer(config: BackpressureConfig): IntentBuffer {
-    // Internal FIFO queue. Array is sufficient for maxBuffer ≤ 50.
-    const queue: ComponentIntent[] = [];
+  // Internal FIFO queue. Array is sufficient for maxBuffer ≤ 50.
+  const queue: ComponentIntent[] = [];
 
-    const buffer: IntentBuffer = {
-        push(intent: ComponentIntent): PushResult {
-            // Actionable intents ALWAYS bypass the buffer (P5).
-            if (intent.interaction === 'actionable') {
-                return { dropped: null, bypassed: true };
-            }
+  const buffer: IntentBuffer = {
+    push(intent: ComponentIntent): PushResult {
+      // Actionable intents ALWAYS bypass the buffer (P5).
+      if (intent.interaction === 'actionable') {
+        return { dropped: null, bypassed: true };
+      }
 
-            // Buffer has capacity — enqueue without eviction.
-            if (queue.length < config.maxBuffer) {
-                queue.push(intent);
-                return { dropped: null, bypassed: false };
-            }
+      // Buffer has capacity — enqueue without eviction.
+      if (queue.length < config.maxBuffer) {
+        queue.push(intent);
+        return { dropped: null, bypassed: false };
+      }
 
-            // Buffer is full — apply drop strategy.
-            if (config.dropStrategy === 'oldest') {
-                // Evict the oldest intent (head of queue).
-                const evicted = queue.shift();
-                queue.push(intent);
-                // `evicted` is guaranteed non-null because queue.length >= maxBuffer > 0.
-                return { dropped: evicted ?? null, bypassed: false };
-            }
+      // Buffer is full — apply drop strategy.
+      if (config.dropStrategy === 'oldest') {
+        // Evict the oldest intent (head of queue).
+        const evicted = queue.shift();
+        queue.push(intent);
+        // `evicted` is guaranteed non-null because queue.length >= maxBuffer > 0.
+        return { dropped: evicted ?? null, bypassed: false };
+      }
 
-            // dropStrategy === 'newest' — reject the incoming intent.
-            return { dropped: intent, bypassed: false };
-        },
+      // dropStrategy === 'newest' — reject the incoming intent.
+      return { dropped: intent, bypassed: false };
+    },
 
-        drain(): readonly ComponentIntent[] {
-            // Splice the entire queue and return a frozen snapshot.
-            const snapshot = queue.splice(0, queue.length);
-            return snapshot;
-        },
+    drain(): readonly ComponentIntent[] {
+      // Splice the entire queue and return a frozen snapshot.
+      const snapshot = queue.splice(0, queue.length);
+      return snapshot;
+    },
 
-        peek(): ComponentIntent | null {
-            return queue.length > 0 ? queue[0] ?? null : null;
-        },
+    peek(): ComponentIntent | null {
+      return queue.length > 0 ? (queue[0] ?? null) : null;
+    },
 
-        get size(): number {
-            return queue.length;
-        },
+    get size(): number {
+      return queue.length;
+    },
 
-        get full(): boolean {
-            return queue.length >= config.maxBuffer;
-        },
+    get full(): boolean {
+      return queue.length >= config.maxBuffer;
+    },
 
-        get maxBuffer(): number {
-            return config.maxBuffer;
-        },
-    };
+    get maxBuffer(): number {
+      return config.maxBuffer;
+    },
+  };
 
-    return buffer;
+  return buffer;
 }

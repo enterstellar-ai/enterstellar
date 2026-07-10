@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/types/semantic-index
+ * @module @enterstellar/types/semantic-index
  * @description Semantic Index types — search results and related data shapes
  * for the embedding-based component retrieval engine.
  *
@@ -35,24 +35,24 @@ import type { ComponentContract } from './contract.js';
  * @see Design Choice SI6 — below `noMatchThreshold` (0.4) → Forge activates.
  */
 export type SemanticSearchResult = {
-    /** PascalCase name of the matched component. */
-    readonly componentName: string;
+  /** PascalCase name of the matched component. */
+  readonly componentName: string;
 
-    /**
-     * Cosine similarity score between the intent embedding and
-     * the component's embedding vector. Range: 0.0–1.0.
-     *
-     * Scores above `noMatchThreshold` (default 0.4) indicate viable matches.
-     * Scores below trigger Forge activation (caller's responsibility).
-     */
-    readonly similarity: number;
+  /**
+   * Cosine similarity score between the intent embedding and
+   * the component's embedding vector. Range: 0.0–1.0.
+   *
+   * Scores above `noMatchThreshold` (default 0.4) indicate viable matches.
+   * Scores below trigger Forge activation (caller's responsibility).
+   */
+  readonly similarity: number;
 
-    /**
-     * The full `ComponentContract` of the matched component.
-     * Provides immediate access to props schema, tokens, and metadata
-     * without a second registry lookup.
-     */
-    readonly contract: ComponentContract;
+  /**
+   * The full `ComponentContract` of the matched component.
+   * Provides immediate access to props schema, tokens, and metadata
+   * without a second registry lookup.
+   */
+  readonly contract: ComponentContract;
 };
 
 // ---------------------------------------------------------------------------
@@ -69,14 +69,14 @@ export type SemanticSearchResult = {
  * @see Design Choice T7 — export both TS type and Zod schema.
  */
 export const SemanticSearchResultSchema = z.object({
-    /** PascalCase name of the matched component. */
-    componentName: z.string().min(1),
+  /** PascalCase name of the matched component. */
+  componentName: z.string().min(1),
 
-    /**
-     * Cosine similarity score. Clamped to [0.0, 1.0].
-     */
-    similarity: z.number().min(0).max(1),
+  /**
+   * Cosine similarity score. Clamped to [0.0, 1.0].
+   */
+  similarity: z.number().min(0).max(1),
 
-    /** The matched component's full contract. */
-    contract: ComponentContractSchema,
+  /** The matched component's full contract. */
+  contract: ComponentContractSchema,
 });

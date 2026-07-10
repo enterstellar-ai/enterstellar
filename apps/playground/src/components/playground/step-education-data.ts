@@ -26,7 +26,7 @@
  * @see implementation_plan.md §3.2.1 — Educational Pipeline Steps
  */
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 import type { PlaygroundMode } from '@/enterstellar/agent-connection';
 
 // ---------------------------------------------------------------------------
@@ -140,10 +140,7 @@ export interface PipelineStepEducation {
    * @returns A `StepAnalysis` with status, headline, details, and
    *   optional structured data.
    */
-  readonly analyzeTrace: (
-    trace: ZoneTrace | null,
-    mode: PlaygroundMode,
-  ) => StepAnalysis;
+  readonly analyzeTrace: (trace: ZoneTrace | null, mode: PlaygroundMode) => StepAnalysis;
 }
 
 // ---------------------------------------------------------------------------
@@ -250,16 +247,12 @@ function analyzeParse(trace: ZoneTrace | null, mode: PlaygroundMode): StepAnalys
   }
 
   // Filter for schema/prop errors (ENS-2xxx codes = compiler validation errors)
-  const schemaErrors = trace.compilation.errors.filter(
-    (e) => e.code.startsWith('ENS-2'),
-  );
+  const schemaErrors = trace.compilation.errors.filter((e) => e.code.startsWith('ENS-2'));
   const wasCorreted = trace.compilation.status === 'corrected';
   const hasFailed = trace.compilation.status === 'fail';
 
   if (schemaErrors.length > 0) {
-    const errorDetails = schemaErrors.map(
-      (e) => `**${e.code}** at \`${e.path}\`: ${e.message}`,
-    );
+    const errorDetails = schemaErrors.map((e) => `**${e.code}** at \`${e.path}\`: ${e.message}`);
 
     return {
       status: hasFailed ? 'error' : 'warning',
@@ -282,7 +275,7 @@ function analyzeParse(trace: ZoneTrace | null, mode: PlaygroundMode): StepAnalys
     status: 'success',
     headline: `Schema validation passed — ${String(trace.metrics.totalMs)}ms`,
     details: [
-      'All props match the component\'s Zod schema. Types are correct, required fields are present, and hallucinated properties have been stripped.',
+      "All props match the component's Zod schema. Types are correct, required fields are present, and hallucinated properties have been stripped.",
     ],
   };
 }
@@ -310,14 +303,10 @@ function analyzeTokens(trace: ZoneTrace | null, _mode: PlaygroundMode): StepAnal
   }
 
   // Token errors use ENS-4xxx codes
-  const tokenErrors = trace.compilation.errors.filter(
-    (e) => e.code.startsWith('ENS-4'),
-  );
+  const tokenErrors = trace.compilation.errors.filter((e) => e.code.startsWith('ENS-4'));
 
   if (tokenErrors.length > 0) {
-    const errorDetails = tokenErrors.map(
-      (e) => `**${e.code}** at \`${e.path}\`: ${e.message}`,
-    );
+    const errorDetails = tokenErrors.map((e) => `**${e.code}** at \`${e.path}\`: ${e.message}`);
 
     return {
       status: 'warning',
@@ -362,20 +351,16 @@ function analyzeA11y(trace: ZoneTrace | null, _mode: PlaygroundMode): StepAnalys
   }
 
   // A11y errors use ENS-5xxx codes
-  const a11yErrors = trace.compilation.errors.filter(
-    (e) => e.code.startsWith('ENS-5'),
-  );
+  const a11yErrors = trace.compilation.errors.filter((e) => e.code.startsWith('ENS-5'));
 
   if (a11yErrors.length > 0) {
-    const errorDetails = a11yErrors.map(
-      (e) => `**${e.code}** at \`${e.path}\`: ${e.message}`,
-    );
+    const errorDetails = a11yErrors.map((e) => `**${e.code}** at \`${e.path}\`: ${e.message}`);
 
     return {
       status: 'warning',
       headline: `Accessibility gaps detected — ${String(a11yErrors.length)} auto-injected`,
       details: [
-        'The compiler detected missing ARIA attributes and auto-injected them based on the component\'s accessibility contract. The rendered component is now screen-reader accessible.',
+        "The compiler detected missing ARIA attributes and auto-injected them based on the component's accessibility contract. The rendered component is now screen-reader accessible.",
         ...errorDetails,
       ],
       errorCodes: a11yErrors.map((e) => e.code),
@@ -386,7 +371,7 @@ function analyzeA11y(trace: ZoneTrace | null, _mode: PlaygroundMode): StepAnalys
     status: 'success',
     headline: 'Accessibility audit passed ✓',
     details: [
-      'ARIA roles, labels, and announcements all comply with the component\'s accessibility contract. The output is screen-reader ready.',
+      "ARIA roles, labels, and announcements all comply with the component's accessibility contract. The output is screen-reader ready.",
     ],
   };
 }
@@ -456,7 +441,7 @@ function analyzeEmit(trace: ZoneTrace | null, mode: PlaygroundMode): StepAnalysi
     status: 'success',
     headline: `Compilation PASSED — clean in ${String(totalMs)}ms`,
     details: [
-      'The LLM\'s output passed all 5 validation stages on the first attempt. The compiled component is type-safe, design-token-compliant, and accessible.',
+      "The LLM's output passed all 5 validation stages on the first attempt. The compiled component is type-safe, design-token-compliant, and accessible.",
       `**Agent:** ${trace.provenance.agent}`,
       `**Compiler:** v${trace.provenance.compilerVersion}`,
     ],
@@ -512,7 +497,7 @@ export const PIPELINE_STEP_EDUCATION: readonly PipelineStepEducation[] = [
     title: 'Parse',
     icon: '📋',
     concept:
-      'The Enterstellar Compiler runs the LLM\'s props through a strict Zod schema. Every field is type-checked, every nested object validated. Hallucinated properties are silently stripped (`z.object().strip()` — Design Choice P10). If critical props are missing or wrong, self-correction kicks in.',
+      "The Enterstellar Compiler runs the LLM's props through a strict Zod schema. Every field is type-checked, every nested object validated. Hallucinated properties are silently stripped (`z.object().strip()` — Design Choice P10). If critical props are missing or wrong, self-correction kicks in.",
     analyzeTrace: analyzeParse,
   },
 
@@ -532,7 +517,7 @@ export const PIPELINE_STEP_EDUCATION: readonly PipelineStepEducation[] = [
     title: 'A11y',
     icon: '♿',
     concept:
-      'Accessibility is not optional. The compiler audits ARIA roles, labels, and announcements against the component\'s accessibility contract. Missing `role`, `aria-label`, or `announceOnUpdate` attributes are auto-injected — every component rendered by Enterstellar is screen-reader ready by default.',
+      "Accessibility is not optional. The compiler audits ARIA roles, labels, and announcements against the component's accessibility contract. Missing `role`, `aria-label`, or `announceOnUpdate` attributes are auto-injected — every component rendered by Enterstellar is screen-reader ready by default.",
     analyzeTrace: analyzeA11y,
   },
 

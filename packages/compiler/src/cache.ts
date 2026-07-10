@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/cache
+ * @module @enterstellar/compiler/cache
  * @description Internal LRU cache for deduplicating Zod parse results.
  *
  * Prevents redundant re-validation when the same `componentName + props`
@@ -8,7 +8,7 @@
  * update) to ensure stale contracts never serve cached results.
  *
  * This is a lightweight, compiler-internal cache — full caching semantics
- * (TTL, eviction policies, disk persistence) live in `@enterstellar-ai/cache`.
+ * (TTL, eviction policies, disk persistence) live in `@enterstellar/cache`.
  *
  * **L15 compliance:** Zero framework imports. Pure data structure.
  *
@@ -25,10 +25,10 @@
  * Stores the validated props and the timestamp of insertion for LRU tracking.
  */
 type CacheEntry = {
-    /** Validated props after Zod parse (the cached result). */
-    readonly props: Readonly<Record<string, unknown>>;
-    /** Insertion timestamp for LRU eviction ordering. */
-    lastAccessed: number;
+  /** Validated props after Zod parse (the cached result). */
+  readonly props: Readonly<Record<string, unknown>>;
+  /** Insertion timestamp for LRU eviction ordering. */
+  lastAccessed: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -42,47 +42,47 @@ type CacheEntry = {
  * it internally and wires it to the compilation pipeline.
  */
 export interface CompilationCache {
-    /**
-     * Retrieves a cached parse result for the given component and props.
-     *
-     * @param componentName - PascalCase component name.
-     * @param props - The raw props to look up.
-     * @returns Cached validated props, or `undefined` on cache miss.
-     */
-    get(
-        componentName: string,
-        props: Readonly<Record<string, unknown>>,
-    ): Readonly<Record<string, unknown>> | undefined;
+  /**
+   * Retrieves a cached parse result for the given component and props.
+   *
+   * @param componentName - PascalCase component name.
+   * @param props - The raw props to look up.
+   * @returns Cached validated props, or `undefined` on cache miss.
+   */
+  get(
+    componentName: string,
+    props: Readonly<Record<string, unknown>>,
+  ): Readonly<Record<string, unknown>> | undefined;
 
-    /**
-     * Stores a validated parse result in the cache.
-     *
-     * If the cache exceeds `maxSize`, the least-recently-accessed entry is evicted.
-     *
-     * @param componentName - PascalCase component name.
-     * @param props - The raw props (used to build the cache key).
-     * @param validatedProps - The validated props to cache.
-     */
-    set(
-        componentName: string,
-        props: Readonly<Record<string, unknown>>,
-        validatedProps: Readonly<Record<string, unknown>>,
-    ): void;
+  /**
+   * Stores a validated parse result in the cache.
+   *
+   * If the cache exceeds `maxSize`, the least-recently-accessed entry is evicted.
+   *
+   * @param componentName - PascalCase component name.
+   * @param props - The raw props (used to build the cache key).
+   * @param validatedProps - The validated props to cache.
+   */
+  set(
+    componentName: string,
+    props: Readonly<Record<string, unknown>>,
+    validatedProps: Readonly<Record<string, unknown>>,
+  ): void;
 
-    /**
-     * Clears all cached entries.
-     * Called automatically on registry mutation events.
-     */
-    clear(): void;
+  /**
+   * Clears all cached entries.
+   * Called automatically on registry mutation events.
+   */
+  clear(): void;
 
-    /** Number of entries currently in the cache. */
-    readonly size: number;
+  /** Number of entries currently in the cache. */
+  readonly size: number;
 
-    /**
-     * Disposes the cache and unsubscribes from registry events.
-     * Call this when the compiler is no longer needed to prevent memory leaks.
-     */
-    dispose(): void;
+  /**
+   * Disposes the cache and unsubscribes from registry events.
+   * Call this when the compiler is no longer needed to prevent memory leaks.
+   */
+  dispose(): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,17 +100,14 @@ export interface CompilationCache {
  * @param props - The raw props object.
  * @returns A deterministic string key.
  */
-function buildCacheKey(
-    componentName: string,
-    props: Readonly<Record<string, unknown>>,
-): string {
-    // Sort keys for deterministic serialization
-    const sortedKeys = Object.keys(props).sort();
-    const sorted: Record<string, unknown> = {};
-    for (const key of sortedKeys) {
-        sorted[key] = props[key];
-    }
-    return `${componentName}::${JSON.stringify(sorted)}`;
+function buildCacheKey(componentName: string, props: Readonly<Record<string, unknown>>): string {
+  // Sort keys for deterministic serialization
+  const sortedKeys = Object.keys(props).sort();
+  const sorted: Record<string, unknown> = {};
+  for (const key of sortedKeys) {
+    sorted[key] = props[key];
+  }
+  return `${componentName}::${JSON.stringify(sorted)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,95 +141,95 @@ function buildCacheKey(
  * ```
  */
 export function createCompilationCache(
-    maxSize: number = 500,
-    registrySubscribe?: (
-        event: 'register' | 'unregister' | 'update',
-        handler: () => void,
-    ) => () => void,
+  maxSize: number = 500,
+  registrySubscribe?: (
+    event: 'register' | 'unregister' | 'update',
+    handler: () => void,
+  ) => () => void,
 ): CompilationCache {
-    const store = new Map<string, CacheEntry>();
-    const unsubscribers: Array<() => void> = [];
+  const store = new Map<string, CacheEntry>();
+  const unsubscribers: Array<() => void> = [];
 
-    /** Monotonic counter for LRU ordering — avoids Date.now() granularity issues. */
-    let accessCounter = 0;
+  /** Monotonic counter for LRU ordering — avoids Date.now() granularity issues. */
+  let accessCounter = 0;
 
-    // Subscribe to registry events for auto-invalidation
-    if (registrySubscribe !== undefined) {
-        const events = ['register', 'unregister', 'update'] as const;
-        for (const event of events) {
-            const unsub = registrySubscribe(event, () => {
-                store.clear();
-            });
-            unsubscribers.push(unsub);
-        }
+  // Subscribe to registry events for auto-invalidation
+  if (registrySubscribe !== undefined) {
+    const events = ['register', 'unregister', 'update'] as const;
+    for (const event of events) {
+      const unsub = registrySubscribe(event, () => {
+        store.clear();
+      });
+      unsubscribers.push(unsub);
+    }
+  }
+
+  /**
+   * Evicts the least-recently-accessed entry when the cache exceeds maxSize.
+   * Scans all entries to find the one with the oldest `lastAccessed` timestamp.
+   */
+  function evictLRU(): void {
+    if (store.size <= maxSize) {
+      return;
     }
 
-    /**
-     * Evicts the least-recently-accessed entry when the cache exceeds maxSize.
-     * Scans all entries to find the one with the oldest `lastAccessed` timestamp.
-     */
-    function evictLRU(): void {
-        if (store.size <= maxSize) {
-            return;
-        }
+    let oldestKey: string | undefined;
+    let oldestTime = Infinity;
 
-        let oldestKey: string | undefined;
-        let oldestTime = Infinity;
-
-        for (const [key, entry] of store) {
-            if (entry.lastAccessed < oldestTime) {
-                oldestTime = entry.lastAccessed;
-                oldestKey = key;
-            }
-        }
-
-        if (oldestKey !== undefined) {
-            store.delete(oldestKey);
-        }
+    for (const [key, entry] of store) {
+      if (entry.lastAccessed < oldestTime) {
+        oldestTime = entry.lastAccessed;
+        oldestKey = key;
+      }
     }
 
-    return {
-        get(
-            componentName: string,
-            props: Readonly<Record<string, unknown>>,
-        ): Readonly<Record<string, unknown>> | undefined {
-            const key = buildCacheKey(componentName, props);
-            const entry = store.get(key);
-            if (entry === undefined) {
-                return undefined;
-            }
-            // Update last accessed time for LRU tracking
-            entry.lastAccessed = ++accessCounter;
-            return entry.props;
-        },
+    if (oldestKey !== undefined) {
+      store.delete(oldestKey);
+    }
+  }
 
-        set(
-            componentName: string,
-            props: Readonly<Record<string, unknown>>,
-            validatedProps: Readonly<Record<string, unknown>>,
-        ): void {
-            const key = buildCacheKey(componentName, props);
-            store.set(key, {
-                props: validatedProps,
-                lastAccessed: ++accessCounter,
-            });
-            evictLRU();
-        },
+  return {
+    get(
+      componentName: string,
+      props: Readonly<Record<string, unknown>>,
+    ): Readonly<Record<string, unknown>> | undefined {
+      const key = buildCacheKey(componentName, props);
+      const entry = store.get(key);
+      if (entry === undefined) {
+        return undefined;
+      }
+      // Update last accessed time for LRU tracking
+      entry.lastAccessed = ++accessCounter;
+      return entry.props;
+    },
 
-        clear(): void {
-            store.clear();
-        },
+    set(
+      componentName: string,
+      props: Readonly<Record<string, unknown>>,
+      validatedProps: Readonly<Record<string, unknown>>,
+    ): void {
+      const key = buildCacheKey(componentName, props);
+      store.set(key, {
+        props: validatedProps,
+        lastAccessed: ++accessCounter,
+      });
+      evictLRU();
+    },
 
-        get size(): number {
-            return store.size;
-        },
+    clear(): void {
+      store.clear();
+    },
 
-        dispose(): void {
-            store.clear();
-            for (const unsub of unsubscribers) {
-                unsub();
-            }
-            unsubscribers.length = 0;
-        },
-    };
+    get size(): number {
+      return store.size;
+    },
+
+    dispose(): void {
+      store.clear();
+      for (const unsub of unsubscribers) {
+        unsub();
+      }
+      unsubscribers.length = 0;
+    },
+  };
 }

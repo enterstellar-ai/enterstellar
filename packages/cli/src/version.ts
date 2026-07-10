@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/version
+ * @module @enterstellar/cli/version
  * @description CLI version constant.
  *
  * Displayed by `enterstellar --version` and embedded in scaffold metadata.
@@ -9,7 +9,7 @@
  */
 
 /**
- * Semantic version of the `@enterstellar-ai/cli` package.
+ * Semantic version of the `@enterstellar/cli` package.
  *
  * @remarks
  * This value MUST match the `version` field in `package.json`.

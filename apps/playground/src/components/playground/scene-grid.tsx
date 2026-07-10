@@ -4,7 +4,7 @@
  * hallucination mode support.
  *
  * Takes a `PlaygroundScene` and renders its zones as a CSS Grid.
- * Each zone is an `<Zone>` from `@enterstellar-ai/react` wrapped in a
+ * Each zone is an `<Zone>` from `@enterstellar/react` wrapped in a
  * Framer Motion container with lifecycle-mapped visual variants.
  *
  * **Hallucination Mode (THE MOAT):**
@@ -12,7 +12,7 @@
  * - **Left (65% width):** "✅ Enterstellar Protected" — standard zones, full fidelity
  * - **Right (35% width):** "⚠ Without Enterstellar" — hallucinated zones, dimmed,
  *   red-tinted border, `opacity-80`. Uses `GenericCard` fallbacks rendered
- *   through the real `@enterstellar-ai/compiler`.
+ *   through the real `@enterstellar/compiler`.
  *
  * On narrow viewports (<768px), the dual grid stacks vertically.
  *
@@ -33,13 +33,13 @@
  *
  * @see implementation_plan.md §4.3 — SceneGrid
  * @see implementation_plan.md §2.2 — Hallucination Mode (THE MOAT)
- * @see Zone from @enterstellar-ai/react — zone rendering component
+ * @see Zone from @enterstellar/react — zone rendering component
  */
 'use client';
 
 import { useContext } from 'react';
 import { motion } from 'framer-motion';
-import { Zone, EnterstellarContext } from '@enterstellar-ai/react';
+import { Zone, EnterstellarContext } from '@enterstellar/react';
 
 import type { PlaygroundScene, ZoneDefinition } from '@/enterstellar/scenes/types';
 import { getHallucinatedZones } from '@/enterstellar/scenes/types';
@@ -77,11 +77,11 @@ interface SceneGridProps {
  * @internal
  */
 const layoutClasses: Record<string, string> = {
-  'single': 'flex items-center justify-center',
+  single: 'flex items-center justify-center',
   'grid-2col': 'grid grid-cols-1 md:grid-cols-2 gap-4',
   'grid-3col': 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4',
   'sidebar-left': 'grid grid-cols-1 md:grid-cols-[300px_1fr] gap-4',
-  'dashboard': 'grid grid-cols-1 md:grid-cols-2 gap-4',
+  dashboard: 'grid grid-cols-1 md:grid-cols-2 gap-4',
 };
 
 // ---------------------------------------------------------------------------
@@ -195,14 +195,13 @@ function ZoneGrid({
     >
       {zones.map((zone) => {
         // Resolve sizeHint → grid class (defaults to 'standard' = col-span-1)
-        const sizeClass = !isSingle
-          ? sizeHintToGridClass[zone.sizeHint ?? 'standard'] ?? ''
-          : '';
+        const sizeClass = !isSingle ? (sizeHintToGridClass[zone.sizeHint ?? 'standard'] ?? '') : '';
 
         // Legacy position.span takes precedence over sizeHint when both are set
-        const spanClass = !isSingle && zone.position.span !== undefined && zone.position.span > 1
-          ? `md:col-span-${String(zone.position.span)}`
-          : sizeClass;
+        const spanClass =
+          !isSingle && zone.position.span !== undefined && zone.position.span > 1
+            ? `md:col-span-${String(zone.position.span)}`
+            : sizeClass;
 
         return (
           <motion.div
@@ -218,25 +217,26 @@ function ZoneGrid({
               pipelineState === 'compiled' && 'border-playground-border/30',
               pipelineState === 'error' && 'border-error/40',
             )}
-          style={
-            !isSingle
-              ? {
-                gridRow: zone.position.row,
-                gridColumn: zone.position.span !== undefined
-                  ? `${String(zone.position.col)} / span ${String(zone.position.span)}`
-                  : zone.position.col,
-              }
-              : {}
-          }
-        >
-          <div className="p-1 h-full min-h-[120px]">
-            {isEnterstellarReady ? (
-              <Zone name={zone.name} />
-            ) : (
-              <div className="h-full min-h-[120px] rounded-lg playground-skeleton" />
-            )}
-          </div>
-        </motion.div>
+            style={
+              !isSingle
+                ? {
+                    gridRow: zone.position.row,
+                    gridColumn:
+                      zone.position.span !== undefined
+                        ? `${String(zone.position.col)} / span ${String(zone.position.span)}`
+                        : zone.position.col,
+                  }
+                : {}
+            }
+          >
+            <div className="p-1 h-full min-h-[120px]">
+              {isEnterstellarReady ? (
+                <Zone name={zone.name} />
+              ) : (
+                <div className="h-full min-h-[120px] rounded-lg playground-skeleton" />
+              )}
+            </div>
+          </motion.div>
         );
       })}
     </motion.div>
@@ -319,11 +319,7 @@ export function SceneGrid({
   const hallucinatedZones = getHallucinatedZones(scene);
 
   return (
-    <div
-      className={cn(
-        'h-full flex flex-col md:flex-row gap-4',
-      )}
-    >
+    <div className={cn('h-full flex flex-col md:flex-row gap-4')}>
       {/* ── Hero: "✅ Enterstellar Protected" (65% width) ── */}
       <div className="md:w-[65%] flex flex-col min-w-0">
         {/* Header badge */}
@@ -359,9 +355,7 @@ export function SceneGrid({
           <span className="text-[11px] font-semibold text-error/80 tracking-wide uppercase">
             Without Enterstellar
           </span>
-          <span className="text-[10px] text-playground-muted">
-            — Raw LLM output, no validation
-          </span>
+          <span className="text-[10px] text-playground-muted">— Raw LLM output, no validation</span>
         </div>
 
         {/* Hallucinated zones — dimmed, red-tinted */}

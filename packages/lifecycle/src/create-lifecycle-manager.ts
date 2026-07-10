@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/lifecycle/create-lifecycle-manager
+ * @module @enterstellar/lifecycle/create-lifecycle-manager
  * @description Factory function for creating a `LifecycleManager` instance.
  *
  * Composes the core state machine with configuration defaults.
- * This is the primary public entry point for `@enterstellar-ai/lifecycle`.
+ * This is the primary public entry point for `@enterstellar/lifecycle`.
  *
  * Follows the Enterstellar factory pattern (R1): returns a plain object with
  * closures, not a class instance. Consistent with `createCompiler()`,
@@ -30,12 +30,12 @@ import { createStateMachine } from './state-machine.js';
  * @internal
  */
 function resolveConfig(partial?: Partial<LifecycleManagerConfig>): LifecycleManagerConfig {
-    const config: LifecycleManagerConfig = {
-        timeoutMs: partial?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-        maxRetries: partial?.maxRetries ?? DEFAULT_MAX_RETRIES,
-    };
+  const config: LifecycleManagerConfig = {
+    timeoutMs: partial?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    maxRetries: partial?.maxRetries ?? DEFAULT_MAX_RETRIES,
+  };
 
-    return config;
+  return config;
 }
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ function resolveConfig(partial?: Partial<LifecycleManagerConfig>): LifecycleMana
  *
  * @example
  * ```ts
- * import { createLifecycleManager } from '@enterstellar-ai/lifecycle';
+ * import { createLifecycleManager } from '@enterstellar/lifecycle';
  *
  * // With defaults (30s timeout, 3 retries)
  * const manager = createLifecycleManager();
@@ -90,6 +90,6 @@ function resolveConfig(partial?: Partial<LifecycleManagerConfig>): LifecycleMana
  * @see Design Choice RE17 — 3 retries with exponential backoff.
  */
 export function createLifecycleManager(config?: Partial<LifecycleManagerConfig>): LifecycleManager {
-    const resolvedConfig = resolveConfig(config);
-    return createStateMachine(resolvedConfig);
+  const resolvedConfig = resolveConfig(config);
+  return createStateMachine(resolvedConfig);
 }

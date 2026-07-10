@@ -3,7 +3,7 @@
   "$id": "./design-tokens-dtcg.json",
   "title": "Enterstellar Design Tokens (W3C DTCG Subset)",
   "description": "Enterstellar-specific subset of the W3C Design Tokens Community Group specification. Validates only the exact token groups and paths that Enterstellar's TokenResolver interface supports. Non-TS renderers validate their token files against this schema.",
-  "$comment": "This schema is an Enterstellar-specific subset of the W3C DTCG v2 spec (https://design-tokens.github.io/community-group/format/). It is hand-crafted per design choice CP9 — we do NOT require full W3C DTCG compliance from renderers. Only the token groups that Enterstellar's TokenResolver.validate() recognizes are included. See @enterstellar-ai/types/token.ts for the canonical TypeScript interface.",
+  "$comment": "This schema is an Enterstellar-specific subset of the W3C DTCG v2 spec (https://design-tokens.github.io/community-group/format/). It is hand-crafted per design choice CP9 — we do NOT require full W3C DTCG compliance from renderers. Only the token groups that Enterstellar's TokenResolver.validate() recognizes are included. See @enterstellar/types/token.ts for the canonical TypeScript interface.",
   "type": "object",
   "properties": {
     "colors": {

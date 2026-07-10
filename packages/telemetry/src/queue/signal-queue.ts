@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/queue/signal-queue
+ * @module @enterstellar/telemetry/queue/signal-queue
  * @description Interface for signal queue implementations.
  *
  * The `SignalQueue` abstracts over different persistence strategies:
@@ -12,7 +12,7 @@
  * @see Design Choice TL4 — queue strategy selection.
  */
 
-import type { ForgeSignal } from '@enterstellar-ai/types';
+import type { ForgeSignal } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // SignalQueue Interface
@@ -27,53 +27,53 @@ import type { ForgeSignal } from '@enterstellar-ai/types';
  * priority on the next flush cycle).
  */
 export interface SignalQueue {
-    /**
-     * Add a signal to the end of the queue.
-     *
-     * @param signal - A fully-formed `ForgeSignal` to enqueue.
-     */
-    enqueue(signal: ForgeSignal): Promise<void>;
+  /**
+   * Add a signal to the end of the queue.
+   *
+   * @param signal - A fully-formed `ForgeSignal` to enqueue.
+   */
+  enqueue(signal: ForgeSignal): Promise<void>;
 
-    /**
-     * Remove and return up to `count` signals from the front of the queue.
-     *
-     * Returns fewer than `count` if the queue has fewer signals.
-     * Returns an empty array if the queue is empty.
-     *
-     * @param count - Maximum number of signals to dequeue.
-     * @returns The dequeued signals, in FIFO order.
-     */
-    dequeue(count: number): Promise<readonly ForgeSignal[]>;
+  /**
+   * Remove and return up to `count` signals from the front of the queue.
+   *
+   * Returns fewer than `count` if the queue has fewer signals.
+   * Returns an empty array if the queue is empty.
+   *
+   * @param count - Maximum number of signals to dequeue.
+   * @returns The dequeued signals, in FIFO order.
+   */
+  dequeue(count: number): Promise<readonly ForgeSignal[]>;
 
-    /**
-     * Re-enqueue signals that failed to send.
-     *
-     * Prepends the signals to the **front** of the queue so they are
-     * retried before newer signals on the next flush cycle.
-     *
-     * @param signals - The failed signals to requeue.
-     */
-    requeue(signals: readonly ForgeSignal[]): Promise<void>;
+  /**
+   * Re-enqueue signals that failed to send.
+   *
+   * Prepends the signals to the **front** of the queue so they are
+   * retried before newer signals on the next flush cycle.
+   *
+   * @param signals - The failed signals to requeue.
+   */
+  requeue(signals: readonly ForgeSignal[]): Promise<void>;
 
-    /**
-     * Get the current number of signals in the queue.
-     *
-     * @returns The queue depth.
-     */
-    size(): Promise<number>;
+  /**
+   * Get the current number of signals in the queue.
+   *
+   * @returns The queue depth.
+   */
+  size(): Promise<number>;
 
-    /**
-     * Remove all signals from the queue.
-     *
-     * Used during `dispose()` cleanup or testing.
-     */
-    clear(): Promise<void>;
+  /**
+   * Remove all signals from the queue.
+   *
+   * Used during `dispose()` cleanup or testing.
+   */
+  clear(): Promise<void>;
 
-    /**
-     * Release any underlying resources (e.g. close an IndexedDB connection).
-     *
-     * Optional — memory queues have no resources to release.
-     * Must be called before deleting the backing store in tests.
-     */
-    close?(): void;
+  /**
+   * Release any underlying resources (e.g. close an IndexedDB connection).
+   *
+   * Optional — memory queues have no resources to release.
+   * Must be called before deleting the backing store in tests.
+   */
+  close?(): void;
 }

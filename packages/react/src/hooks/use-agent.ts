@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/hooks/use-enterstellar-agent
+ * @module @enterstellar/react/hooks/use-enterstellar-agent
  * @description Hook to access the `EnterstellarAgentConnection` from the nearest `<Provider>`.
  *
  * Returns `EnterstellarAgentConnection | null`. Unlike `useEnterstellar()`, this hook
@@ -19,7 +19,7 @@
  *
  * @example
  * ```tsx
- * import { useEnterstellarAgent } from '@enterstellar-ai/react';
+ * import { useEnterstellarAgent } from '@enterstellar/react';
  *
  * function AgentStatus() {
  *   const connection = useEnterstellarAgent();
@@ -35,7 +35,7 @@
 
 import { useContext } from 'react';
 
-import type { EnterstellarAgentConnection } from '@enterstellar-ai/types';
+import type { EnterstellarAgentConnection } from '@enterstellar/types';
 
 import { EnterstellarAgentContext } from '../provider.js';
 
@@ -55,6 +55,6 @@ import { EnterstellarAgentContext } from '../provider.js';
  * @see Design Choice RE9 — separate from core context hook
  */
 export function useEnterstellarAgent(): EnterstellarAgentConnection | null {
-    const context = useContext(EnterstellarAgentContext);
-    return context.connection;
+  const context = useContext(EnterstellarAgentContext);
+  return context.connection;
 }

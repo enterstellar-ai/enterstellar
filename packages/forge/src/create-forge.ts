@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge/create-forge
+ * @module @enterstellar/forge/create-forge
  * @description Factory function for the Enterstellar Component Forge.
  *
  * `createComponentForge()` wires together all forge subsystems:
@@ -20,7 +20,7 @@
  *
  * @example
  * ```ts
- * import { createComponentForge } from '@enterstellar-ai/forge';
+ * import { createComponentForge } from '@enterstellar/forge';
  *
  * const forge = createComponentForge({
  *   routing: 'auto',
@@ -41,14 +41,14 @@
  * ```
  */
 
-import type { ComponentCategory, ComponentIntent, ForgeResult, ForgeTraceRecord } from '@enterstellar-ai/types';
-
 import type {
-    ComponentForge,
-    ForgeConfig,
-    ForgeStats,
-    ForgeTemplate,
-} from './types.js';
+  ComponentCategory,
+  ComponentIntent,
+  ForgeResult,
+  ForgeTraceRecord,
+} from '@enterstellar/types';
+
+import type { ComponentForge, ForgeConfig, ForgeStats, ForgeTemplate } from './types.js';
 import { forgeLocal } from './local-forge.js';
 import { forgeCloud } from './cloud-forge.js';
 import { createTemplateRegistry } from './templates/registry.js';
@@ -65,12 +65,12 @@ import { forgeCompilationFailedError } from './errors.js';
  * Updated on every `forge()` invocation.
  */
 type MutableStats = {
-    totalForged: number;
-    successCount: number;
-    failureCount: number;
-    localCount: number;
-    cloudCount: number;
-    intentCounts: Map<string, number>;
+  totalForged: number;
+  successCount: number;
+  failureCount: number;
+  localCount: number;
+  cloudCount: number;
+  intentCounts: Map<string, number>;
 };
 
 // ---------------------------------------------------------------------------
@@ -101,262 +101,250 @@ type MutableStats = {
  * @see Design Choice F8 — routing chain: LocalForge → CloudForge → fallback.
  */
 export function createComponentForge(config: ForgeConfig): ComponentForge {
-    // -----------------------------------------------------------------------
-    // Initialize subsystems
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Initialize subsystems
+  // -----------------------------------------------------------------------
 
-    const templateRegistry = createTemplateRegistry();
-    const coldPathTracker = createColdPathTracker();
+  const templateRegistry = createTemplateRegistry();
+  const coldPathTracker = createColdPathTracker();
 
-    /** Mutable stats — encapsulated, never leaked. */
-    const stats: MutableStats = {
-        totalForged: 0,
-        successCount: 0,
-        failureCount: 0,
-        localCount: 0,
-        cloudCount: 0,
-        intentCounts: new Map<string, number>(),
+  /** Mutable stats — encapsulated, never leaked. */
+  const stats: MutableStats = {
+    totalForged: 0,
+    successCount: 0,
+    failureCount: 0,
+    localCount: 0,
+    cloudCount: 0,
+    intentCounts: new Map<string, number>(),
+  };
+
+  // -----------------------------------------------------------------------
+  // forge() — the core Hot Path function
+  // -----------------------------------------------------------------------
+
+  /**
+   * Generates a temporary `ComponentContract` for an unmatched intent.
+   *
+   * **Routing chain (F8):**
+   * 1. If `routing` is `'auto'` or `'local-only'` → try LocalForge.
+   * 2. If LocalForge returns `null` and `routing` is `'auto'` or `'cloud-only'` → try CloudForge.
+   * 3. If CloudForge returns `null` → fallback result.
+   * 4. Compile the forged contract (L3). If compilation fails → fallback.
+   * 5. Record trace for Cold Path (Hot Path Rule 6).
+   * 6. Return `ForgeResult`.
+   */
+  async function forge(
+    intent: ComponentIntent,
+    context?: Readonly<Record<string, unknown>>,
+  ): Promise<ForgeResult> {
+    stats.totalForged += 1;
+
+    // Track intent frequency
+    const intentSlug = slugifyIntent(intent.component);
+    const currentCount = stats.intentCounts.get(intentSlug);
+    stats.intentCounts.set(intentSlug, (currentCount ?? 0) + 1);
+
+    // ----- Phase 1: Attempt LocalForge -----
+    let forgedContract = null;
+    let forgeMode: 'local' | 'cloud' = 'local';
+
+    if (config.routing === 'auto' || config.routing === 'local-only') {
+      // Derive category from intent (simple heuristic — default data-display)
+      const category = deriveCategory(intent);
+      forgedContract = forgeLocal(intent, templateRegistry, config.constraints, category);
+
+      if (forgedContract !== null) {
+        forgeMode = 'local';
+        stats.localCount += 1;
+      }
+    }
+
+    // ----- Phase 2: Attempt CloudForge (if LocalForge returned null) -----
+    if (forgedContract === null && config.routing !== 'local-only') {
+      if (config.onCloudForge !== undefined) {
+        forgedContract = await forgeCloud(intent, config.constraints, config.onCloudForge);
+
+        if (forgedContract !== null) {
+          forgeMode = 'cloud';
+          stats.cloudCount += 1;
+        }
+      }
+    }
+
+    // ----- Phase 3: No contract generated → fallback -----
+    if (forgedContract === null) {
+      stats.failureCount += 1;
+      recordTrace(intent, 'local', false, context);
+
+      return createFallbackResult(forgeMode);
+    }
+
+    // ----- Phase 4: Compile the forged contract (L3 — never bypassed) -----
+    const compilationResult = await config.compiler.compile(
+      {
+        component: forgedContract.name,
+        props: {},
+        confidence: 0.5,
+      },
+      { agent: 'forge' },
+    );
+
+    if (compilationResult.status === 'fail') {
+      stats.failureCount += 1;
+      recordTrace(intent, forgeMode, false, context);
+
+      // Log the compilation failure (ENS-4004) but don't throw.
+      // The error is available via getStats() and trace history.
+      void forgeCompilationFailedError(forgedContract.name, compilationResult.errors.length);
+
+      return createFallbackResult(forgeMode);
+    }
+
+    // ----- Phase 5: Success -----
+    stats.successCount += 1;
+    recordTrace(intent, forgeMode, true, context);
+
+    return {
+      success: true,
+      contract: forgedContract,
+      compilationResult,
+      fallbackUsed: false,
+      forgeMode,
+    };
+  }
+
+  // -----------------------------------------------------------------------
+  // Cold Path trace recording (Hot Path Rule 6)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Records a forge trace for Cold Path analysis.
+   * Called on every forge invocation, regardless of success/failure.
+   */
+  function recordTrace(
+    intent: ComponentIntent,
+    forgeMode: 'local' | 'cloud',
+    success: boolean,
+    context?: Readonly<Record<string, unknown>>,
+  ): void {
+    if (!config.coldPath.enabled) {
+      return;
+    }
+
+    const record: ForgeTraceRecord = {
+      intentSlug: slugifyIntent(intent.component),
+      intentHash: xxHash8(intent.component),
+      forgeMode,
+      success,
+      timestamp: new Date().toISOString(),
+      ...(context !== undefined ? { context } : {}),
     };
 
-    // -----------------------------------------------------------------------
-    // forge() — the core Hot Path function
-    // -----------------------------------------------------------------------
+    coldPathTracker.recordTrace(record);
+  }
 
-    /**
-     * Generates a temporary `ComponentContract` for an unmatched intent.
-     *
-     * **Routing chain (F8):**
-     * 1. If `routing` is `'auto'` or `'local-only'` → try LocalForge.
-     * 2. If LocalForge returns `null` and `routing` is `'auto'` or `'cloud-only'` → try CloudForge.
-     * 3. If CloudForge returns `null` → fallback result.
-     * 4. Compile the forged contract (L3). If compilation fails → fallback.
-     * 5. Record trace for Cold Path (Hot Path Rule 6).
-     * 6. Return `ForgeResult`.
-     */
-    async function forge(
-        intent: ComponentIntent,
-        context?: Readonly<Record<string, unknown>>,
-    ): Promise<ForgeResult> {
-        stats.totalForged += 1;
+  // -----------------------------------------------------------------------
+  // Category derivation (simple heuristic)
+  // -----------------------------------------------------------------------
 
-        // Track intent frequency
-        const intentSlug = slugifyIntent(intent.component);
-        const currentCount = stats.intentCounts.get(intentSlug);
-        stats.intentCounts.set(intentSlug, (currentCount ?? 0) + 1);
-
-        // ----- Phase 1: Attempt LocalForge -----
-        let forgedContract = null;
-        let forgeMode: 'local' | 'cloud' = 'local';
-
-        if (config.routing === 'auto' || config.routing === 'local-only') {
-            // Derive category from intent (simple heuristic — default data-display)
-            const category = deriveCategory(intent);
-            forgedContract = forgeLocal(
-                intent,
-                templateRegistry,
-                config.constraints,
-                category,
-            );
-
-            if (forgedContract !== null) {
-                forgeMode = 'local';
-                stats.localCount += 1;
-            }
-        }
-
-        // ----- Phase 2: Attempt CloudForge (if LocalForge returned null) -----
-        if (forgedContract === null && config.routing !== 'local-only') {
-            if (config.onCloudForge !== undefined) {
-                forgedContract = await forgeCloud(
-                    intent,
-                    config.constraints,
-                    config.onCloudForge,
-                );
-
-                if (forgedContract !== null) {
-                    forgeMode = 'cloud';
-                    stats.cloudCount += 1;
-                }
-            }
-        }
-
-        // ----- Phase 3: No contract generated → fallback -----
-        if (forgedContract === null) {
-            stats.failureCount += 1;
-            recordTrace(intent, 'local', false, context);
-
-            return createFallbackResult(forgeMode);
-        }
-
-        // ----- Phase 4: Compile the forged contract (L3 — never bypassed) -----
-        const compilationResult = await config.compiler.compile(
-            {
-                component: forgedContract.name,
-                props: {},
-                confidence: 0.5,
-            },
-            { agent: 'forge' },
-        );
-
-        if (compilationResult.status === 'fail') {
-            stats.failureCount += 1;
-            recordTrace(intent, forgeMode, false, context);
-
-            // Log the compilation failure (ENS-4004) but don't throw.
-            // The error is available via getStats() and trace history.
-            void forgeCompilationFailedError(
-                forgedContract.name,
-                compilationResult.errors.length,
-            );
-
-            return createFallbackResult(forgeMode);
-        }
-
-        // ----- Phase 5: Success -----
-        stats.successCount += 1;
-        recordTrace(intent, forgeMode, true, context);
-
-        return {
-            success: true,
-            contract: forgedContract,
-            compilationResult,
-            fallbackUsed: false,
-            forgeMode,
-        };
+  /**
+   * Derives a `ComponentCategory` from intent metadata.
+   *
+   * This is a simple heuristic — in production, the Semantic Index would
+   * provide category classification. For LocalForge, we use intent
+   * `interaction` and `mode` hints to narrow the match.
+   */
+  function deriveCategory(intent: ComponentIntent): ComponentCategory {
+    // Use interaction hint if available
+    if (intent.interaction === 'editable') {
+      return 'form';
     }
 
-    // -----------------------------------------------------------------------
-    // Cold Path trace recording (Hot Path Rule 6)
-    // -----------------------------------------------------------------------
-
-    /**
-     * Records a forge trace for Cold Path analysis.
-     * Called on every forge invocation, regardless of success/failure.
-     */
-    function recordTrace(
-        intent: ComponentIntent,
-        forgeMode: 'local' | 'cloud',
-        success: boolean,
-        context?: Readonly<Record<string, unknown>>,
-    ): void {
-        if (!config.coldPath.enabled) {
-            return;
-        }
-
-        const record: ForgeTraceRecord = {
-            intentSlug: slugifyIntent(intent.component),
-            intentHash: xxHash8(intent.component),
-            forgeMode,
-            success,
-            timestamp: new Date().toISOString(),
-            ...(context !== undefined ? { context } : {}),
-        };
-
-        coldPathTracker.recordTrace(record);
+    // Use mode hint if available
+    if (intent.mode !== undefined) {
+      const modeMap: Readonly<Record<string, ComponentCategory>> = {
+        list: 'data-display',
+        detail: 'data-display',
+        summary: 'data-display',
+        comparison: 'data-display',
+        'time-series': 'data-display',
+        snapshot: 'data-display',
+      };
+      const mapped = modeMap[intent.mode];
+      if (mapped !== undefined) {
+        return mapped;
+      }
     }
 
-    // -----------------------------------------------------------------------
-    // Category derivation (simple heuristic)
-    // -----------------------------------------------------------------------
+    // Default
+    return 'data-display';
+  }
 
-    /**
-     * Derives a `ComponentCategory` from intent metadata.
-     *
-     * This is a simple heuristic — in production, the Semantic Index would
-     * provide category classification. For LocalForge, we use intent
-     * `interaction` and `mode` hints to narrow the match.
-     */
-    function deriveCategory(intent: ComponentIntent): ComponentCategory {
-        // Use interaction hint if available
-        if (intent.interaction === 'editable') {
-            return 'form';
-        }
+  // -----------------------------------------------------------------------
+  // Fallback result builder
+  // -----------------------------------------------------------------------
 
-        // Use mode hint if available
-        if (intent.mode !== undefined) {
-            const modeMap: Readonly<Record<string, ComponentCategory>> = {
-                'list': 'data-display',
-                'detail': 'data-display',
-                'summary': 'data-display',
-                'comparison': 'data-display',
-                'time-series': 'data-display',
-                'snapshot': 'data-display',
-            };
-            const mapped = modeMap[intent.mode];
-            if (mapped !== undefined) {
-                return mapped;
-            }
-        }
+  /**
+   * Creates a `ForgeResult` indicating fallback was used.
+   */
+  function createFallbackResult(forgeMode: 'local' | 'cloud'): ForgeResult {
+    return {
+      success: false,
+      contract: null,
+      compilationResult: null,
+      fallbackUsed: true,
+      forgeMode,
+    };
+  }
 
-        // Default
-        return 'data-display';
+  // -----------------------------------------------------------------------
+  // registerTemplate
+  // -----------------------------------------------------------------------
+
+  function registerTemplate(name: string, template: ForgeTemplate): void {
+    templateRegistry.registerTemplate(name, template);
+  }
+
+  // -----------------------------------------------------------------------
+  // getStats
+  // -----------------------------------------------------------------------
+
+  function getStats(): ForgeStats {
+    // Build topIntents sorted by count descending
+    const topIntents: Array<{ intent: string; count: number }> = [];
+
+    for (const [intent, count] of stats.intentCounts) {
+      topIntents.push({ intent, count });
     }
 
-    // -----------------------------------------------------------------------
-    // Fallback result builder
-    // -----------------------------------------------------------------------
+    topIntents.sort((a, b) => b.count - a.count);
 
-    /**
-     * Creates a `ForgeResult` indicating fallback was used.
-     */
-    function createFallbackResult(forgeMode: 'local' | 'cloud'): ForgeResult {
-        return {
-            success: false,
-            contract: null,
-            compilationResult: null,
-            fallbackUsed: true,
-            forgeMode,
-        };
-    }
+    return {
+      totalForged: stats.totalForged,
+      successCount: stats.successCount,
+      failureCount: stats.failureCount,
+      localCount: stats.localCount,
+      cloudCount: stats.cloudCount,
+      topIntents: topIntents.slice(0, 20),
+    };
+  }
 
-    // -----------------------------------------------------------------------
-    // registerTemplate
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // getTraceHistory
+  // -----------------------------------------------------------------------
 
-    function registerTemplate(name: string, template: ForgeTemplate): void {
-        templateRegistry.registerTemplate(name, template);
-    }
+  function getTraceHistory(): readonly ForgeTraceRecord[] {
+    return coldPathTracker.getTraceHistory();
+  }
 
-    // -----------------------------------------------------------------------
-    // getStats
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Return frozen public API
+  // -----------------------------------------------------------------------
 
-    function getStats(): ForgeStats {
-        // Build topIntents sorted by count descending
-        const topIntents: Array<{ intent: string; count: number }> = [];
-
-        for (const [intent, count] of stats.intentCounts) {
-            topIntents.push({ intent, count });
-        }
-
-        topIntents.sort((a, b) => b.count - a.count);
-
-        return {
-            totalForged: stats.totalForged,
-            successCount: stats.successCount,
-            failureCount: stats.failureCount,
-            localCount: stats.localCount,
-            cloudCount: stats.cloudCount,
-            topIntents: topIntents.slice(0, 20),
-        };
-    }
-
-    // -----------------------------------------------------------------------
-    // getTraceHistory
-    // -----------------------------------------------------------------------
-
-    function getTraceHistory(): readonly ForgeTraceRecord[] {
-        return coldPathTracker.getTraceHistory();
-    }
-
-    // -----------------------------------------------------------------------
-    // Return frozen public API
-    // -----------------------------------------------------------------------
-
-    return Object.freeze({
-        forge,
-        registerTemplate,
-        getStats,
-        getTraceHistory,
-    });
+  return Object.freeze({
+    forge,
+    registerTemplate,
+    getStats,
+    getTraceHistory,
+  });
 }

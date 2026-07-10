@@ -1,17 +1,17 @@
 ---
-title: "@enterstellar-ai/adapter-supabase"
+title: "@enterstellar/adapter-supabase"
 description: Supabase adapter — pre-built auth and data adapters that map Supabase SDK calls to Enterstellar adapter interfaces.
 icon: Database
 ---
 
 ## Purpose
 
-`@enterstellar-ai/adapter-supabase` provides `createSupabaseAuthAdapter()` and `createSupabaseDataAdapter()` — concrete factory functions that map Supabase SDK calls to the `AuthAdapter` and `DataAdapter` interfaces from `@enterstellar-ai/adapters`. P0 priority — ships with core.
+`@enterstellar/adapter-supabase` provides `createSupabaseAuthAdapter()` and `createSupabaseDataAdapter()` — concrete factory functions that map Supabase SDK calls to the `AuthAdapter` and `DataAdapter` interfaces from `@enterstellar/adapters`. P0 priority — ships with core.
 
-Each factory delegates to `createAuthAdapter()` / `createDataAdapter()` from `@enterstellar-ai/adapters` internally, so all AD5 error wrapping is applied automatically.
+Each factory delegates to `createAuthAdapter()` / `createDataAdapter()` from `@enterstellar/adapters` internally, so all AD5 error wrapping is applied automatically.
 
 ```bash
-npm install @enterstellar-ai/adapter-supabase @supabase/supabase-js
+npm install @enterstellar/adapter-supabase @supabase/supabase-js
 ```
 
 ---
@@ -23,8 +23,8 @@ import { createClient } from '@supabase/supabase-js';
 import {
   createSupabaseAuthAdapter,
   createSupabaseDataAdapter,
-} from '@enterstellar-ai/adapter-supabase';
-import { Provider } from '@enterstellar-ai/react';
+} from '@enterstellar/adapter-supabase';
+import { Provider } from '@enterstellar/react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -150,5 +150,5 @@ Implement a custom `DataAdapter` for complex mapping logic that differs from thi
 
 - [Package Map](../architecture/package-map) — adapters module specification and pre-built packages table
 - [Design Principles](../architecture/design-principles) — adapter priorities and capabilities (auth, queries, realtime)
-- [`@enterstellar-ai/adapters` →](/api/adapters) — build your own custom adapter
+- [`@enterstellar/adapters` →](/api/adapters) — build your own custom adapter
 - [Data Integration Guide →](/guides/data-integration) — full data adapter walkthrough

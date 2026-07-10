@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/review/format-review-json
+ * @module @enterstellar/cli/review/format-review-json
  * @description JSON output formatter for the `enterstellar review --json` mode.
  *
  * Serializes annotation results to stdout-ready JSON. Used by CI/CD
@@ -54,12 +54,12 @@ import type { FileAnnotations } from './parse-annotations.js';
  * ```
  */
 export type ReviewJsonOutput = {
-    /** Total number of annotations across all files. */
-    readonly totalAnnotations: number;
-    /** Number of files that contain at least one annotation. */
-    readonly totalFiles: number;
-    /** Per-file annotation results, in scan order. */
-    readonly files: readonly FileAnnotations[];
+  /** Total number of annotations across all files. */
+  readonly totalAnnotations: number;
+  /** Number of files that contain at least one annotation. */
+  readonly totalFiles: number;
+  /** Per-file annotation results, in scan order. */
+  readonly files: readonly FileAnnotations[];
 };
 
 // ---------------------------------------------------------------------------
@@ -86,19 +86,14 @@ export type ReviewJsonOutput = {
  *
  * @see Correction 1 — `enterstellar review --json` output format
  */
-export function formatReviewJson(
-    files: readonly FileAnnotations[],
-): string {
-    const totalAnnotations = files.reduce(
-        (sum, f) => sum + f.annotations.length,
-        0,
-    );
+export function formatReviewJson(files: readonly FileAnnotations[]): string {
+  const totalAnnotations = files.reduce((sum, f) => sum + f.annotations.length, 0);
 
-    const output: ReviewJsonOutput = {
-        totalAnnotations,
-        totalFiles: files.length,
-        files,
-    };
+  const output: ReviewJsonOutput = {
+    totalAnnotations,
+    totalFiles: files.length,
+    files,
+  };
 
-    return JSON.stringify(output, null, 2);
+  return JSON.stringify(output, null, 2);
 }

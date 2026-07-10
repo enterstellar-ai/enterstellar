@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/hooks/use-enterstellar-context
+ * @module @enterstellar/react/hooks/use-enterstellar-context
  * @description Hook to access core Enterstellar services from the nearest `<Provider>`.
  *
  * Returns `{ registry, compiler, store, telemetry, cache, adapters }` — the
@@ -16,7 +16,7 @@
  *
  * @example
  * ```tsx
- * import { useEnterstellar } from '@enterstellar-ai/react';
+ * import { useEnterstellar } from '@enterstellar/react';
  *
  * function MyComponent() {
  *   const { registry, compiler, store, telemetry } = useEnterstellar();
@@ -28,12 +28,12 @@
 
 import { useContext } from 'react';
 
-import type { EnterstellarRegistry } from '@enterstellar-ai/registry';
-import type { EnterstellarCompiler } from '@enterstellar-ai/compiler';
-import type { EnterstellarStore } from '@enterstellar-ai/state';
-import type { TelemetryCollector } from '@enterstellar-ai/telemetry';
-import type { RenderCache } from '@enterstellar-ai/cache';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import type { EnterstellarRegistry } from '@enterstellar/registry';
+import type { EnterstellarCompiler } from '@enterstellar/compiler';
+import type { EnterstellarStore } from '@enterstellar/state';
+import type { TelemetryCollector } from '@enterstellar/telemetry';
+import type { RenderCache } from '@enterstellar/cache';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { EnterstellarContext, Enterstellar_CONTEXT_NONE } from '../provider.js';
 import type { EnterstellarAdapters } from '../types.js';
@@ -51,25 +51,25 @@ import type { EnterstellarAdapters } from '../types.js';
  * @see Design Choice RE9
  */
 export type UseEnterstellarContextResult = {
-    /** The component registry instance. */
-    readonly registry: EnterstellarRegistry;
-    /** The UI compiler instance. */
-    readonly compiler: EnterstellarCompiler;
-    /** The state store instance. */
-    readonly store: EnterstellarStore;
-    /** The telemetry collector instance. */
-    readonly telemetry: TelemetryCollector;
-    /**
-     * The render cache instance, or `null` if not provided.
-     * @see Design Choice CA3 — global cache, opt-in via provider.
-     */
-    readonly cache: RenderCache | null;
-    /**
-     * The adapters object. Defaults to `{}` when not provided.
-     * All fields are optional — consume via `adapters.error`, etc.
-     * @see Design Choice AD1 — adapter injection via provider.
-     */
-    readonly adapters: EnterstellarAdapters;
+  /** The component registry instance. */
+  readonly registry: EnterstellarRegistry;
+  /** The UI compiler instance. */
+  readonly compiler: EnterstellarCompiler;
+  /** The state store instance. */
+  readonly store: EnterstellarStore;
+  /** The telemetry collector instance. */
+  readonly telemetry: TelemetryCollector;
+  /**
+   * The render cache instance, or `null` if not provided.
+   * @see Design Choice CA3 — global cache, opt-in via provider.
+   */
+  readonly cache: RenderCache | null;
+  /**
+   * The adapters object. Defaults to `{}` when not provided.
+   * All fields are optional — consume via `adapters.error`, etc.
+   * @see Design Choice AD1 — adapter injection via provider.
+   */
+  readonly adapters: EnterstellarAdapters;
 };
 
 // ---------------------------------------------------------------------------
@@ -97,23 +97,23 @@ export type UseEnterstellarContextResult = {
  * @see Design Choice RE5 — throws, no silent degradation
  */
 export function useEnterstellar(): UseEnterstellarContextResult {
-    const context = useContext(EnterstellarContext);
+  const context = useContext(EnterstellarContext);
 
-    if (context === null || context === Enterstellar_CONTEXT_NONE) {
-        throw new EnterstellarError(
-            'ENS-3001',
-            'react',
-            'useEnterstellar() must be used within an <Provider>. No EnterstellarContext found.',
-            false,
-        );
-    }
+  if (context === null || context === Enterstellar_CONTEXT_NONE) {
+    throw new EnterstellarError(
+      'ENS-3001',
+      'react',
+      'useEnterstellar() must be used within an <Provider>. No EnterstellarContext found.',
+      false,
+    );
+  }
 
-    return {
-        registry: context.registry,
-        compiler: context.compiler,
-        store: context.store,
-        telemetry: context.telemetry,
-        cache: context.cache,
-        adapters: context.adapters,
-    };
+  return {
+    registry: context.registry,
+    compiler: context.compiler,
+    store: context.store,
+    telemetry: context.telemetry,
+    cache: context.cache,
+    adapters: context.adapters,
+  };
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/pipeline/resolve-step
+ * @module @enterstellar/compiler/pipeline/resolve-step
  * @description Pipeline Step 1: Component Resolution.
  *
  * Looks up the `ComponentIntent.component` name in the registry. If the
@@ -47,26 +47,26 @@ import { unknownComponentError } from '../errors.js';
  * ```
  */
 export const resolveStep: CompilationStep = async (
-    context: CompilationContext,
-    next: () => Promise<CompilationContext>,
+  context: CompilationContext,
+  next: () => Promise<CompilationContext>,
 ): Promise<CompilationContext> => {
-    const { intent, registry } = context;
-    const contract = registry.get(intent.component);
+  const { intent, registry } = context;
+  const contract = registry.get(intent.component);
 
-    if (contract === undefined) {
-        // Unknown component — short-circuit the pipeline
-        context.errors.push(unknownComponentError(intent.component));
-        return context;
-    }
+  if (contract === undefined) {
+    // Unknown component — short-circuit the pipeline
+    context.errors.push(unknownComponentError(intent.component));
+    return context;
+  }
 
-    // Verify consistency: the contract in context matches the resolved one.
-    // This is a defensive check — in practice, the compile orchestrator
-    // sets context.contract before pipeline execution. If mismatched,
-    // trust the registry lookup (source of truth per L1).
-    if (context.contract.name !== contract.name) {
-        // Overwrite with registry truth — should not happen in practice
-        (context as { contract: typeof contract }).contract = contract;
-    }
+  // Verify consistency: the contract in context matches the resolved one.
+  // This is a defensive check — in practice, the compile orchestrator
+  // sets context.contract before pipeline execution. If mismatched,
+  // trust the registry lookup (source of truth per L1).
+  if (context.contract.name !== contract.name) {
+    // Overwrite with registry truth — should not happen in practice
+    (context as { contract: typeof contract }).contract = contract;
+  }
 
-    return next();
+  return next();
 };

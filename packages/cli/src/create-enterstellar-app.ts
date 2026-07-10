@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/create-enterstellar-app
+ * @module @enterstellar/cli/create-enterstellar-app
  * @description Entrypoint for `npx create-enterstellar-app [directory]`.
  *
  * Provides the standard `npx create-*` convention used by Next.js, Vite,
@@ -30,8 +30,8 @@ import { handleTopLevelError } from './utils/errors.js';
  * the user will be prompted interactively.
  */
 async function main(): Promise<void> {
-    const directoryArg = process.argv[2];
-    await initCommand(directoryArg);
+  const directoryArg = process.argv[2];
+  await initCommand(directoryArg);
 }
 
 // ---------------------------------------------------------------------------

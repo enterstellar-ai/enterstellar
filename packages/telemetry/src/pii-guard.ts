@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/pii-guard
+ * @module @enterstellar/telemetry/pii-guard
  * @description Targeted PII check for `ForgeSignal.componentName`.
  *
  * Validates that the component name does not accidentally contain
@@ -51,14 +51,14 @@ const SANITIZED_NAME = '__pii_redacted__';
  * The result of a PII guard check on a component name.
  */
 export type PiiCheckResult = {
-    /** The (possibly sanitized) component name. */
-    readonly name: string;
+  /** The (possibly sanitized) component name. */
+  readonly name: string;
 
-    /** Whether the original name was flagged as a potential PII leak. */
-    readonly flagged: boolean;
+  /** Whether the original name was flagged as a potential PII leak. */
+  readonly flagged: boolean;
 
-    /** Human-readable reason, if flagged. `undefined` if clean. */
-    readonly reason?: string | undefined;
+  /** Human-readable reason, if flagged. `undefined` if clean. */
+  readonly reason?: string | undefined;
 };
 
 // ---------------------------------------------------------------------------
@@ -89,28 +89,28 @@ export type PiiCheckResult = {
  * @see Design Choice TL8
  */
 export function checkComponentNamePii(componentName: string): PiiCheckResult {
-    // Check 1: Entirely numeric — definitely an ID, not a component name.
-    if (PURE_NUMERIC_PATTERN.test(componentName)) {
-        return {
-            name: SANITIZED_NAME,
-            flagged: true,
-            reason:
-                `Component name "${componentName}" is purely numeric and likely a PII identifier. ` +
-                'Sanitized to prevent accidental PII leakage in ForgeSignal.',
-        };
-    }
+  // Check 1: Entirely numeric — definitely an ID, not a component name.
+  if (PURE_NUMERIC_PATTERN.test(componentName)) {
+    return {
+      name: SANITIZED_NAME,
+      flagged: true,
+      reason:
+        `Component name "${componentName}" is purely numeric and likely a PII identifier. ` +
+        'Sanitized to prevent accidental PII leakage in ForgeSignal.',
+    };
+  }
 
-    // Check 2: Contains a segment of 5+ consecutive digits — likely an embedded ID.
-    if (NUMERIC_ID_SEGMENT_PATTERN.test(componentName)) {
-        return {
-            name: SANITIZED_NAME,
-            flagged: true,
-            reason:
-                `Component name "${componentName}" contains a numeric segment ≥5 digits, ` +
-                'which may be a PII identifier. Sanitized to prevent accidental PII leakage in ForgeSignal.',
-        };
-    }
+  // Check 2: Contains a segment of 5+ consecutive digits — likely an embedded ID.
+  if (NUMERIC_ID_SEGMENT_PATTERN.test(componentName)) {
+    return {
+      name: SANITIZED_NAME,
+      flagged: true,
+      reason:
+        `Component name "${componentName}" contains a numeric segment ≥5 digits, ` +
+        'which may be a PII identifier. Sanitized to prevent accidental PII leakage in ForgeSignal.',
+    };
+  }
 
-    // Clean — no PII detected.
-    return { name: componentName, flagged: false };
+  // Clean — no PII detected.
+  return { name: componentName, flagged: false };
 }

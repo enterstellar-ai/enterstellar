@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/publishing/badge-service
+ * @module @enterstellar/global-index/publishing/badge-service
  * @description Pure utility functions for certification and badge status.
  *
  * Provides ergonomic helpers for working with the certification status
@@ -45,7 +45,7 @@ import type { CertificationTier, GlobalSearchResult } from '../types.js';
  * ```
  */
 export function isCertified(result: GlobalSearchResult): boolean {
-    return result.certified && result.certificationTier === 'certified';
+  return result.certified && result.certificationTier === 'certified';
 }
 
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ export function isCertified(result: GlobalSearchResult): boolean {
  * ```
  */
 export function isIndexed(result: GlobalSearchResult): boolean {
-    return result.certificationTier === 'indexed';
+  return result.certificationTier === 'indexed';
 }
 
 // ---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ export function isIndexed(result: GlobalSearchResult): boolean {
  * ```
  */
 export function getCertificationTier(result: GlobalSearchResult): CertificationTier {
-    return result.certificationTier;
+  return result.certificationTier;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export function getCertificationTier(result: GlobalSearchResult): CertificationT
  * ```
  */
 export function getScreenshotUrl(result: GlobalSearchResult): string | undefined {
-    return result.screenshotUrl;
+  return result.screenshotUrl;
 }
 
 // ---------------------------------------------------------------------------
@@ -139,7 +139,7 @@ export function getScreenshotUrl(result: GlobalSearchResult): string | undefined
  * @returns `true` if a screenshot URL is present.
  */
 export function hasScreenshot(result: GlobalSearchResult): boolean {
-    return result.screenshotUrl !== undefined && result.screenshotUrl !== '';
+  return result.screenshotUrl !== undefined && result.screenshotUrl !== '';
 }
 
 // ---------------------------------------------------------------------------
@@ -159,5 +159,5 @@ export function hasScreenshot(result: GlobalSearchResult): boolean {
  * @returns The relevance score (0.0–1.0), or `0` if unavailable.
  */
 export function getRelevanceScore(result: GlobalSearchResult): number {
-    return result.score ?? 0;
+  return result.score ?? 0;
 }

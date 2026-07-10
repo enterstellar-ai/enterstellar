@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/state/persistence/local-storage
+ * @module @enterstellar/state/persistence/local-storage
  * @description `localStorage` persistence adapter.
  *
  * Stores serialized state as a JSON string under the key `enterstellar-store`.
@@ -15,8 +15,8 @@
  * @see Design Choice S6 — `localStorage` for web persistence.
  */
 
-import type { SerializedState } from '@enterstellar-ai/types';
-import { SerializedStateSchema } from '@enterstellar-ai/types';
+import type { SerializedState } from '@enterstellar/types';
+import { SerializedStateSchema } from '@enterstellar/types';
 import type { PersistenceAdapter } from '../types.js';
 import { persistenceError } from '../errors.js';
 
@@ -38,14 +38,14 @@ const STORAGE_KEY = 'enterstellar-store';
  * @returns `true` if `localStorage` is available.
  */
 function isLocalStorageAvailable(): boolean {
-    try {
-        const testKey = '__enterstellar_ls_test__';
-        localStorage.setItem(testKey, '1');
-        localStorage.removeItem(testKey);
-        return true;
-    } catch {
-        return false;
-    }
+  try {
+    const testKey = '__enterstellar_ls_test__';
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -69,59 +69,59 @@ function isLocalStorageAvailable(): boolean {
  * ```
  */
 export function createLocalStorageAdapter(): PersistenceAdapter {
-    return {
-        load(): Promise<SerializedState | undefined> {
-            if (!isLocalStorageAvailable()) {
-                return Promise.resolve(undefined);
-            }
+  return {
+    load(): Promise<SerializedState | undefined> {
+      if (!isLocalStorageAvailable()) {
+        return Promise.resolve(undefined);
+      }
 
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw === null) {
-                    return Promise.resolve(undefined);
-                }
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw === null) {
+          return Promise.resolve(undefined);
+        }
 
-                const parsed: unknown = JSON.parse(raw);
-                const result = SerializedStateSchema.safeParse(parsed);
-                if (result.success) {
-                    return Promise.resolve(result.data as SerializedState);
-                }
+        const parsed: unknown = JSON.parse(raw);
+        const result = SerializedStateSchema.safeParse(parsed);
+        if (result.success) {
+          return Promise.resolve(result.data as SerializedState);
+        }
 
-                // Corrupted or incompatible data — treat as no persisted state.
-                // Don't throw — the store will initialize with empty state.
-                return Promise.resolve(undefined);
-            } catch {
-                // JSON.parse failure or unexpected error — treat as no persisted state.
-                return Promise.resolve(undefined);
-            }
-        },
+        // Corrupted or incompatible data — treat as no persisted state.
+        // Don't throw — the store will initialize with empty state.
+        return Promise.resolve(undefined);
+      } catch {
+        // JSON.parse failure or unexpected error — treat as no persisted state.
+        return Promise.resolve(undefined);
+      }
+    },
 
-        save(state: SerializedState): Promise<void> {
-            if (!isLocalStorageAvailable()) {
-                return Promise.resolve();
-            }
+    save(state: SerializedState): Promise<void> {
+      if (!isLocalStorageAvailable()) {
+        return Promise.resolve();
+      }
 
-            try {
-                const serialized = JSON.stringify(state);
-                localStorage.setItem(STORAGE_KEY, serialized);
-                return Promise.resolve();
-            } catch (error: unknown) {
-                // QuotaExceededError or other write failure
-                throw persistenceError('local-storage', error);
-            }
-        },
+      try {
+        const serialized = JSON.stringify(state);
+        localStorage.setItem(STORAGE_KEY, serialized);
+        return Promise.resolve();
+      } catch (error: unknown) {
+        // QuotaExceededError or other write failure
+        throw persistenceError('local-storage', error);
+      }
+    },
 
-        clear(): Promise<void> {
-            if (!isLocalStorageAvailable()) {
-                return Promise.resolve();
-            }
+    clear(): Promise<void> {
+      if (!isLocalStorageAvailable()) {
+        return Promise.resolve();
+      }
 
-            try {
-                localStorage.removeItem(STORAGE_KEY);
-                return Promise.resolve();
-            } catch (error: unknown) {
-                throw persistenceError('local-storage', error);
-            }
-        },
-    };
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        return Promise.resolve();
+      } catch (error: unknown) {
+        throw persistenceError('local-storage', error);
+      }
+    },
+  };
 }

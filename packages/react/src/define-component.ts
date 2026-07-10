@@ -1,15 +1,15 @@
 /**
- * @module @enterstellar-ai/react/define-enterstellar-component
+ * @module @enterstellar/react/define-enterstellar-component
  * @description Convenience wrapper that pairs a `ComponentContract` with a
  * React component renderer in a single call.
  *
- * This is **syntax sugar** — it calls `defineComponent()` from `@enterstellar-ai/registry`
+ * This is **syntax sugar** — it calls `defineComponent()` from `@enterstellar/registry`
  * to create and validate the contract, then registers the React renderer in
  * the module-level `RendererRegistry` singleton. The underlying storages
  * are always separate:
  *
- * - **Contract** → `@enterstellar-ai/registry` (pure data, framework-agnostic)
- * - **Renderer** → `@enterstellar-ai/react` `rendererRegistry` (React-specific)
+ * - **Contract** → `@enterstellar/registry` (pure data, framework-agnostic)
+ * - **Renderer** → `@enterstellar/react` `rendererRegistry` (React-specific)
  *
  * This split preserves the isomorphic/universal nature of the system:
  * contracts work everywhere (server, worker, native); renderers are
@@ -21,7 +21,7 @@
  *
  * @example
  * ```tsx
- * import { defineComponent } from '@enterstellar-ai/react';
+ * import { defineComponent } from '@enterstellar/react';
  * import { z } from 'zod';
  *
  * const PatientVitals = (props: { patientId: string; riskLevel: string }) => (
@@ -50,9 +50,9 @@
 
 import type { ComponentType } from 'react';
 
-import type { ComponentContract } from '@enterstellar-ai/types';
-import * as Registry from '@enterstellar-ai/registry';
-import type { ComponentContractInput } from '@enterstellar-ai/registry';
+import type { ComponentContract } from '@enterstellar/types';
+import * as Registry from '@enterstellar/registry';
+import type { ComponentContractInput } from '@enterstellar/registry';
 
 import { rendererRegistry } from './renderer-registry.js';
 
@@ -66,16 +66,16 @@ import { rendererRegistry } from './renderer-registry.js';
  * @typeParam TProps - The props type for the React component renderer.
  */
 export type DefineComponentConfig<TProps extends Record<string, unknown>> = {
-    /**
-     * The component contract input. Validated and frozen by `defineComponent()`.
-     * Must not include a `render` field — that's the separate `render` prop.
-     */
-    readonly contract: ComponentContractInput;
-    /**
-     * The React component that renders this contract.
-     * Registered in the module-level `RendererRegistry`.
-     */
-    readonly render: ComponentType<TProps>;
+  /**
+   * The component contract input. Validated and frozen by `defineComponent()`.
+   * Must not include a `render` field — that's the separate `render` prop.
+   */
+  readonly contract: ComponentContractInput;
+  /**
+   * The React component that renders this contract.
+   * Registered in the module-level `RendererRegistry`.
+   */
+  readonly render: ComponentType<TProps>;
 };
 
 // ---------------------------------------------------------------------------
@@ -88,10 +88,10 @@ export type DefineComponentConfig<TProps extends Record<string, unknown>> = {
  * @typeParam TProps - The props type for the React component renderer.
  */
 export type DefineComponentResult<TProps extends Record<string, unknown>> = {
-    /** The validated, frozen `ComponentContract`. */
-    readonly contract: ComponentContract;
-    /** The React component renderer (same reference passed in). */
-    readonly render: ComponentType<TProps>;
+  /** The validated, frozen `ComponentContract`. */
+  readonly contract: ComponentContract;
+  /** The React component renderer (same reference passed in). */
+  readonly render: ComponentType<TProps>;
 };
 
 // ---------------------------------------------------------------------------
@@ -108,8 +108,8 @@ export type DefineComponentResult<TProps extends Record<string, unknown>> = {
  *    component name to the React component in the module-level singleton.
  *
  * **The contract and renderer are always stored separately:**
- * - Contract → `@enterstellar-ai/registry` (via `createRegistry({ components: [...] })`)
- * - Renderer → `@enterstellar-ai/react` `rendererRegistry` module singleton
+ * - Contract → `@enterstellar/registry` (via `createRegistry({ components: [...] })`)
+ * - Renderer → `@enterstellar/react` `rendererRegistry` module singleton
  *
  * @param config - The contract input + React component.
  * @returns The frozen contract and the renderer reference.
@@ -119,32 +119,27 @@ export type DefineComponentResult<TProps extends Record<string, unknown>> = {
  * @see Design Choice R5 — validates immediately (fail-fast)
  * @see Design Choice R6 — render not on ComponentContract
  */
-export function defineComponent<
-    TProps extends Record<string, unknown>,
->(
-    config: DefineComponentConfig<TProps>,
+export function defineComponent<TProps extends Record<string, unknown>>(
+  config: DefineComponentConfig<TProps>,
 ): DefineComponentResult<TProps> {
-    // Step 1: Validate and freeze the contract (R4, R5)
-    const contract = Registry.defineComponent(config.contract);
+  // Step 1: Validate and freeze the contract (R4, R5)
+  const contract = Registry.defineComponent(config.contract);
 
-    // Step 2: Register the renderer in the module-level singleton.
-    //
-    // Widening cast: ComponentType<TProps> → ComponentType<Record<string, unknown>>.
-    // This is structurally safe because:
-    // 1. TProps extends Record<string, unknown> (generic constraint).
-    // 2. The compiler Zod-validates props against the contract schema before
-    //    they reach the renderer — the renderer always receives valid TProps.
-    // 3. React's ComponentType is invariant on its props parameter, making
-    //    this cast necessary at the type boundary. It is NOT a suppression.
-    //
-    // @see Design Choice R5 — fail-fast validation before render.
-    rendererRegistry.register(
-        contract.name,
-        config.render as ComponentType<Record<string, unknown>>,
-    );
+  // Step 2: Register the renderer in the module-level singleton.
+  //
+  // Widening cast: ComponentType<TProps> → ComponentType<Record<string, unknown>>.
+  // This is structurally safe because:
+  // 1. TProps extends Record<string, unknown> (generic constraint).
+  // 2. The compiler Zod-validates props against the contract schema before
+  //    they reach the renderer — the renderer always receives valid TProps.
+  // 3. React's ComponentType is invariant on its props parameter, making
+  //    this cast necessary at the type boundary. It is NOT a suppression.
+  //
+  // @see Design Choice R5 — fail-fast validation before render.
+  rendererRegistry.register(contract.name, config.render as ComponentType<Record<string, unknown>>);
 
-    return {
-        contract,
-        render: config.render,
-    };
+  return {
+    contract,
+    render: config.render,
+  };
 }

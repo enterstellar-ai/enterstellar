@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/__tests__/mcp-server
+ * @module @enterstellar/agent-sdk/__tests__/mcp-server
  * @description Unit tests for `createMCPServer()`.
  *
  * Verifies the embedded MCP server wrapper:
@@ -15,16 +15,16 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import type {
-    AgentSDKConfig,
-    AgentSDKRegistry,
-    AgentSDKCompiler,
-    AgentSDKSemanticIndex,
-    AgentSDKComponentContract,
-    EnterstellarAgentSDK,
-    MCPToolDefinition,
+  AgentSDKConfig,
+  AgentSDKRegistry,
+  AgentSDKCompiler,
+  AgentSDKSemanticIndex,
+  AgentSDKComponentContract,
+  EnterstellarAgentSDK,
+  MCPToolDefinition,
 } from '../src/types.js';
 import { createAgentSDK } from '../src/create-agent-sdk.js';
 import { createMCPServer } from '../src/mcp-server.js';
@@ -39,48 +39,48 @@ import type { EnterstellarMCPServer } from '../src/mcp-server.js';
  * Creates a valid SDK instance for MCP server tests.
  */
 function createTestSDK(): EnterstellarAgentSDK {
-    const contract: AgentSDKComponentContract = {
-        name: 'TestComponent',
-        category: 'data-display',
-        description: 'Test',
-        tags: [],
+  const contract: AgentSDKComponentContract = {
+    name: 'TestComponent',
+    category: 'data-display',
+    description: 'Test',
+    tags: [],
+    props: {},
+  };
+
+  const config: AgentSDKConfig = {
+    registry: {
+      get: vi.fn((_name: string) => contract),
+      list: vi.fn(() => [contract]),
+    },
+    compiler: {
+      compile: vi.fn().mockResolvedValue({
+        componentName: 'TestComponent',
         props: {},
-    };
+        status: 'pass',
+        provenance: {
+          agent: 'agent-sdk',
+          registry: 'default',
+          compiledAt: new Date().toISOString(),
+          compilerVersion: '0.0.0',
+        },
+        errors: [],
+        selfCorrectionAttempts: 0,
+      }),
+      lint: vi.fn().mockResolvedValue([]),
+    },
+    semanticIndex: {
+      search: vi.fn().mockResolvedValue([]),
+    },
+  };
 
-    const config: AgentSDKConfig = {
-        registry: {
-            get: vi.fn((_name: string) => contract),
-            list: vi.fn(() => [contract]),
-        },
-        compiler: {
-            compile: vi.fn().mockResolvedValue({
-                componentName: 'TestComponent',
-                props: {},
-                status: 'pass',
-                provenance: {
-                    agent: 'agent-sdk',
-                    registry: 'default',
-                    compiledAt: new Date().toISOString(),
-                    compilerVersion: '0.0.0',
-                },
-                errors: [],
-                selfCorrectionAttempts: 0,
-            }),
-            lint: vi.fn().mockResolvedValue([]),
-        },
-        semanticIndex: {
-            search: vi.fn().mockResolvedValue([]),
-        },
-    };
-
-    return createAgentSDK(config);
+  return createAgentSDK(config);
 }
 
 /**
  * Creates a test MCP server from a valid SDK.
  */
 function createTestServer(): EnterstellarMCPServer {
-    return createMCPServer(createTestSDK());
+  return createMCPServer(createTestSDK());
 }
 
 // ---------------------------------------------------------------------------
@@ -88,150 +88,152 @@ function createTestServer(): EnterstellarMCPServer {
 // ---------------------------------------------------------------------------
 
 describe('createMCPServer', () => {
-    // -----------------------------------------------------------------------
-    // listTools()
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // listTools()
+  // -----------------------------------------------------------------------
 
-    describe('listTools', () => {
-        it('returns all 7 MCP tool definitions', () => {
-            const server = createTestServer();
+  describe('listTools', () => {
+    it('returns all 7 MCP tool definitions', () => {
+      const server = createTestServer();
 
-            const tools = server.listTools();
+      const tools = server.listTools();
 
-            expect(tools).toHaveLength(7);
-        });
-
-        it('each tool has name, description, inputSchema, and handler', () => {
-            const server = createTestServer();
-
-            for (const tool of server.listTools()) {
-                expect(typeof tool.name).toBe('string');
-                expect(typeof tool.description).toBe('string');
-                expect(typeof tool.inputSchema).toBe('object');
-                expect(typeof tool.handler).toBe('function');
-            }
-        });
+      expect(tools).toHaveLength(7);
     });
 
-    // -----------------------------------------------------------------------
-    // handleToolCall() — successful dispatch
-    // -----------------------------------------------------------------------
+    it('each tool has name, description, inputSchema, and handler', () => {
+      const server = createTestServer();
 
-    describe('successful dispatch', () => {
-        it('dispatches enterstellar_search_components and returns success', async () => {
-            const server = createTestServer();
+      for (const tool of server.listTools()) {
+        expect(typeof tool.name).toBe('string');
+        expect(typeof tool.description).toBe('string');
+        expect(typeof tool.inputSchema).toBe('object');
+        expect(typeof tool.handler).toBe('function');
+      }
+    });
+  });
 
-            const result = await server.handleToolCall('enterstellar_search_components', {
-                query: 'test query',
-            });
+  // -----------------------------------------------------------------------
+  // handleToolCall() — successful dispatch
+  // -----------------------------------------------------------------------
 
-            expect(result.success).toBe(true);
-            if (result.success) {
-                expect(result.data).toBeDefined();
-            }
-        });
+  describe('successful dispatch', () => {
+    it('dispatches enterstellar_search_components and returns success', async () => {
+      const server = createTestServer();
 
-        it('dispatches enterstellar_get_component_schema and returns success', async () => {
-            const server = createTestServer();
+      const result = await server.handleToolCall('enterstellar_search_components', {
+        query: 'test query',
+      });
 
-            const result = await server.handleToolCall('enterstellar_get_component_schema', {
-                componentName: 'TestComponent',
-            });
-
-            expect(result.success).toBe(true);
-            if (result.success) {
-                expect(result.data).toBeDefined();
-            }
-        });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toBeDefined();
+      }
     });
 
-    // -----------------------------------------------------------------------
-    // handleToolCall() — unknown tool
-    // -----------------------------------------------------------------------
+    it('dispatches enterstellar_get_component_schema and returns success', async () => {
+      const server = createTestServer();
 
-    describe('unknown tool', () => {
-        it('returns error for unknown tool name', async () => {
-            const server = createTestServer();
+      const result = await server.handleToolCall('enterstellar_get_component_schema', {
+        componentName: 'TestComponent',
+      });
 
-            const result = await server.handleToolCall('nonexistent_tool', {});
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toBeDefined();
+      }
+    });
+  });
 
-            expect(result.success).toBe(false);
-            if (!result.success) {
-                expect(result.code).toBe('UNKNOWN_TOOL');
-                expect(result.message).toContain('nonexistent_tool');
-                expect(result.message).toContain('Available tools');
-            }
-        });
+  // -----------------------------------------------------------------------
+  // handleToolCall() — unknown tool
+  // -----------------------------------------------------------------------
 
-        it('lists available tool names in error message', async () => {
-            const server = createTestServer();
+  describe('unknown tool', () => {
+    it('returns error for unknown tool name', async () => {
+      const server = createTestServer();
 
-            const result = await server.handleToolCall('bad_tool', {});
+      const result = await server.handleToolCall('nonexistent_tool', {});
 
-            expect(result.success).toBe(false);
-            if (!result.success) {
-                expect(result.message).toContain('enterstellar_search_components');
-                expect(result.message).toContain('enterstellar_compose_ui');
-            }
-        });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe('UNKNOWN_TOOL');
+        expect(result.message).toContain('nonexistent_tool');
+        expect(result.message).toContain('Available tools');
+      }
     });
 
-    // -----------------------------------------------------------------------
-    // handleToolCall() — error handling
-    // -----------------------------------------------------------------------
+    it('lists available tool names in error message', async () => {
+      const server = createTestServer();
 
-    describe('error handling', () => {
-        it('preserves EnterstellarError code in error response', async () => {
-            // Create SDK with a forge-less config, then call forge tool
-            const server = createTestServer();
+      const result = await server.handleToolCall('bad_tool', {});
 
-            const result = await server.handleToolCall('enterstellar_forge_component', {
-                intent: 'test intent',
-            });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.message).toContain('enterstellar_search_components');
+        expect(result.message).toContain('enterstellar_compose_ui');
+      }
+    });
+  });
 
-            // Should fail because forge is not configured
-            expect(result.success).toBe(false);
-            if (!result.success) {
-                expect(result.code).toBe('ENS-8002');
-            }
-        });
+  // -----------------------------------------------------------------------
+  // handleToolCall() — error handling
+  // -----------------------------------------------------------------------
 
-        it('returns INTERNAL_ERROR for non-EnterstellarError exceptions', async () => {
-            // Create a custom SDK with a tool that throws a generic error
-            const sdk = createTestSDK();
-            const tools: MCPToolDefinition[] = [{
-                name: 'test_throw',
-                description: 'Test tool that throws',
-                inputSchema: { type: 'object' },
-                handler: vi.fn().mockRejectedValue(new Error('Generic crash')),
-            }];
+  describe('error handling', () => {
+    it('preserves EnterstellarError code in error response', async () => {
+      // Create SDK with a forge-less config, then call forge tool
+      const server = createTestServer();
 
-            // Replace the tools on the sdk (we need to work around freeze)
-            const customSDK: EnterstellarAgentSDK = {
-                ...sdk,
-                tools,
-            };
-            const server = createMCPServer(customSDK);
+      const result = await server.handleToolCall('enterstellar_forge_component', {
+        intent: 'test intent',
+      });
 
-            const result = await server.handleToolCall('test_throw', {});
-
-            expect(result.success).toBe(false);
-            if (!result.success) {
-                expect(result.code).toBe('INTERNAL_ERROR');
-                expect(result.message).toContain('Generic crash');
-            }
-        });
+      // Should fail because forge is not configured
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe('ENS-8002');
+      }
     });
 
-    // -----------------------------------------------------------------------
-    // Frozen server (R4)
-    // -----------------------------------------------------------------------
+    it('returns INTERNAL_ERROR for non-EnterstellarError exceptions', async () => {
+      // Create a custom SDK with a tool that throws a generic error
+      const sdk = createTestSDK();
+      const tools: MCPToolDefinition[] = [
+        {
+          name: 'test_throw',
+          description: 'Test tool that throws',
+          inputSchema: { type: 'object' },
+          handler: vi.fn().mockRejectedValue(new Error('Generic crash')),
+        },
+      ];
 
-    describe('frozen server', () => {
-        it('returns a frozen MCP server object', () => {
-            const server = createTestServer();
+      // Replace the tools on the sdk (we need to work around freeze)
+      const customSDK: EnterstellarAgentSDK = {
+        ...sdk,
+        tools,
+      };
+      const server = createMCPServer(customSDK);
 
-            expect(Object.isFrozen(server)).toBe(true);
-        });
+      const result = await server.handleToolCall('test_throw', {});
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.code).toBe('INTERNAL_ERROR');
+        expect(result.message).toContain('Generic crash');
+      }
     });
+  });
+
+  // -----------------------------------------------------------------------
+  // Frozen server (R4)
+  // -----------------------------------------------------------------------
+
+  describe('frozen server', () => {
+    it('returns a frozen MCP server object', () => {
+      const server = createTestServer();
+
+      expect(Object.isFrozen(server)).toBe(true);
+    });
+  });
 });

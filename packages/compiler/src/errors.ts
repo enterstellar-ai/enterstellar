@@ -1,12 +1,12 @@
 /**
- * @module @enterstellar-ai/compiler/errors
+ * @module @enterstellar/compiler/errors
  * @description Compiler-specific error factory functions for `ENS-2xxx` codes.
  *
  * Each factory creates a well-typed `CompilationError` with a machine-readable
  * `code`, human-readable `message`, field `path`, and (where applicable) a
  * `fix` suggestion for auto-correction in DevTools and the self-correction loop.
  *
- * Error codes are defined in `@enterstellar-ai/types/errors` (`EnterstellarErrorCode` union).
+ * Error codes are defined in `@enterstellar/types/errors` (`EnterstellarErrorCode` union).
  * This module provides the compiler-domain factories only.
  *
  * @see Coding Rules — Error Taxonomy (ENS-2xxx range)
@@ -14,7 +14,7 @@
  * @see Design Choice C15 — all errors include machine-readable `fix` suggestion.
  */
 
-import type { CompilationError, CompilationFix } from '@enterstellar-ai/types';
+import type { CompilationError, CompilationFix } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -26,16 +26,16 @@ import type { CompilationError, CompilationFix } from '@enterstellar-ai/types';
  * primitives use `String()`.
  */
 function safeStringify(value: unknown): string {
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
-    if (typeof value === 'object') return JSON.stringify(value);
-    if (typeof value === 'symbol') return value.toString();
-    if (typeof value === 'function') return '[function]';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'number') return String(value);
-    if (typeof value === 'bigint') return String(value);
-    if (typeof value === 'boolean') return String(value);
-    return '[unknown]';
+  if (value === null) return 'null';
+  if (value === undefined) return 'undefined';
+  if (typeof value === 'object') return JSON.stringify(value);
+  if (typeof value === 'symbol') return value.toString();
+  if (typeof value === 'function') return '[function]';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'bigint') return String(value);
+  if (typeof value === 'boolean') return String(value);
+  return '[unknown]';
 }
 
 /**
@@ -43,26 +43,26 @@ function safeStringify(value: unknown): string {
  * Internal helper — not exported.
  */
 function createError(
-    code: string,
-    path: string,
-    message: string,
-    options?: {
-        readonly received?: unknown;
-        readonly expected?: unknown;
-        readonly fix?: CompilationFix;
-    },
+  code: string,
+  path: string,
+  message: string,
+  options?: {
+    readonly received?: unknown;
+    readonly expected?: unknown;
+    readonly fix?: CompilationFix;
+  },
 ): CompilationError {
-    const base: CompilationError = { code, path, message };
-    if (options?.received !== undefined) {
-        (base as { received: unknown }).received = options.received;
-    }
-    if (options?.expected !== undefined) {
-        (base as { expected: unknown }).expected = options.expected;
-    }
-    if (options?.fix !== undefined) {
-        (base as { fix: CompilationFix }).fix = options.fix;
-    }
-    return base;
+  const base: CompilationError = { code, path, message };
+  if (options?.received !== undefined) {
+    (base as { received: unknown }).received = options.received;
+  }
+  if (options?.expected !== undefined) {
+    (base as { expected: unknown }).expected = options.expected;
+  }
+  if (options?.fix !== undefined) {
+    (base as { fix: CompilationFix }).fix = options.fix;
+  }
+  return base;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,21 +84,24 @@ function createError(
  * @see Design Choice C15 — errors include fix suggestions.
  */
 export function schemaParseError(
-    path: string,
-    received: unknown,
-    expected: string,
-    fix?: CompilationFix,
+  path: string,
+  received: unknown,
+  expected: string,
+  fix?: CompilationFix,
 ): CompilationError {
-    const opts: { received: unknown; expected: string; fix?: CompilationFix } = { received, expected };
-    if (fix !== undefined) {
-        opts.fix = fix;
-    }
-    return createError(
-        'ENS-2001',
-        path,
-        `Schema validation failed at '${path}': expected ${expected}, received ${String(received)}.`,
-        opts,
-    );
+  const opts: { received: unknown; expected: string; fix?: CompilationFix } = {
+    received,
+    expected,
+  };
+  if (fix !== undefined) {
+    opts.fix = fix;
+  }
+  return createError(
+    'ENS-2001',
+    path,
+    `Schema validation failed at '${path}': expected ${expected}, received ${String(received)}.`,
+    opts,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -120,26 +123,26 @@ export function schemaParseError(
  * @see Design Choice C9 — raw CSS values always rejected.
  */
 export function invalidTokenError(
-    path: string,
-    value: string,
-    suggestion?: string,
+  path: string,
+  value: string,
+  suggestion?: string,
 ): CompilationError {
-    const fix: CompilationFix | undefined = suggestion !== undefined
-        ? { field: path, was: value, shouldBe: suggestion }
-        : undefined;
+  const fix: CompilationFix | undefined =
+    suggestion !== undefined ? { field: path, was: value, shouldBe: suggestion } : undefined;
 
-    const opts: { received: string; fix?: CompilationFix } = { received: value };
-    if (fix !== undefined) {
-        opts.fix = fix;
-    }
+  const opts: { received: string; fix?: CompilationFix } = { received: value };
+  if (fix !== undefined) {
+    opts.fix = fix;
+  }
 
-    return createError(
-        'ENS-2002',
-        path,
-        `Invalid design token at '${path}': '${value}' is not a registered token.${suggestion !== undefined ? ` Use '${suggestion}' instead.` : ''
-        }`,
-        opts,
-    );
+  return createError(
+    'ENS-2002',
+    path,
+    `Invalid design token at '${path}': '${value}' is not a registered token.${
+      suggestion !== undefined ? ` Use '${suggestion}' instead.` : ''
+    }`,
+    opts,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -158,23 +161,20 @@ export function invalidTokenError(
  *
  * @see Design Choice C10 — role and aria-* only, no tabindex.
  */
-export function missingAccessibilityError(
-    attr: string,
-    componentName: string,
-): CompilationError {
-    return createError(
-        'ENS-2003',
-        `accessibility.${attr}`,
-        `Missing accessibility attribute '${attr}' on component '${componentName}'.`,
-        {
-            expected: `A valid '${attr}' value`,
-            fix: {
-                field: `accessibility.${attr}`,
-                was: undefined,
-                shouldBe: `[provide ${attr}]`,
-            },
-        },
-    );
+export function missingAccessibilityError(attr: string, componentName: string): CompilationError {
+  return createError(
+    'ENS-2003',
+    `accessibility.${attr}`,
+    `Missing accessibility attribute '${attr}' on component '${componentName}'.`,
+    {
+      expected: `A valid '${attr}' value`,
+      fix: {
+        field: `accessibility.${attr}`,
+        was: undefined,
+        shouldBe: `[provide ${attr}]`,
+      },
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -190,12 +190,12 @@ export function missingAccessibilityError(
  * @returns A `CompilationError` with code `'ENS-2004'`.
  */
 export function unknownComponentError(name: string): CompilationError {
-    return createError(
-        'ENS-2004',
-        'component',
-        `Unknown component '${name}': not found in the registry.`,
-        { received: name },
-    );
+  return createError(
+    'ENS-2004',
+    'component',
+    `Unknown component '${name}': not found in the registry.`,
+    { received: name },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -215,15 +215,15 @@ export function unknownComponentError(name: string): CompilationError {
  * @see Design Choice C6 — fallback component after max retries.
  */
 export function selfCorrectionExhaustedError(
-    attempts: number,
-    maxRetries: number,
+  attempts: number,
+  maxRetries: number,
 ): CompilationError {
-    return createError(
-        'ENS-2005',
-        'self-correction',
-        `Self-correction exhausted after ${String(attempts)}/${String(maxRetries)} attempts. Falling back to fallback component.`,
-        { received: attempts, expected: `≤${String(maxRetries)} successful corrections` },
-    );
+  return createError(
+    'ENS-2005',
+    'self-correction',
+    `Self-correction exhausted after ${String(attempts)}/${String(maxRetries)} attempts. Falling back to fallback component.`,
+    { received: attempts, expected: `≤${String(maxRetries)} successful corrections` },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -240,15 +240,15 @@ export function selfCorrectionExhaustedError(
  * @see Design Choice C6 — fallback receives error details as props.
  */
 export function fallbackRenderedError(
-    originalComponent: string,
-    fallbackComponent: string,
+  originalComponent: string,
+  fallbackComponent: string,
 ): CompilationError {
-    return createError(
-        'ENS-2006',
-        'component',
-        `Fallback rendered: '${fallbackComponent}' used instead of '${originalComponent}'.`,
-        { received: originalComponent, expected: fallbackComponent },
-    );
+  return createError(
+    'ENS-2006',
+    'component',
+    `Fallback rendered: '${fallbackComponent}' used instead of '${originalComponent}'.`,
+    { received: originalComponent, expected: fallbackComponent },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -269,20 +269,15 @@ export function fallbackRenderedError(
  * @see Design Choice C8 — coercion is the safety net, not the happy path.
  */
 export function tokenCoercionWarning(
-    path: string,
-    was: string,
-    coercedTo: string,
+  path: string,
+  was: string,
+  coercedTo: string,
 ): CompilationError {
-    return createError(
-        'ENS-2007',
-        path,
-        `Token coerced at '${path}': '${was}' → '${coercedTo}'.`,
-        {
-            received: was,
-            expected: coercedTo,
-            fix: { field: path, was, shouldBe: coercedTo },
-        },
-    );
+  return createError('ENS-2007', path, `Token coerced at '${path}': '${was}' → '${coercedTo}'.`, {
+    received: was,
+    expected: coercedTo,
+    fix: { field: path, was, shouldBe: coercedTo },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -301,15 +296,13 @@ export function tokenCoercionWarning(
  *
  * @see Design Choice P10 — strip unknown, log as warning.
  */
-export function propsStrippedWarning(
-    fields: readonly string[],
-): CompilationError {
-    return createError(
-        'ENS-2008',
-        'props',
-        `Unknown props stripped: [${fields.join(', ')}]. Hallucinated props are discarded.`,
-        { received: fields },
-    );
+export function propsStrippedWarning(fields: readonly string[]): CompilationError {
+  return createError(
+    'ENS-2008',
+    'props',
+    `Unknown props stripped: [${fields.join(', ')}]. Hallucinated props are discarded.`,
+    { received: fields },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -326,12 +319,9 @@ export function propsStrippedWarning(
  * @returns A `CompilationError` with code `'ENS-2009'`.
  */
 export function correctionCallbackError(cause: string): CompilationError {
-    return createError(
-        'ENS-2009',
-        'self-correction',
-        `Self-correction callback failed: ${cause}`,
-        { received: cause },
-    );
+  return createError('ENS-2009', 'self-correction', `Self-correction callback failed: ${cause}`, {
+    received: cause,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -350,24 +340,21 @@ export function correctionCallbackError(cause: string): CompilationError {
  *
  * @see Design Choice P4 — default 10, configurable 3–20.
  */
-export function maxNestingDepthError(
-    depth: number,
-    max: number,
-): CompilationError {
-    return createError(
-        'ENS-2010',
-        'nesting',
-        `Maximum nesting depth exceeded: depth ${String(depth)} exceeds limit of ${String(max)}.`,
-        {
-            received: depth,
-            expected: `≤${String(max)}`,
-            fix: {
-                field: 'nesting',
-                was: depth,
-                shouldBe: `Flatten component tree to ≤${String(max)} levels`,
-            },
-        },
-    );
+export function maxNestingDepthError(depth: number, max: number): CompilationError {
+  return createError(
+    'ENS-2010',
+    'nesting',
+    `Maximum nesting depth exceeded: depth ${String(depth)} exceeds limit of ${String(max)}.`,
+    {
+      received: depth,
+      expected: `≤${String(max)}`,
+      fix: {
+        field: 'nesting',
+        was: depth,
+        shouldBe: `Flatten component tree to ≤${String(max)} levels`,
+      },
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -396,27 +383,27 @@ export function maxNestingDepthError(
  * @see Design Choice SC-17 — info-level correction diagnostics.
  */
 export function deterministicCorrectionInfo(
-    field: string,
-    was: unknown,
-    correctedTo: unknown,
-    strategy: string,
+  field: string,
+  was: unknown,
+  correctedTo: unknown,
+  strategy: string,
 ): CompilationError {
-    const wasDisplay = was === undefined ? '(missing)' : safeStringify(was);
-    const correctedDisplay = safeStringify(correctedTo);
-    return createError(
-        'ENS-2011',
-        `props.${field}`,
-        `Tier 1 correction applied [${strategy}]: "${field}" changed from ${wasDisplay} to ${correctedDisplay}.`,
-        {
-            received: was,
-            expected: correctedTo,
-            fix: {
-                field,
-                was,
-                shouldBe: correctedTo,
-            },
-        },
-    );
+  const wasDisplay = was === undefined ? '(missing)' : safeStringify(was);
+  const correctedDisplay = safeStringify(correctedTo);
+  return createError(
+    'ENS-2011',
+    `props.${field}`,
+    `Tier 1 correction applied [${strategy}]: "${field}" changed from ${wasDisplay} to ${correctedDisplay}.`,
+    {
+      received: was,
+      expected: correctedTo,
+      fix: {
+        field,
+        was,
+        shouldBe: correctedTo,
+      },
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -439,22 +426,19 @@ export function deterministicCorrectionInfo(
  * @see Design Choice SC-17 — info-level correction diagnostics.
  * @see Bible §4.3 — Tier 2 only fires for missing fields.
  */
-export function templateCorrectionInfo(
-    field: string,
-    correctedTo: unknown,
-): CompilationError {
-    return createError(
-        'ENS-2012',
-        `props.${field}`,
-        `Tier 2 correction applied [example-fallback]: "${field}" set to ${String(correctedTo)} from contract example.`,
-        {
-            received: undefined,
-            expected: correctedTo,
-            fix: {
-                field,
-                was: undefined,
-                shouldBe: correctedTo,
-            },
-        },
-    );
+export function templateCorrectionInfo(field: string, correctedTo: unknown): CompilationError {
+  return createError(
+    'ENS-2012',
+    `props.${field}`,
+    `Tier 2 correction applied [example-fallback]: "${field}" set to ${String(correctedTo)} from contract example.`,
+    {
+      received: undefined,
+      expected: correctedTo,
+      fix: {
+        field,
+        was: undefined,
+        shouldBe: correctedTo,
+      },
+    },
+  );
 }

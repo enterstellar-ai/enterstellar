@@ -1,4 +1,10 @@
-# @enterstellar-ai/contract-protocol
+# @enterstellar/contract-protocol
+
+## 0.1.1
+
+### Patch Changes
+
+- Migrate the npm scope from `@enterstellar-ai` to `@enterstellar`. Public API is unchanged — consumers must update `package.json` dependencies and import paths. Legacy `@enterstellar-ai/*` proxy packages (v0.1.1) re-export the new scope during the transition period.
 
 ## 0.1.0
 

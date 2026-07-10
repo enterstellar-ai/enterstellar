@@ -8,7 +8,7 @@ icon: TestTube
 
 You can't unit test an LLM. But you can test everything Enterstellar does with that LLM's output.
 
-`@enterstellar-ai/test` provides a `TestHarness` that:
+`@enterstellar/test` provides a `TestHarness` that:
 - **Mocks** intent resolution (you control what the "LLM" returns)
 - **Runs the real compiler** — Zod validation, token enforcement, accessibility checks
 - **Produces** a full `AgentTrace` with timing metrics
@@ -18,14 +18,14 @@ No real LLM. No network. Deterministic. Fast.
 ## Installation
 
 ```bash
-npm install --save-dev @enterstellar-ai/test
+npm install --save-dev @enterstellar/test
 ```
 
 ## Basic Setup
 
 ```ts
-import { createTestHarness } from '@enterstellar-ai/test';
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createTestHarness } from '@enterstellar/test';
+import { createRegistry } from '@enterstellar/registry';
 import { StatusCard } from './components/status-card/StatusCard.contract';
 
 const registry = createRegistry({ components: [StatusCard] });
@@ -59,7 +59,7 @@ harness.expect.latencyBelow(trace, 500); // ms
 
 Each `resolve()` call:
 1. Looks up `mockResponses['show API health']` → `ComponentIntent`
-2. Runs it through the real `@enterstellar-ai/compiler`
+2. Runs it through the real `@enterstellar/compiler`
 3. Returns a synthetic `AgentTrace` with timing
 
 If the intent has no mock, `resolve()` throws `ENS-5010`.
@@ -70,7 +70,7 @@ For a more expressive syntax, register the Enterstellar matchers in your Vitest 
 
 ```ts
 // vitest.setup.ts
-import { enterstellarMatchers } from '@enterstellar-ai/test';
+import { enterstellarMatchers } from '@enterstellar/test';
 import { expect } from 'vitest';
 
 expect.extend(enterstellarMatchers);
@@ -141,7 +141,7 @@ Components without `examples` get a minimal mock with just the component name. `
 Run intent coverage analysis across your test results to find uncovered components:
 
 ```ts
-import { computeIntentCoverage } from '@enterstellar-ai/test';
+import { computeIntentCoverage } from '@enterstellar/test';
 
 const results = [
   { intent: 'show API health', resolvedComponent: 'StatusCard', compilationPassed: true },
@@ -158,7 +158,7 @@ console.log('Uncovered:', coverage.uncovered); // ['MetricChart']
 Record real LLM responses as fixtures for deterministic replay in CI:
 
 ```ts
-import { saveFixtures, loadFixtures } from '@enterstellar-ai/test';
+import { saveFixtures, loadFixtures } from '@enterstellar/test';
 
 // Record (run once against a real LLM)
 await saveFixtures('./fixtures/status-card.json', [
@@ -176,8 +176,8 @@ for (const { intent, response } of fixtures) {
 
 ```ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createTestHarness } from '@enterstellar-ai/test';
-import { enterstellarMatchers } from '@enterstellar-ai/test';
+import { createTestHarness } from '@enterstellar/test';
+import { enterstellarMatchers } from '@enterstellar/test';
 import { registry } from './enterstellar/registry';
 
 expect.extend(enterstellarMatchers);

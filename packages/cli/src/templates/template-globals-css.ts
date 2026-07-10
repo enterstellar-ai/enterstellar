@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-globals-css
+ * @module @enterstellar/cli/templates/template-globals-css
  * @description Generates `src/globals.css` — CSS custom properties from design tokens.
  *
  * Maps the `DesignTokenSet` dot-notation paths to CSS custom properties
@@ -45,7 +45,7 @@
  * ```
  */
 export function generateGlobalsCss(): string {
-    return `/**
+  return `/**
  * Enterstellar Design Token — CSS Custom Properties
  *
  * Auto-generated alongside the DesignTokenSet in tokens.ts.

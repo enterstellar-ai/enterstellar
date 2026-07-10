@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/panels/cache-dashboard
+ * @module @enterstellar/devtools/panels/cache-dashboard
  * @description P1 Tab — Live cache performance statistics and management.
  *
  * The Cache Dashboard displays cache hit/miss statistics from a
  * `DevToolsCacheAdapter` instance, with live polling and a "Clear Cache"
  * action button. It uses a protocol-based adapter (not a direct import
- * of `@enterstellar-ai/cache`) to maintain incremental adoptability (L5).
+ * of `@enterstellar/cache`) to maintain incremental adoptability (L5).
  *
  * Data flow:
  * ```
@@ -19,7 +19,7 @@
  * instructing the user to pass a `RenderCache` to `<EnterstellarDevTools />`.
  *
  * Current limitations (deferred):
- * - Cache entry listing requires `RenderCache.list()` (not yet in `@enterstellar-ai/cache`).
+ * - Cache entry listing requires `RenderCache.list()` (not yet in `@enterstellar/cache`).
  * - Warmup trigger requires `WarmupEntry[]` + `CompileFn` (not available in DevTools).
  *
  * @see Bible §4.4 — Cache Dashboard tab
@@ -33,10 +33,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import type { DevToolsCacheAdapter } from '../types.js';
 import { CACHE_POLL_INTERVAL_MS } from '../constants.js';
-import {
-    cacheDashboardStyles as styles,
-    sharedPanelStyles,
-} from '../styles.js';
+import { cacheDashboardStyles as styles, sharedPanelStyles } from '../styles.js';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -48,13 +45,13 @@ import {
  * @internal
  */
 type CacheDashboardProps = {
-    /**
-     * The cache adapter instance, or `null` if no cache is configured.
-     * When `null`, the panel shows an instructional empty state.
-     *
-     * @see {@link DevToolsCacheAdapter}
-     */
-    readonly cache: DevToolsCacheAdapter | null;
+  /**
+   * The cache adapter instance, or `null` if no cache is configured.
+   * When `null`, the panel shows an instructional empty state.
+   *
+   * @see {@link DevToolsCacheAdapter}
+   */
+  readonly cache: DevToolsCacheAdapter | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -67,10 +64,10 @@ type CacheDashboardProps = {
  * @internal
  */
 type CacheStatsSnapshot = {
-    readonly hits: number;
-    readonly misses: number;
-    readonly entries: number;
-    readonly hitRate: number;
+  readonly hits: number;
+  readonly misses: number;
+  readonly entries: number;
+  readonly hitRate: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -87,18 +84,15 @@ type CacheStatsSnapshot = {
  *
  * @internal
  */
-function StatCard(props: {
-    readonly label: string;
-    readonly value: string;
-}): React.JSX.Element {
-    const { label, value } = props;
+function StatCard(props: { readonly label: string; readonly value: string }): React.JSX.Element {
+  const { label, value } = props;
 
-    return (
-        <div style={styles['statCard']}>
-            <span style={styles['statLabel']}>{label}</span>
-            <span style={styles['statValue']}>{value}</span>
-        </div>
-    );
+  return (
+    <div style={styles['statCard']}>
+      <span style={styles['statLabel']}>{label}</span>
+      <span style={styles['statValue']}>{value}</span>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -125,180 +119,160 @@ function StatCard(props: {
  * @internal
  */
 export function CacheDashboard(props: CacheDashboardProps): React.JSX.Element {
-    const { cache } = props;
+  const { cache } = props;
 
-    // -----------------------------------------------------------------------
-    // State: Cache Stats
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // State: Cache Stats
+  // -----------------------------------------------------------------------
 
-    const [stats, setStats] = useState<CacheStatsSnapshot | null>(null);
+  const [stats, setStats] = useState<CacheStatsSnapshot | null>(null);
 
-    // -----------------------------------------------------------------------
-    // Polling Effect
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Polling Effect
+  // -----------------------------------------------------------------------
 
-    useEffect(() => {
-        if (cache === null) {
-            setStats(null);
-            return;
-        }
-
-        /**
-         * Reads current stats from the cache adapter.
-         * Called immediately on mount and then on each interval tick.
-         */
-        const readStats = (): void => {
-            const current = cache.getStats();
-            setStats({
-                hits: current.hits,
-                misses: current.misses,
-                entries: current.entries,
-                hitRate: current.hitRate,
-            });
-        };
-
-        // Initial read
-        readStats();
-
-        // Poll at configured interval
-        const intervalId = setInterval(readStats, CACHE_POLL_INTERVAL_MS);
-
-        // Cleanup on unmount or cache change
-        return () => {
-            clearInterval(intervalId);
-        };
-    }, [cache]);
-
-    // -----------------------------------------------------------------------
-    // Handlers
-    // -----------------------------------------------------------------------
-
-    /**
-     * Handles the "Clear Cache" button click.
-     * Calls `cache.invalidateAll()` and immediately refreshes stats.
-     */
-    const handleClearCache = useCallback(() => {
-        if (cache === null) {
-            return;
-        }
-
-        cache.invalidateAll();
-
-        // Immediately refresh stats after clearing
-        const refreshed = cache.getStats();
-        setStats({
-            hits: refreshed.hits,
-            misses: refreshed.misses,
-            entries: refreshed.entries,
-            hitRate: refreshed.hitRate,
-        });
-    }, [cache]);
-
-    // -----------------------------------------------------------------------
-    // Render: Empty State
-    // -----------------------------------------------------------------------
-
+  useEffect(() => {
     if (cache === null) {
-        return (
-            <div
-                style={sharedPanelStyles['panelRoot']}
-                data-enterstellar-devtools-panel="cache-dashboard"
-            >
-                <div style={styles['emptyState']}>
-                    <span style={styles['emptyIcon']} role="img" aria-label="No cache">
-                        📦
-                    </span>
-                    <span>
-                        No cache configured.
-                    </span>
-                    <span>
-                        Pass a <code>RenderCache</code> to <code>&lt;EnterstellarDevTools /&gt;</code> to enable the Cache Dashboard.
-                    </span>
-                </div>
-            </div>
-        );
+      setStats(null);
+      return;
     }
 
-    // -----------------------------------------------------------------------
-    // Render: Stats Dashboard
-    // -----------------------------------------------------------------------
+    /**
+     * Reads current stats from the cache adapter.
+     * Called immediately on mount and then on each interval tick.
+     */
+    const readStats = (): void => {
+      const current = cache.getStats();
+      setStats({
+        hits: current.hits,
+        misses: current.misses,
+        entries: current.entries,
+        hitRate: current.hitRate,
+      });
+    };
 
-    /** Hit rate as a percentage (0–100), clamped. */
-    const hitRatePercent = stats !== null
-        ? Math.min(100, Math.max(0, Math.round(stats.hitRate * 100)))
-        : 0;
+    // Initial read
+    readStats();
 
-    /** Whether clear button should be disabled (no entries to clear). */
-    const isClearDisabled = stats === null || stats.entries === 0;
+    // Poll at configured interval
+    const intervalId = setInterval(readStats, CACHE_POLL_INTERVAL_MS);
 
+    // Cleanup on unmount or cache change
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [cache]);
+
+  // -----------------------------------------------------------------------
+  // Handlers
+  // -----------------------------------------------------------------------
+
+  /**
+   * Handles the "Clear Cache" button click.
+   * Calls `cache.invalidateAll()` and immediately refreshes stats.
+   */
+  const handleClearCache = useCallback(() => {
+    if (cache === null) {
+      return;
+    }
+
+    cache.invalidateAll();
+
+    // Immediately refresh stats after clearing
+    const refreshed = cache.getStats();
+    setStats({
+      hits: refreshed.hits,
+      misses: refreshed.misses,
+      entries: refreshed.entries,
+      hitRate: refreshed.hitRate,
+    });
+  }, [cache]);
+
+  // -----------------------------------------------------------------------
+  // Render: Empty State
+  // -----------------------------------------------------------------------
+
+  if (cache === null) {
     return (
-        <div
-            style={sharedPanelStyles['panelRoot']}
-            data-enterstellar-devtools-panel="cache-dashboard"
-        >
-            {/* Header */}
-            <div style={sharedPanelStyles['header']}>
-                <span style={sharedPanelStyles['headerMeta']}>
-                    Cache Statistics
-                </span>
-            </div>
-
-            {/* Stats Grid */}
-            <div
-                style={styles['statsGrid']}
-                role="group"
-                aria-label="Cache performance statistics"
-            >
-                <StatCard
-                    label="Hits"
-                    value={stats !== null ? String(stats.hits) : '–'}
-                />
-                <StatCard
-                    label="Misses"
-                    value={stats !== null ? String(stats.misses) : '–'}
-                />
-                <StatCard
-                    label="Entries"
-                    value={stats !== null ? String(stats.entries) : '–'}
-                />
-                <div style={styles['statCard']}>
-                    <span style={styles['statLabel']}>Hit Rate</span>
-                    <span style={styles['statValue']}>
-                        {stats !== null ? `${String(hitRatePercent)}%` : '–'}
-                    </span>
-                    <div
-                        style={styles['progressTrack']}
-                        role="progressbar"
-                        aria-valuenow={hitRatePercent}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`Cache hit rate: ${String(hitRatePercent)}%`}
-                    >
-                        <div
-                            style={{
-                                ...styles['progressFill'],
-                                width: `${String(hitRatePercent)}%`,
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Actions */}
-            <div style={styles['actions']}>
-                <button
-                    type="button"
-                    onClick={handleClearCache}
-                    disabled={isClearDisabled}
-                    style={{
-                        ...styles['actionButton'],
-                        ...(isClearDisabled ? styles['actionButtonDisabled'] : undefined),
-                    }}
-                    aria-label="Clear all cache entries"
-                >
-                    🗑 Clear Cache
-                </button>
-            </div>
+      <div
+        style={sharedPanelStyles['panelRoot']}
+        data-enterstellar-devtools-panel="cache-dashboard"
+      >
+        <div style={styles['emptyState']}>
+          <span style={styles['emptyIcon']} role="img" aria-label="No cache">
+            📦
+          </span>
+          <span>No cache configured.</span>
+          <span>
+            Pass a <code>RenderCache</code> to <code>&lt;EnterstellarDevTools /&gt;</code> to enable
+            the Cache Dashboard.
+          </span>
         </div>
+      </div>
     );
+  }
+
+  // -----------------------------------------------------------------------
+  // Render: Stats Dashboard
+  // -----------------------------------------------------------------------
+
+  /** Hit rate as a percentage (0–100), clamped. */
+  const hitRatePercent =
+    stats !== null ? Math.min(100, Math.max(0, Math.round(stats.hitRate * 100))) : 0;
+
+  /** Whether clear button should be disabled (no entries to clear). */
+  const isClearDisabled = stats === null || stats.entries === 0;
+
+  return (
+    <div style={sharedPanelStyles['panelRoot']} data-enterstellar-devtools-panel="cache-dashboard">
+      {/* Header */}
+      <div style={sharedPanelStyles['header']}>
+        <span style={sharedPanelStyles['headerMeta']}>Cache Statistics</span>
+      </div>
+
+      {/* Stats Grid */}
+      <div style={styles['statsGrid']} role="group" aria-label="Cache performance statistics">
+        <StatCard label="Hits" value={stats !== null ? String(stats.hits) : '–'} />
+        <StatCard label="Misses" value={stats !== null ? String(stats.misses) : '–'} />
+        <StatCard label="Entries" value={stats !== null ? String(stats.entries) : '–'} />
+        <div style={styles['statCard']}>
+          <span style={styles['statLabel']}>Hit Rate</span>
+          <span style={styles['statValue']}>
+            {stats !== null ? `${String(hitRatePercent)}%` : '–'}
+          </span>
+          <div
+            style={styles['progressTrack']}
+            role="progressbar"
+            aria-valuenow={hitRatePercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Cache hit rate: ${String(hitRatePercent)}%`}
+          >
+            <div
+              style={{
+                ...styles['progressFill'],
+                width: `${String(hitRatePercent)}%`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={styles['actions']}>
+        <button
+          type="button"
+          onClick={handleClearCache}
+          disabled={isClearDisabled}
+          style={{
+            ...styles['actionButton'],
+            ...(isClearDisabled ? styles['actionButtonDisabled'] : undefined),
+          }}
+          aria-label="Clear all cache entries"
+        >
+          🗑 Clear Cache
+        </button>
+      </div>
+    </div>
+  );
 }

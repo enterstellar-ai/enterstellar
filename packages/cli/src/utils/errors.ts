@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/utils/errors
+ * @module @enterstellar/cli/utils/errors
  * @description CLI-specific error factories for the `ENS-9xxx` error code range.
  *
  * Each factory produces a properly typed `EnterstellarError` with:
@@ -23,7 +23,7 @@
  * @see Implementation Bible §4.17
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 import pc from 'picocolors';
 
 // ---------------------------------------------------------------------------
@@ -47,12 +47,12 @@ import pc from 'picocolors';
  * ```
  */
 export function createInvalidProjectNameError(name: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-9001',
-        'cli',
-        `[ENS-9001] Invalid project name "${name}". Project names must be kebab-case (e.g., "my-enterstellar-app"). Only lowercase letters, numbers, and hyphens are allowed.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-9001',
+    'cli',
+    `[ENS-9001] Invalid project name "${name}". Project names must be kebab-case (e.g., "my-enterstellar-app"). Only lowercase letters, numbers, and hyphens are allowed.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -76,12 +76,12 @@ export function createInvalidProjectNameError(name: string): EnterstellarError {
  * ```
  */
 export function createInvalidComponentNameError(name: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-9002',
-        'cli',
-        `[ENS-9002] Invalid component name "${name}". Component names must be PascalCase (e.g., "PatientVitals"). Must start with an uppercase letter and contain only letters and numbers.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-9002',
+    'cli',
+    `[ENS-9002] Invalid component name "${name}". Component names must be PascalCase (e.g., "PatientVitals"). Must start with an uppercase letter and contain only letters and numbers.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -105,12 +105,12 @@ export function createInvalidComponentNameError(name: string): EnterstellarError
  * ```
  */
 export function createDirectoryExistsError(directory: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-9003',
-        'cli',
-        `[ENS-9003] Directory "${directory}" already exists and is not empty. Use an empty directory or choose a different name.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-9003',
+    'cli',
+    `[ENS-9003] Directory "${directory}" already exists and is not empty. Use an empty directory or choose a different name.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export function createDirectoryExistsError(directory: string): EnterstellarError
  * Creates an `EnterstellarError` when the current directory is not an Enterstellar project.
  *
  * The `enterstellar add component` command requires an existing Enterstellar project
- * (a `package.json` that depends on `@enterstellar-ai/registry`).
+ * (a `package.json` that depends on `@enterstellar/registry`).
  *
  * @param directory - The directory searched for an Enterstellar project.
  * @returns An `EnterstellarError` with code `ENS-9004`.
@@ -130,16 +130,16 @@ export function createDirectoryExistsError(directory: string): EnterstellarError
  * ```ts
  * throw createProjectNotFoundError('/Users/dev/plain-app');
  * // EnterstellarError: [ENS-9004] No Enterstellar project found in "/Users/dev/plain-app".
- * // Ensure package.json contains an @enterstellar-ai/registry dependency.
+ * // Ensure package.json contains an @enterstellar/registry dependency.
  * ```
  */
 export function createProjectNotFoundError(directory: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-9004',
-        'cli',
-        `[ENS-9004] No Enterstellar project found in "${directory}". Ensure package.json exists and contains an @enterstellar-ai/registry dependency.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-9004',
+    'cli',
+    `[ENS-9004] No Enterstellar project found in "${directory}". Ensure package.json exists and contains an @enterstellar/registry dependency.`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -164,16 +164,16 @@ export function createProjectNotFoundError(directory: string): EnterstellarError
  * ```
  */
 export function createInstallFailedError(
-    packageManager: string,
-    cause?: unknown,
+  packageManager: string,
+  cause?: unknown,
 ): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-9005',
-        'cli',
-        `[ENS-9005] Package manager "${packageManager}" install failed. Run "${packageManager} install" manually to resolve.`,
-        true,
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-9005',
+    'cli',
+    `[ENS-9005] Package manager "${packageManager}" install failed. Run "${packageManager} install" manually to resolve.`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -197,17 +197,14 @@ export function createInstallFailedError(
  * // Check file permissions and available disk space.
  * ```
  */
-export function createFileWriteError(
-    filePath: string,
-    cause?: unknown,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-9006',
-        'cli',
-        `[ENS-9006] Failed to write file "${filePath}". Check file permissions and available disk space.`,
-        true,
-        cause,
-    );
+export function createFileWriteError(filePath: string, cause?: unknown): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-9006',
+    'cli',
+    `[ENS-9006] Failed to write file "${filePath}". Check file permissions and available disk space.`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -241,31 +238,31 @@ export function createFileWriteError(
  * @see Coding Rules — Error Handling (C15)
  */
 export function handleTopLevelError(error: unknown): void {
-    if (error instanceof EnterstellarError) {
-        console.error('');
-        console.error(pc.red(`${pc.bold(`[${error.code}]`)} ${error.message}`));
-        console.error(pc.dim(`  Module: @enterstellar-ai/${error.module}`));
+  if (error instanceof EnterstellarError) {
+    console.error('');
+    console.error(pc.red(`${pc.bold(`[${error.code}]`)} ${error.message}`));
+    console.error(pc.dim(`  Module: @enterstellar/${error.module}`));
 
-        if (error.recoverable) {
-            console.error(pc.dim('  This error is recoverable — see the message above for next steps.'));
-        }
-
-        console.error('');
-    } else {
-        console.error('');
-        console.error(pc.red('An unexpected error occurred:'));
-
-        if (error instanceof Error) {
-            console.error(error.message);
-            if (error.stack !== undefined) {
-                console.error(pc.dim(error.stack));
-            }
-        } else {
-            console.error(String(error));
-        }
-
-        console.error('');
+    if (error.recoverable) {
+      console.error(pc.dim('  This error is recoverable — see the message above for next steps.'));
     }
 
-    process.exitCode = 1;
+    console.error('');
+  } else {
+    console.error('');
+    console.error(pc.red('An unexpected error occurred:'));
+
+    if (error instanceof Error) {
+      console.error(error.message);
+      if (error.stack !== undefined) {
+        console.error(pc.dim(error.stack));
+      }
+    } else {
+      console.error(String(error));
+    }
+
+    console.error('');
+  }
+
+  process.exitCode = 1;
 }

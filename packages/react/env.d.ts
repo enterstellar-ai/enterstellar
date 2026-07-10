@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/react/env
+ * @module @enterstellar/react/env
  * @description Ambient type declarations for `process.env` access.
  *
  * `Provider` references `process.env.NODE_ENV` for the DevTools hook
@@ -11,5 +11,5 @@
  */
 
 declare const process: {
-    readonly env: Readonly<Record<string, string | undefined>>;
+  readonly env: Readonly<Record<string, string | undefined>>;
 };

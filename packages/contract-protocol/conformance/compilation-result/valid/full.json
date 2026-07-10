@@ -15,7 +15,7 @@
     "forgeMode": "local",
     "contractOrigin": {
       "registryUrl": "https://registry.enterstellar.dev/components/patient-vitals",
-      "publisher": "@enterstellar-ai/clinical-components"
+      "publisher": "@enterstellar/clinical-components"
     }
   },
   "errors": [

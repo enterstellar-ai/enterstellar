@@ -1,13 +1,13 @@
-# @enterstellar-ai/migration
+# @enterstellar/migration
 
 > Migration pipeline — AST extraction, LLM enrichment, and contract assembly for migrating existing component libraries into Enterstellar `ComponentContract` standard.
 
-This package converts existing React/Vue/Svelte component files into fully typed `.contract.ts` + `.test.ts` files. It is a **library**, not a CLI — the CLI (`@enterstellar-ai/cli`) provides command routing and terminal output. This separation allows `@enterstellar-ai/cloud` to import `extractManifest()` for server-side extraction without depending on the CLI binary (Correction 4).
+This package converts existing React/Vue/Svelte component files into fully typed `.contract.ts` + `.test.ts` files. It is a **library**, not a CLI — the CLI (`@enterstellar/cli`) provides command routing and terminal output. This separation allows `@enterstellar/cloud` to import `extractManifest()` for server-side extraction without depending on the CLI binary (Correction 4).
 
 ## Quick Start
 
 ```ts
-import { extractManifest } from '@enterstellar-ai/migration';
+import { extractManifest } from '@enterstellar/migration';
 import fs from 'node:fs';
 
 // 1. Read component source from disk (CLI) or receive from HTTP body (server)
@@ -21,7 +21,7 @@ const result = extractManifest(source, 'Button.tsx');
 // result.diagnostics         — ExtractDiagnostic[] (informational)
 
 // 3. (Optional) Enrich heuristic fields via LLM
-import { resolveProvider, enrichManifest } from '@enterstellar-ai/migration';
+import { resolveProvider, enrichManifest } from '@enterstellar/migration';
 
 const provider = resolveProvider({
   providerName: 'openai',
@@ -35,7 +35,7 @@ const enrichResult = await enrichManifest(result.manifest, source, provider);
 // enrichResult.diagnostics     — EnrichDiagnostic[] (errors/warnings from provider)
 
 // 4. Assemble contract + test files
-import { assembleContract, assembleTest } from '@enterstellar-ai/migration';
+import { assembleContract, assembleTest } from '@enterstellar/migration';
 
 const contract = assembleContract(result.manifest, 'src/Button.tsx', '1.0.0');
 // contract.content             — TypeScript source for Button.contract.ts
@@ -81,7 +81,7 @@ const test = assembleTest(result.manifest, './Button.contract');
 | `enrich-manifest.ts`  | Orchestrator — gating logic, provider dispatch, overlay merge                       | `enrichManifest()`, `mergeOverlay()`, `ENRICHABLE_FIELD_KEYS`  |
 | `build-prompt.ts`     | Pure prompt builder for BYO-key provider (internal — NOT exported from root barrel) | `buildEnrichmentPrompt()`                                      |
 | `byo-key-provider.ts` | OpenAI-compatible chat completions API provider                                     | `BYOKeyEnrichmentProvider` (class)                             |
-| `cloud-provider.ts`   | Enterstellar Cloud forge API provider (follows `@enterstellar-ai/cloud` patterns)   | `CloudEnrichmentProvider` (class)                              |
+| `cloud-provider.ts`   | Enterstellar Cloud forge API provider (follows `@enterstellar/cloud` patterns)      | `CloudEnrichmentProvider` (class)                              |
 | `resolve-provider.ts` | Factory: `EnrichmentConfig` → provider instance                                     | `resolveProvider()`, `EnrichmentConfig` (type)                 |
 | `types.ts`            | Provider interface, error codes, error class                                        | `EnrichmentProvider`, `EnrichmentError`, `EnrichmentErrorCode` |
 
@@ -145,9 +145,9 @@ const test = assembleTest(result.manifest, './Button.contract');
 | :--------- | :--- | :------------------------------- |
 | `ts-morph` | ~2MB | AST extraction engine (Phase 1). |
 
-> **Note:** `fast-glob` and `ignore` are dependencies of `@enterstellar-ai/cli` (not `@enterstellar-ai/migration`). The migration package is a pure library — filesystem discovery is the CLI's responsibility.
+> **Note:** `fast-glob` and `ignore` are dependencies of `@enterstellar/cli` (not `@enterstellar/migration`). The migration package is a pure library — filesystem discovery is the CLI's responsibility.
 
-**Peer dependencies:** `@enterstellar-ai/types`, `@enterstellar-ai/compiler`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `@enterstellar/compiler`, `zod ^4.3.6`
 
 ## See Also
 

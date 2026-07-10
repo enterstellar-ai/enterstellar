@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/search-components
+ * @module @enterstellar/agent-sdk/tools/search-components
  * @description Implements the `enterstellar_search_components` MCP tool.
  *
  * Searches the semantic index for components matching a natural-language
@@ -20,7 +20,7 @@
  * @see Design Choice SI6 — noMatchThreshold filtering.
  */
 
-import type { SemanticSearchResult } from '@enterstellar-ai/types';
+import type { SemanticSearchResult } from '@enterstellar/types';
 
 import type { AgentSDKSemanticIndex } from '../types.js';
 import { searchFailedError } from '../errors.js';
@@ -63,24 +63,21 @@ const MAX_TOP_K = 20;
  * ```
  */
 export async function executeSearchComponents(
-    semanticIndex: AgentSDKSemanticIndex,
-    query: string,
-    topK?: number,
+  semanticIndex: AgentSDKSemanticIndex,
+  query: string,
+  topK?: number,
 ): Promise<readonly SemanticSearchResult[]> {
-    // Empty query → empty results (no error, agent-friendly)
-    if (query.trim().length === 0) {
-        return [];
-    }
+  // Empty query → empty results (no error, agent-friendly)
+  if (query.trim().length === 0) {
+    return [];
+  }
 
-    // Clamp topK to valid range — don't error, agent may send out-of-range values
-    const clampedTopK = Math.max(
-        MIN_TOP_K,
-        Math.min(MAX_TOP_K, topK ?? DEFAULT_TOP_K),
-    );
+  // Clamp topK to valid range — don't error, agent may send out-of-range values
+  const clampedTopK = Math.max(MIN_TOP_K, Math.min(MAX_TOP_K, topK ?? DEFAULT_TOP_K));
 
-    try {
-        return await semanticIndex.search(query, { topK: clampedTopK });
-    } catch (error: unknown) {
-        throw searchFailedError(query, error);
-    }
+  try {
+    return await semanticIndex.search(query, { topK: clampedTopK });
+  } catch (error: unknown) {
+    throw searchFailedError(query, error);
+  }
 }

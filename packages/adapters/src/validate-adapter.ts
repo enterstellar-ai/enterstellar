@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/validate-adapter
+ * @module @enterstellar/adapters/validate-adapter
  * @description Shared runtime validation for adapter configuration objects.
  *
  * Called by each `createXxxAdapter()` factory before wrapping the consumer's
@@ -27,13 +27,13 @@ import type { AdapterType } from './types.js';
  *
  * @remarks
  * These lists must stay in sync with the corresponding config types
- * in `types.ts` and the adapter interfaces in `@enterstellar-ai/types/adapters`.
+ * in `types.ts` and the adapter interfaces in `@enterstellar/types/adapters`.
  */
 const REQUIRED_METHODS: Readonly<Record<AdapterType, readonly string[]>> = {
-    auth: ['getSession', 'hasRole', 'onAuthChange'],
-    data: ['query', 'mutate', 'subscribe'],
-    error: ['report', 'shouldRetry', 'sanitize'],
-    analytics: ['track', 'identify'],
+  auth: ['getSession', 'hasRole', 'onAuthChange'],
+  data: ['query', 'mutate', 'subscribe'],
+  error: ['report', 'shouldRetry', 'sanitize'],
+  analytics: ['track', 'identify'],
 };
 
 // ---------------------------------------------------------------------------
@@ -70,35 +70,32 @@ const REQUIRED_METHODS: Readonly<Record<AdapterType, readonly string[]>> = {
  * ```
  */
 export function validateAdapterConfig(
-    adapterType: AdapterType,
-    config: Readonly<Record<string, unknown>>,
+  adapterType: AdapterType,
+  config: Readonly<Record<string, unknown>>,
 ): void {
-    // -----------------------------------------------------------------------
-    // 1. Name validation
-    // -----------------------------------------------------------------------
-    const name = config['name'];
+  // -----------------------------------------------------------------------
+  // 1. Name validation
+  // -----------------------------------------------------------------------
+  const name = config['name'];
 
-    if (typeof name !== 'string' || name.length === 0) {
-        throw adapterValidationError(
-            adapterType,
-            '"name" must be a non-empty string.',
-        );
+  if (typeof name !== 'string' || name.length === 0) {
+    throw adapterValidationError(adapterType, '"name" must be a non-empty string.');
+  }
+
+  // -----------------------------------------------------------------------
+  // 2. Required method validation
+  // -----------------------------------------------------------------------
+  const requiredMethods = REQUIRED_METHODS[adapterType];
+
+  for (const methodName of requiredMethods) {
+    const method = config[methodName];
+
+    if (typeof method !== 'function') {
+      const receivedType = method === null ? 'null' : typeof method;
+      throw adapterValidationError(
+        adapterType,
+        `Missing or invalid method "${methodName}". Expected function, received ${receivedType}.`,
+      );
     }
-
-    // -----------------------------------------------------------------------
-    // 2. Required method validation
-    // -----------------------------------------------------------------------
-    const requiredMethods = REQUIRED_METHODS[adapterType];
-
-    for (const methodName of requiredMethods) {
-        const method = config[methodName];
-
-        if (typeof method !== 'function') {
-            const receivedType = method === null ? 'null' : typeof method;
-            throw adapterValidationError(
-                adapterType,
-                `Missing or invalid method "${methodName}". Expected function, received ${receivedType}.`,
-            );
-        }
-    }
+  }
 }

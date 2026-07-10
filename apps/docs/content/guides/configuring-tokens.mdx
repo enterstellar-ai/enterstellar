@@ -9,7 +9,7 @@ icon: Palette
 A `DesignTokenSet` is a plain JavaScript object following the W3C DTCG specification. Define it in `enterstellar/tokens.ts`:
 
 ```ts
-import type { DesignTokenSet } from '@enterstellar-ai/types';
+import type { DesignTokenSet } from '@enterstellar/types';
 
 export const tokens: DesignTokenSet = {
   colors: {
@@ -60,7 +60,7 @@ export const tokens: DesignTokenSet = {
 In a `ComponentContract`, reference tokens using the `token:` prefix with the DTCG path:
 
 ```ts
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 export const AlertCard = defineComponent({
@@ -144,7 +144,7 @@ For multi-tenant or white-label applications, define one token set per brand:
 
 ```ts
 // registries/brand-a.ts
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createRegistry } from '@enterstellar/registry';
 import { brandATokens } from './tokens/brand-a';
 
 export const brandARegistry = createRegistry({
@@ -164,10 +164,10 @@ The compiler validates token paths against the registry's token set. A contract 
 ## Scenario: Custom Brand Palette
 
 ```ts
-import { defineComponent } from '@enterstellar-ai/registry';
-import { createRegistry } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
+import { createRegistry } from '@enterstellar/registry';
 import { z } from 'zod';
-import type { DesignTokenSet } from '@enterstellar-ai/types';
+import type { DesignTokenSet } from '@enterstellar/types';
 
 // 1. Define your brand tokens
 const myTokens: DesignTokenSet = {

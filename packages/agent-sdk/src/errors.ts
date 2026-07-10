@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/errors
+ * @module @enterstellar/agent-sdk/errors
  * @description Agent SDK error factory functions for `ENS-8xxx` codes.
  *
  * Each factory creates a well-typed `EnterstellarError` with:
@@ -17,8 +17,7 @@
  * @see Design Choice AS4 — factory validates config on creation.
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
-
+import { EnterstellarError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // ENS-8001: SDK Not Initialized
@@ -36,16 +35,14 @@ import { EnterstellarError } from '@enterstellar-ai/types';
  *
  * @see Design Choice AS4 — factory validates config before returning SDK.
  */
-export function sdkNotInitializedError(
-    missingDep: string,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-8001',
-        'agent-sdk',
-        `Agent SDK initialization failed: required dependency '${missingDep}' is missing. ` +
-        `Provide it via createAgentSDK({ ${missingDep}: ... }).`,
-        false,
-    );
+export function sdkNotInitializedError(missingDep: string): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-8001',
+    'agent-sdk',
+    `Agent SDK initialization failed: required dependency '${missingDep}' is missing. ` +
+      `Provide it via createAgentSDK({ ${missingDep}: ... }).`,
+    false,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -65,22 +62,17 @@ export function sdkNotInitializedError(
  *
  * @see Bible §4.16 — `enterstellar_search_components` tool.
  */
-export function searchFailedError(
-    query: string,
-    cause: unknown,
-): EnterstellarError {
-    const reason = cause instanceof Error
-        ? cause.message
-        : String(cause);
+export function searchFailedError(query: string, cause: unknown): EnterstellarError {
+  const reason = cause instanceof Error ? cause.message : String(cause);
 
-    return new EnterstellarError(
-        'ENS-8002',
-        'agent-sdk',
-        `Component search failed for query '${query}': ${reason}. ` +
-        `Try a simpler query or reduce topK.`,
-        true,
-        cause,
-    );
+  return new EnterstellarError(
+    'ENS-8002',
+    'agent-sdk',
+    `Component search failed for query '${query}': ${reason}. ` +
+      `Try a simpler query or reduce topK.`,
+    true,
+    cause,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -100,16 +92,14 @@ export function searchFailedError(
  * @see Design Choice AS3 — UISpec validation rules.
  * @see Bible §4.16 — `enterstellar_compose_ui` tool.
  */
-export function composeFailedError(
-    reason: string,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-8003',
-        'agent-sdk',
-        `UI composition failed: ${reason}. ` +
-        `Verify that all component names exist in the registry and determinism is 0.0–1.0.`,
-        true,
-    );
+export function composeFailedError(reason: string): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-8003',
+    'agent-sdk',
+    `UI composition failed: ${reason}. ` +
+      `Verify that all component names exist in the registry and determinism is 0.0–1.0.`,
+    true,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -128,16 +118,14 @@ export function composeFailedError(
  *
  * @see Bible §4.16 — `enterstellar_get_component_schema` tool.
  */
-export function componentSchemaNotFoundError(
-    componentName: string,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-8004',
-        'agent-sdk',
-        `Component '${componentName}' not found in registry. ` +
-        `Use enterstellar_search_components to discover available components.`,
-        true,
-    );
+export function componentSchemaNotFoundError(componentName: string): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-8004',
+    'agent-sdk',
+    `Component '${componentName}' not found in registry. ` +
+      `Use enterstellar_search_components to discover available components.`,
+    true,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -157,14 +145,12 @@ export function componentSchemaNotFoundError(
  * @see Design Choice AS5 — queries `EnterstellarStore` for local traces.
  * @see Bible §4.16 — `enterstellar_analyze_traces` tool.
  */
-export function traceAnalysisInvalidError(
-    reason: string,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-8005',
-        'agent-sdk',
-        `Trace analysis failed: ${reason}. ` +
-        `Valid groupBy values: 'component', 'zone', 'status', 'strategy'.`,
-        true,
-    );
+export function traceAnalysisInvalidError(reason: string): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-8005',
+    'agent-sdk',
+    `Trace analysis failed: ${reason}. ` +
+      `Valid groupBy values: 'component', 'zone', 'status', 'strategy'.`,
+    true,
+  );
 }

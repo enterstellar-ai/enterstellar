@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/global-index/discovery/registry-crawler.test
+ * @module @enterstellar/global-index/discovery/registry-crawler.test
  * @description Unit tests for the federated registry discovery operations.
  *
  * Tests cover:
@@ -13,15 +13,15 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import type { TransportConfig } from '../../src/transport.js';
 import type { FederatedRegistry, RegistryRegistration } from '../../src/types.js';
 
 import {
-    listRegistries,
-    refreshRegistry,
-    registerRegistry,
+  listRegistries,
+  refreshRegistry,
+  registerRegistry,
 } from '../../src/discovery/registry-crawler.js';
 
 // ---------------------------------------------------------------------------
@@ -29,46 +29,43 @@ import {
 // ---------------------------------------------------------------------------
 
 const TEST_CONFIG: TransportConfig = {
-    endpoint: 'https://index.enterstellar.dev',
-    apiKey: 'test-key',
-    timeoutMs: 5000,
+  endpoint: 'https://index.enterstellar.dev',
+  apiKey: 'test-key',
+  timeoutMs: 5000,
 };
 
 /** A valid `RegistryRegistration` input. */
 const VALID_REGISTRATION: RegistryRegistration = {
-    name: 'ACME Clinical',
-    url: 'https://registry.acme.health',
-    publisher: 'ACME Corp',
+  name: 'ACME Clinical',
+  url: 'https://registry.acme.health',
+  publisher: 'ACME Corp',
 };
 
 /** A valid `FederatedRegistry` as returned by the server. */
 const MOCK_REGISTRY: FederatedRegistry = {
-    id: 'reg-001',
-    name: 'ACME Clinical',
-    url: 'https://registry.acme.health',
-    publisher: 'ACME Corp',
-    contractCount: 42,
-    lastRefreshedAt: '2026-02-26T10:00:00.000Z',
-    active: true,
+  id: 'reg-001',
+  name: 'ACME Clinical',
+  url: 'https://registry.acme.health',
+  publisher: 'ACME Corp',
+  contractCount: 42,
+  lastRefreshedAt: '2026-02-26T10:00:00.000Z',
+  active: true,
 };
 
 /**
  * Creates a mock `Response` object for `fetch` stubbing.
  */
-function mockResponse(
-    body: unknown,
-    init?: { status?: number; statusText?: string },
-): Response {
-    const status = init?.status ?? 200;
-    const statusText = init?.statusText ?? 'OK';
+function mockResponse(body: unknown, init?: { status?: number; statusText?: string }): Response {
+  const status = init?.status ?? 200;
+  const statusText = init?.statusText ?? 'OK';
 
-    return {
-        ok: status >= 200 && status < 300,
-        status,
-        statusText,
-        json: () => Promise.resolve(body),
-        headers: new Headers(),
-    } as unknown as Response;
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText,
+    json: () => Promise.resolve(body),
+    headers: new Headers(),
+  } as unknown as Response;
 }
 
 // ---------------------------------------------------------------------------
@@ -78,12 +75,12 @@ function mockResponse(
 let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-    fetchMock = vi.fn();
-    vi.stubGlobal('fetch', fetchMock);
+  fetchMock = vi.fn();
+  vi.stubGlobal('fetch', fetchMock);
 });
 
 afterEach(() => {
-    vi.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 // ---------------------------------------------------------------------------
@@ -91,121 +88,116 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('registerRegistry', () => {
-    it('returns a FederatedRegistry on success', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registry: MOCK_REGISTRY }),
-        );
+  it('returns a FederatedRegistry on success', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registry: MOCK_REGISTRY }));
 
-        const result = await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
+    const result = await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
 
-        expect(result.id).toBe('reg-001');
-        expect(result.name).toBe('ACME Clinical');
-        expect(result.url).toBe('https://registry.acme.health');
-        expect(result.publisher).toBe('ACME Corp');
-        expect(result.contractCount).toBe(42);
-        expect(result.active).toBe(true);
-    });
+    expect(result.id).toBe('reg-001');
+    expect(result.name).toBe('ACME Clinical');
+    expect(result.url).toBe('https://registry.acme.health');
+    expect(result.publisher).toBe('ACME Corp');
+    expect(result.contractCount).toBe(42);
+    expect(result.active).toBe(true);
+  });
 
-    it('sends POST to /v1/registries', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registry: MOCK_REGISTRY }),
-        );
+  it('sends POST to /v1/registries', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registry: MOCK_REGISTRY }));
 
-        await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
+    await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
 
-        const calledUrl = fetchMock.mock.calls[0]![0] as string;
-        expect(calledUrl).toContain('/v1/registries');
+    const calledUrl = fetchMock.mock.calls[0]![0] as string;
+    expect(calledUrl).toContain('/v1/registries');
 
-        const options = fetchMock.mock.calls[0]![1] as RequestInit;
-        expect(options.method).toBe('POST');
-    });
+    const options = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(options.method).toBe('POST');
+  });
 
-    it('sends registration data as JSON body', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registry: MOCK_REGISTRY }),
-        );
+  it('sends registration data as JSON body', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registry: MOCK_REGISTRY }));
 
-        await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
+    await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
 
-        const options = fetchMock.mock.calls[0]![1] as RequestInit;
-        const body = JSON.parse(options.body as string) as Record<string, unknown>;
-        expect(body['name']).toBe('ACME Clinical');
-        expect(body['url']).toBe('https://registry.acme.health');
-        expect(body['publisher']).toBe('ACME Corp');
-    });
+    const options = fetchMock.mock.calls[0]![1] as RequestInit;
+    const body = JSON.parse(options.body as string) as Record<string, unknown>;
+    expect(body['name']).toBe('ACME Clinical');
+    expect(body['url']).toBe('https://registry.acme.health');
+    expect(body['publisher']).toBe('ACME Corp');
+  });
 
-    it('throws ENS-5034 when name is empty (local validation)', async () => {
-        try {
-            await registerRegistry(TEST_CONFIG, {
-                name: '',
-                url: 'https://registry.example.com',
-                publisher: 'Test',
-            });
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5034');
-            expect((error as EnterstellarError).message).toContain('Invalid registration input');
-        }
+  it('throws ENS-5034 when name is empty (local validation)', async () => {
+    try {
+      await registerRegistry(TEST_CONFIG, {
+        name: '',
+        url: 'https://registry.example.com',
+        publisher: 'Test',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5034');
+      expect((error as EnterstellarError).message).toContain('Invalid registration input');
+    }
 
-        // Verify no network call was made
-        expect(fetchMock).not.toHaveBeenCalled();
-    });
+    // Verify no network call was made
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    it('throws ENS-5034 when URL is invalid (local validation)', async () => {
-        try {
-            await registerRegistry(TEST_CONFIG, {
-                name: 'Test',
-                url: 'not-a-url',
-                publisher: 'Test',
-            });
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5034');
-        }
+  it('throws ENS-5034 when URL is invalid (local validation)', async () => {
+    try {
+      await registerRegistry(TEST_CONFIG, {
+        name: 'Test',
+        url: 'not-a-url',
+        publisher: 'Test',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5034');
+    }
 
-        expect(fetchMock).not.toHaveBeenCalled();
-    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    it('throws ENS-5034 when publisher is empty (local validation)', async () => {
-        try {
-            await registerRegistry(TEST_CONFIG, {
-                name: 'Test',
-                url: 'https://registry.example.com',
-                publisher: '',
-            });
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5034');
-        }
+  it('throws ENS-5034 when publisher is empty (local validation)', async () => {
+    try {
+      await registerRegistry(TEST_CONFIG, {
+        name: 'Test',
+        url: 'https://registry.example.com',
+        publisher: '',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5034');
+    }
 
-        expect(fetchMock).not.toHaveBeenCalled();
-    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    it('throws ENS-5032 on server error (500)', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ message: 'Internal error' }, { status: 500, statusText: 'Internal Server Error' }),
-        );
+  it('throws ENS-5032 on server error (500)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { message: 'Internal error' },
+        { status: 500, statusText: 'Internal Server Error' },
+      ),
+    );
 
-        try {
-            await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5032');
-        }
-    });
+    try {
+      await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5032');
+    }
+  });
 
-    it('throws ENS-5035 on malformed server response', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ wrong: 'shape' }),
-        );
+  it('throws ENS-5035 on malformed server response', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ wrong: 'shape' }));
 
-        try {
-            await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5035');
-        }
-    });
+    try {
+      await registerRegistry(TEST_CONFIG, VALID_REGISTRATION);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5035');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -213,84 +205,74 @@ describe('registerRegistry', () => {
 // ---------------------------------------------------------------------------
 
 describe('listRegistries', () => {
-    it('returns an array of FederatedRegistry on success', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registries: [MOCK_REGISTRY] }),
-        );
+  it('returns an array of FederatedRegistry on success', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registries: [MOCK_REGISTRY] }));
 
-        const result = await listRegistries(TEST_CONFIG);
+    const result = await listRegistries(TEST_CONFIG);
 
-        expect(result).toHaveLength(1);
-        expect(result[0]!.id).toBe('reg-001');
-        expect(result[0]!.name).toBe('ACME Clinical');
-    });
+    expect(result).toHaveLength(1);
+    expect(result[0]!.id).toBe('reg-001');
+    expect(result[0]!.name).toBe('ACME Clinical');
+  });
 
-    it('sends GET to /v1/registries', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registries: [] }),
-        );
+  it('sends GET to /v1/registries', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registries: [] }));
 
-        await listRegistries(TEST_CONFIG);
+    await listRegistries(TEST_CONFIG);
 
-        const calledUrl = fetchMock.mock.calls[0]![0] as string;
-        expect(calledUrl).toContain('/v1/registries');
+    const calledUrl = fetchMock.mock.calls[0]![0] as string;
+    expect(calledUrl).toContain('/v1/registries');
 
-        const options = fetchMock.mock.calls[0]![1] as RequestInit;
-        expect(options.method).toBe('GET');
-    });
+    const options = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(options.method).toBe('GET');
+  });
 
-    it('returns empty array when no registries exist', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registries: [] }),
-        );
+  it('returns empty array when no registries exist', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registries: [] }));
 
-        const result = await listRegistries(TEST_CONFIG);
+    const result = await listRegistries(TEST_CONFIG);
 
-        expect(result).toHaveLength(0);
-    });
+    expect(result).toHaveLength(0);
+  });
 
-    it('returns multiple registries', async () => {
-        const secondRegistry = {
-            ...MOCK_REGISTRY,
-            id: 'reg-002',
-            name: 'Beta Health',
-            url: 'https://registry.beta.health',
-        };
+  it('returns multiple registries', async () => {
+    const secondRegistry = {
+      ...MOCK_REGISTRY,
+      id: 'reg-002',
+      name: 'Beta Health',
+      url: 'https://registry.beta.health',
+    };
 
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registries: [MOCK_REGISTRY, secondRegistry] }),
-        );
+    fetchMock.mockResolvedValueOnce(mockResponse({ registries: [MOCK_REGISTRY, secondRegistry] }));
 
-        const result = await listRegistries(TEST_CONFIG);
+    const result = await listRegistries(TEST_CONFIG);
 
-        expect(result).toHaveLength(2);
-        expect(result[0]!.id).toBe('reg-001');
-        expect(result[1]!.id).toBe('reg-002');
-    });
+    expect(result).toHaveLength(2);
+    expect(result[0]!.id).toBe('reg-001');
+    expect(result[1]!.id).toBe('reg-002');
+  });
 
-    it('throws ENS-5032 on network error', async () => {
-        fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+  it('throws ENS-5032 on network error', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
 
-        try {
-            await listRegistries(TEST_CONFIG);
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5032');
-        }
-    });
+    try {
+      await listRegistries(TEST_CONFIG);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5032');
+    }
+  });
 
-    it('throws ENS-5035 on malformed response', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ not_registries: [] }),
-        );
+  it('throws ENS-5035 on malformed response', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ not_registries: [] }));
 
-        try {
-            await listRegistries(TEST_CONFIG);
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5035');
-        }
-    });
+    try {
+      await listRegistries(TEST_CONFIG);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5035');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -298,92 +280,84 @@ describe('listRegistries', () => {
 // ---------------------------------------------------------------------------
 
 describe('refreshRegistry', () => {
-    it('returns an updated FederatedRegistry on success', async () => {
-        const refreshed = { ...MOCK_REGISTRY, contractCount: 55 };
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registry: refreshed }),
-        );
+  it('returns an updated FederatedRegistry on success', async () => {
+    const refreshed = { ...MOCK_REGISTRY, contractCount: 55 };
+    fetchMock.mockResolvedValueOnce(mockResponse({ registry: refreshed }));
 
-        const result = await refreshRegistry(TEST_CONFIG, 'reg-001');
+    const result = await refreshRegistry(TEST_CONFIG, 'reg-001');
 
-        expect(result.id).toBe('reg-001');
-        expect(result.contractCount).toBe(55);
-    });
+    expect(result.id).toBe('reg-001');
+    expect(result.contractCount).toBe(55);
+  });
 
-    it('sends POST to /v1/registries/{id}/refresh', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registry: MOCK_REGISTRY }),
-        );
+  it('sends POST to /v1/registries/{id}/refresh', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registry: MOCK_REGISTRY }));
 
-        await refreshRegistry(TEST_CONFIG, 'reg-001');
+    await refreshRegistry(TEST_CONFIG, 'reg-001');
 
-        const calledUrl = fetchMock.mock.calls[0]![0] as string;
-        expect(calledUrl).toContain('/v1/registries/reg-001/refresh');
+    const calledUrl = fetchMock.mock.calls[0]![0] as string;
+    expect(calledUrl).toContain('/v1/registries/reg-001/refresh');
 
-        const options = fetchMock.mock.calls[0]![1] as RequestInit;
-        expect(options.method).toBe('POST');
-    });
+    const options = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(options.method).toBe('POST');
+  });
 
-    it('URL-encodes the registryId in the path', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ registry: MOCK_REGISTRY }),
-        );
+  it('URL-encodes the registryId in the path', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ registry: MOCK_REGISTRY }));
 
-        await refreshRegistry(TEST_CONFIG, 'reg/with/slashes');
+    await refreshRegistry(TEST_CONFIG, 'reg/with/slashes');
 
-        const calledUrl = fetchMock.mock.calls[0]![0] as string;
-        expect(calledUrl).toContain('reg%2Fwith%2Fslashes');
-    });
+    const calledUrl = fetchMock.mock.calls[0]![0] as string;
+    expect(calledUrl).toContain('reg%2Fwith%2Fslashes');
+  });
 
-    it('throws ENS-5034 when registryId is empty string', async () => {
-        try {
-            await refreshRegistry(TEST_CONFIG, '');
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5034');
-            expect((error as EnterstellarError).message).toContain('must not be empty');
-        }
+  it('throws ENS-5034 when registryId is empty string', async () => {
+    try {
+      await refreshRegistry(TEST_CONFIG, '');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5034');
+      expect((error as EnterstellarError).message).toContain('must not be empty');
+    }
 
-        expect(fetchMock).not.toHaveBeenCalled();
-    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    it('throws ENS-5034 when registryId is whitespace only', async () => {
-        try {
-            await refreshRegistry(TEST_CONFIG, '   ');
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5034');
-        }
+  it('throws ENS-5034 when registryId is whitespace only', async () => {
+    try {
+      await refreshRegistry(TEST_CONFIG, '   ');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5034');
+    }
 
-        expect(fetchMock).not.toHaveBeenCalled();
-    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    it('throws ENS-5032 on server error (503)', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse(
-                { message: 'Service unavailable' },
-                { status: 503, statusText: 'Service Unavailable' },
-            ),
-        );
+  it('throws ENS-5032 on server error (503)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { message: 'Service unavailable' },
+        { status: 503, statusText: 'Service Unavailable' },
+      ),
+    );
 
-        try {
-            await refreshRegistry(TEST_CONFIG, 'reg-001');
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5032');
-        }
-    });
+    try {
+      await refreshRegistry(TEST_CONFIG, 'reg-001');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5032');
+    }
+  });
 
-    it('throws ENS-5035 on malformed server response', async () => {
-        fetchMock.mockResolvedValueOnce(
-            mockResponse({ wrong: 'shape' }),
-        );
+  it('throws ENS-5035 on malformed server response', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ wrong: 'shape' }));
 
-        try {
-            await refreshRegistry(TEST_CONFIG, 'reg-001');
-        } catch (error: unknown) {
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect((error as EnterstellarError).code).toBe('ENS-5035');
-        }
-    });
+    try {
+      await refreshRegistry(TEST_CONFIG, 'reg-001');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect((error as EnterstellarError).code).toBe('ENS-5035');
+    }
+  });
 });

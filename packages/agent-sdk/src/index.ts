@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk
+ * @module @enterstellar/agent-sdk
  * @description AI agent SDK with MCP server — 7 tools for component search,
  * compose, validate, analyze, forge, schema, and composite build.
  *
@@ -10,7 +10,7 @@
  * ## Quick Start
  *
  * ```ts
- * import { createAgentSDK, createMCPServer } from '@enterstellar-ai/agent-sdk';
+ * import { createAgentSDK, createMCPServer } from '@enterstellar/agent-sdk';
  *
  * const sdk = createAgentSDK({ registry, compiler, semanticIndex, forge });
  *
@@ -41,41 +41,41 @@ export { createMCPServer } from './mcp-server.js';
 // Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    EnterstellarAgentSDK,
-    AgentSDKConfig,
-    ZoneSpec,
-    UISpec,
-    TraceAnalysis,
-    TraceAnalysisGroup,
-    BuildUIResult,
-    ComponentSchemaResult,
-    MCPToolDefinition,
-    AgentSDKRegistry,
-    AgentSDKCompiler,
-    AgentSDKSemanticIndex,
-    AgentSDKForge,
-    AgentSDKStore,
+  EnterstellarAgentSDK,
+  AgentSDKConfig,
+  ZoneSpec,
+  UISpec,
+  TraceAnalysis,
+  TraceAnalysisGroup,
+  BuildUIResult,
+  ComponentSchemaResult,
+  MCPToolDefinition,
+  AgentSDKRegistry,
+  AgentSDKCompiler,
+  AgentSDKSemanticIndex,
+  AgentSDKForge,
+  AgentSDKStore,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
 // MCP Server Types
 // ---------------------------------------------------------------------------
 export type {
-    EnterstellarMCPServer,
-    MCPToolResponse,
-    MCPToolErrorResponse,
-    MCPCallResult,
+  EnterstellarMCPServer,
+  MCPToolResponse,
+  MCPToolErrorResponse,
+  MCPCallResult,
 } from './mcp-server.js';
 
 // ---------------------------------------------------------------------------
 // Error Factories (for testing and consumer error handling)
 // ---------------------------------------------------------------------------
 export {
-    sdkNotInitializedError,
-    searchFailedError,
-    composeFailedError,
-    componentSchemaNotFoundError,
-    traceAnalysisInvalidError,
+  sdkNotInitializedError,
+  searchFailedError,
+  composeFailedError,
+  componentSchemaNotFoundError,
+  traceAnalysisInvalidError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/create-analytics-adapter
+ * @module @enterstellar/adapters/create-analytics-adapter
  * @description Factory functions for creating validated `AnalyticsAdapter` instances.
  *
  * - `createAnalyticsAdapter(config)` — wraps a consumer-provided implementation,
@@ -16,7 +16,7 @@
  * @see Design Choice AD5 — wrap into EnterstellarError
  */
 
-import type { AnalyticsAdapter } from '@enterstellar-ai/types';
+import type { AnalyticsAdapter } from '@enterstellar/types';
 
 import { adapterMethodError } from './errors.js';
 import type { AnalyticsAdapterConfig } from './types.js';
@@ -43,7 +43,7 @@ import { validateAdapterConfig } from './validate-adapter.js';
  *
  * @example
  * ```ts
- * import { createAnalyticsAdapter } from '@enterstellar-ai/adapters';
+ * import { createAnalyticsAdapter } from '@enterstellar/adapters';
  *
  * const analytics = createAnalyticsAdapter({
  *   name: 'mixpanel-analytics',
@@ -58,52 +58,46 @@ import { validateAdapterConfig } from './validate-adapter.js';
  * ```
  */
 export function createAnalyticsAdapter(config: AnalyticsAdapterConfig): AnalyticsAdapter {
-    // -----------------------------------------------------------------------
-    // Step 1: Validate config — throws ENS-7001 on failure
-    // -----------------------------------------------------------------------
-    validateAdapterConfig('analytics', config);
+  // -----------------------------------------------------------------------
+  // Step 1: Validate config — throws ENS-7001 on failure
+  // -----------------------------------------------------------------------
+  validateAdapterConfig('analytics', config);
 
-    const adapterName = config.name;
+  const adapterName = config.name;
 
-    // -----------------------------------------------------------------------
-    // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
-    // -----------------------------------------------------------------------
-    const adapter: AnalyticsAdapter = {
-        /**
-         * Wrapped `track()` — catches vendor errors → `ENS-7002`.
-         * Fire-and-forget: consumers do not await this method.
-         */
-        track(
-            event: string,
-            properties?: Readonly<Record<string, unknown>>,
-        ): void {
-            try {
-                config.track(event, properties);
-            } catch (error: unknown) {
-                throw adapterMethodError(adapterName, 'track', error);
-            }
-        },
+  // -----------------------------------------------------------------------
+  // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
+  // -----------------------------------------------------------------------
+  const adapter: AnalyticsAdapter = {
+    /**
+     * Wrapped `track()` — catches vendor errors → `ENS-7002`.
+     * Fire-and-forget: consumers do not await this method.
+     */
+    track(event: string, properties?: Readonly<Record<string, unknown>>): void {
+      try {
+        config.track(event, properties);
+      } catch (error: unknown) {
+        throw adapterMethodError(adapterName, 'track', error);
+      }
+    },
 
-        /**
-         * Wrapped `identify()` — catches vendor errors → `ENS-7002`.
-         * Fire-and-forget: consumers do not await this method.
-         */
-        identify(
-            userId: string,
-            traits?: Readonly<Record<string, unknown>>,
-        ): void {
-            try {
-                config.identify(userId, traits);
-            } catch (error: unknown) {
-                throw adapterMethodError(adapterName, 'identify', error);
-            }
-        },
-    };
+    /**
+     * Wrapped `identify()` — catches vendor errors → `ENS-7002`.
+     * Fire-and-forget: consumers do not await this method.
+     */
+    identify(userId: string, traits?: Readonly<Record<string, unknown>>): void {
+      try {
+        config.identify(userId, traits);
+      } catch (error: unknown) {
+        throw adapterMethodError(adapterName, 'identify', error);
+      }
+    },
+  };
 
-    // -----------------------------------------------------------------------
-    // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
-    // -----------------------------------------------------------------------
-    return Object.freeze(adapter);
+  // -----------------------------------------------------------------------
+  // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
+  // -----------------------------------------------------------------------
+  return Object.freeze(adapter);
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +115,7 @@ export function createAnalyticsAdapter(config: AnalyticsAdapterConfig): Analytic
  *
  * @example
  * ```ts
- * import { createNoopAnalyticsAdapter } from '@enterstellar-ai/adapters';
+ * import { createNoopAnalyticsAdapter } from '@enterstellar/adapters';
  *
  * const analytics = createNoopAnalyticsAdapter();
  * analytics.track('zone_rendered', { zone: 'main' }); // no-op
@@ -129,21 +123,15 @@ export function createAnalyticsAdapter(config: AnalyticsAdapterConfig): Analytic
  * ```
  */
 export function createNoopAnalyticsAdapter(): AnalyticsAdapter {
-    const adapter: AnalyticsAdapter = {
-        track(
-            _event: string,
-            _properties?: Readonly<Record<string, unknown>>,
-        ): void {
-            // No-op — events silently consumed in noop mode.
-        },
+  const adapter: AnalyticsAdapter = {
+    track(_event: string, _properties?: Readonly<Record<string, unknown>>): void {
+      // No-op — events silently consumed in noop mode.
+    },
 
-        identify(
-            _userId: string,
-            _traits?: Readonly<Record<string, unknown>>,
-        ): void {
-            // No-op — identity silently consumed in noop mode.
-        },
-    };
+    identify(_userId: string, _traits?: Readonly<Record<string, unknown>>): void {
+      // No-op — identity silently consumed in noop mode.
+    },
+  };
 
-    return Object.freeze(adapter);
+  return Object.freeze(adapter);
 }

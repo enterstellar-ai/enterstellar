@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools
+ * @module @enterstellar/agent-sdk/tools
  * @description Barrel re-exports for all MCP tool implementations.
  *
  * Each tool is an independent, testable function that takes its required

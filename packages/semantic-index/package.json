@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/semantic-index",
+  "name": "@enterstellar/semantic-index",
   "description": "Semantic component search — embedding-based retrieval via cloud, local, or hybrid provider.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,13 +54,13 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
     "zod": "^4.3.6"
   }
 }

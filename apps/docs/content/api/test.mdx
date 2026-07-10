@@ -1,24 +1,24 @@
 ---
-title: "@enterstellar-ai/test"
+title: "@enterstellar/test"
 description: Intent-based testing framework for Enterstellar GenUI — deterministic test harness, assertion helpers, Vitest matchers, VCR fixtures, intent coverage, and regression detection.
 icon: FlaskConical
 ---
 
 ## Purpose
 
-`@enterstellar-ai/test` provides a deterministic test harness that exercises the real Enterstellar compiler pipeline with mock intent responses — no real LLM calls. The compiler validation (Zod schema, design tokens, accessibility) is real. Only the intent resolution is mocked.
+`@enterstellar/test` provides a deterministic test harness that exercises the real Enterstellar compiler pipeline with mock intent responses — no real LLM calls. The compiler validation (Zod schema, design tokens, accessibility) is real. Only the intent resolution is mocked.
 
 **What you test:** Pipeline decisions, not rendered pixels.
 
 ```bash
-npm install --save-dev @enterstellar-ai/test @enterstellar-ai/registry vitest
+npm install --save-dev @enterstellar/test @enterstellar/registry vitest
 ```
 
 ## Quick Start
 
 ```ts
-import { createTestHarness } from '@enterstellar-ai/test';
-import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+import { createTestHarness } from '@enterstellar/test';
+import { createRegistry, defineComponent } from '@enterstellar/registry';
 import { describe, it } from 'vitest';
 
 const registry = createRegistry({ components: [PatientVitals] });
@@ -100,7 +100,7 @@ harness.autoMock();
 
 Resolves an intent string to a full `AgentTrace`. Runs:
 1. Looks up `mockResponses[intent]` → `ComponentIntent`
-2. Compiles via real `@enterstellar-ai/compiler`
+2. Compiles via real `@enterstellar/compiler`
 3. Builds a synthetic `AgentTrace` from the result + timing
 4. Returns the trace
 
@@ -171,7 +171,7 @@ import {
   tokenCompliant,
   latencyBelow,
   accessibilityToPass,
-} from '@enterstellar-ai/test';
+} from '@enterstellar/test';
 
 componentToBe(trace, 'PatientVitals');
 compilationToPass(result);
@@ -182,7 +182,7 @@ compilationToPass(result);
 ## Vitest Matchers
 
 ```ts
-import { enterstellarMatchers } from '@enterstellar-ai/test';
+import { enterstellarMatchers } from '@enterstellar/test';
 import { expect } from 'vitest';
 
 expect.extend(enterstellarMatchers);
@@ -198,7 +198,7 @@ expect(result).toBeTokenCompliant();
 ## VCR Fixture Utilities
 
 ```ts
-import { saveFixtures, loadFixtures, listFixtureFiles } from '@enterstellar-ai/test';
+import { saveFixtures, loadFixtures, listFixtureFiles } from '@enterstellar/test';
 
 // Save current mock responses as JSON fixtures
 await saveFixtures(harness, './fixtures/patient-vitals.json');
@@ -216,7 +216,7 @@ const files = listFixtureFiles('./fixtures/');
 ## Intent Coverage
 
 ```ts
-import { computeIntentCoverage } from '@enterstellar-ai/test';
+import { computeIntentCoverage } from '@enterstellar/test';
 
 const coverage = computeIntentCoverage(registry, testResults);
 // coverage.covered — number of components with at least one mock
@@ -229,7 +229,7 @@ const coverage = computeIntentCoverage(registry, testResults);
 ## Regression Detection
 
 ```ts
-import { detectRegressions } from '@enterstellar-ai/test';
+import { detectRegressions } from '@enterstellar/test';
 
 const regressions = detectRegressions(currentTraces, baselineTraces);
 // regressions[] — traces where component or status changed from baseline

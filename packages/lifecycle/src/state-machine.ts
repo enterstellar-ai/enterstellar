@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/lifecycle/state-machine
+ * @module @enterstellar/lifecycle/state-machine
  * @description Core finite state machine for zone lifecycle management.
  *
  * Implements the exhaustive transition map from LC2 as a deterministic,
@@ -17,19 +17,19 @@
  */
 
 import type {
-    LifecycleState,
-    LifecycleEvent,
-    LifecycleTransitionContext,
-    LifecycleListener,
-    LifecycleManagerConfig,
-    LifecycleManager,
+  LifecycleState,
+  LifecycleEvent,
+  LifecycleTransitionContext,
+  LifecycleListener,
+  LifecycleManagerConfig,
+  LifecycleManager,
 } from './types.js';
 import { VALID_TRANSITIONS } from './constants.js';
 import {
-    createInvalidTransitionError,
-    createAgentTimeoutError,
-    createDisposedError,
-    createMaxRetriesExceededError,
+  createInvalidTransitionError,
+  createAgentTimeoutError,
+  createDisposedError,
+  createMaxRetriesExceededError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------
@@ -58,186 +58,188 @@ import {
  * @see Design Choice LC1 — custom FSM, ~100 lines, not xstate or React reducer.
  */
 export function createStateMachine(config: LifecycleManagerConfig): LifecycleManager {
-    // -----------------------------------------------------------------------
-    // Internal State (closures — no `this` binding issues per R1)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Internal State (closures — no `this` binding issues per R1)
+  // -----------------------------------------------------------------------
 
-    let currentState: LifecycleState = 'idle';
-    let retryCount = 0;
-    let isDisposed = false;
-    let timeoutTimerId: ReturnType<typeof globalThis.setTimeout> | null = null;
-    const listeners: Set<LifecycleListener> = new Set();
+  let currentState: LifecycleState = 'idle';
+  let retryCount = 0;
+  let isDisposed = false;
+  let timeoutTimerId: ReturnType<typeof globalThis.setTimeout> | null = null;
+  const listeners: Set<LifecycleListener> = new Set();
 
-    // -----------------------------------------------------------------------
-    // Internal Helpers
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Internal Helpers
+  // -----------------------------------------------------------------------
 
-    /**
-     * Validates that a transition from `currentState` to `to` is permitted.
-     * Throws `ENS-3003` on invalid transition.
-     */
-    function validateTransition(to: LifecycleState): void {
-        const allowed = VALID_TRANSITIONS[currentState];
-        if (!allowed.includes(to)) {
-            throw createInvalidTransitionError(currentState, to);
-        }
+  /**
+   * Validates that a transition from `currentState` to `to` is permitted.
+   * Throws `ENS-3003` on invalid transition.
+   */
+  function validateTransition(to: LifecycleState): void {
+    const allowed = VALID_TRANSITIONS[currentState];
+    if (!allowed.includes(to)) {
+      throw createInvalidTransitionError(currentState, to);
     }
+  }
 
-    /**
-     * Emits a `LifecycleEvent` to all registered listeners.
-     */
-    function emit(from: LifecycleState, to: LifecycleState, context?: LifecycleTransitionContext): void {
-        // Build event conditionally: exactOptionalPropertyTypes forbids assigning
-        // `undefined` to the optional `context` field — we must omit it entirely.
-        const base = { from, to, timestamp: Date.now() } as const;
-        const event: LifecycleEvent = context !== undefined
-            ? { ...base, context }
-            : base;
+  /**
+   * Emits a `LifecycleEvent` to all registered listeners.
+   */
+  function emit(
+    from: LifecycleState,
+    to: LifecycleState,
+    context?: LifecycleTransitionContext,
+  ): void {
+    // Build event conditionally: exactOptionalPropertyTypes forbids assigning
+    // `undefined` to the optional `context` field — we must omit it entirely.
+    const base = { from, to, timestamp: Date.now() } as const;
+    const event: LifecycleEvent = context !== undefined ? { ...base, context } : base;
 
-        for (const listener of listeners) {
-            listener(event);
-        }
+    for (const listener of listeners) {
+      listener(event);
     }
+  }
 
-    /**
-     * Starts the loading timeout timer.
-     * Transitions to `error` with `ENS-3002` if the timer fires.
-     */
-    function startTimeout(): void {
+  /**
+   * Starts the loading timeout timer.
+   * Transitions to `error` with `ENS-3002` if the timer fires.
+   */
+  function startTimeout(): void {
+    clearTimeoutTimer();
+    timeoutTimerId = globalThis.setTimeout(() => {
+      // Guard: manager may have been disposed or transitioned while timer was pending
+      if (isDisposed || currentState !== 'loading') {
+        return;
+      }
+      const error = createAgentTimeoutError(config.timeoutMs);
+      // Perform the timeout transition internally (bypass validateTransition — we know loading → error is valid)
+      const from = currentState;
+      currentState = 'error';
+      emit(from, 'error', { error });
+    }, config.timeoutMs);
+  }
+
+  /**
+   * Clears the loading timeout timer if active.
+   */
+  function clearTimeoutTimer(): void {
+    if (timeoutTimerId !== null) {
+      globalThis.clearTimeout(timeoutTimerId);
+      timeoutTimerId = null;
+    }
+  }
+
+  /**
+   * Asserts the manager has not been disposed.
+   * Throws `ENS-3005` if disposed.
+   */
+  function assertNotDisposed(): void {
+    if (isDisposed) {
+      throw createDisposedError();
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Public Interface
+  // -----------------------------------------------------------------------
+
+  const manager: LifecycleManager = {
+    get state(): LifecycleState {
+      return currentState;
+    },
+
+    get retryCount(): number {
+      return retryCount;
+    },
+
+    get disposed(): boolean {
+      return isDisposed;
+    },
+
+    transition(to: LifecycleState, context?: LifecycleTransitionContext): void {
+      assertNotDisposed();
+
+      // Special case: error → loading requires retry count check
+      if (currentState === 'error' && to === 'loading') {
+        if (retryCount >= config.maxRetries) {
+          throw createMaxRetriesExceededError(config.maxRetries);
+        }
+      }
+
+      validateTransition(to);
+
+      const from = currentState;
+      currentState = to;
+
+      // -------------------------------------------------------------------
+      // Post-transition side effects
+      // -------------------------------------------------------------------
+
+      // Track retry count
+      if (from === 'error' && to === 'loading') {
+        retryCount += 1;
+      }
+
+      // Reset retry count on success
+      if (to === 'ready') {
+        retryCount = 0;
+      }
+
+      // Start timeout timer when entering loading
+      if (to === 'loading') {
+        startTimeout();
+      }
+
+      // Clear timeout timer when leaving loading
+      if (from === 'loading') {
         clearTimeoutTimer();
-        timeoutTimerId = globalThis.setTimeout(() => {
-            // Guard: manager may have been disposed or transitioned while timer was pending
-            if (isDisposed || currentState !== 'loading') {
-                return;
-            }
-            const error = createAgentTimeoutError(config.timeoutMs);
-            // Perform the timeout transition internally (bypass validateTransition — we know loading → error is valid)
-            const from = currentState;
-            currentState = 'error';
-            emit(from, 'error', { error });
-        }, config.timeoutMs);
-    }
+      }
 
-    /**
-     * Clears the loading timeout timer if active.
-     */
-    function clearTimeoutTimer(): void {
-        if (timeoutTimerId !== null) {
-            globalThis.clearTimeout(timeoutTimerId);
-            timeoutTimerId = null;
-        }
-    }
+      // Enrich context with retry info for error → loading
+      let enrichedContext = context;
+      if (from === 'error' && to === 'loading') {
+        enrichedContext = {
+          ...context,
+          retryAttempt: retryCount,
+        };
+      }
 
-    /**
-     * Asserts the manager has not been disposed.
-     * Throws `ENS-3005` if disposed.
-     */
-    function assertNotDisposed(): void {
-        if (isDisposed) {
-            throw createDisposedError();
-        }
-    }
+      emit(from, to, enrichedContext);
+    },
 
-    // -----------------------------------------------------------------------
-    // Public Interface
-    // -----------------------------------------------------------------------
+    on(listener: LifecycleListener): () => void {
+      assertNotDisposed();
+      listeners.add(listener);
 
-    const manager: LifecycleManager = {
-        get state(): LifecycleState {
-            return currentState;
-        },
+      return () => {
+        listeners.delete(listener);
+      };
+    },
 
-        get retryCount(): number {
-            return retryCount;
-        },
+    reset(): void {
+      assertNotDisposed();
 
-        get disposed(): boolean {
-            return isDisposed;
-        },
+      const from = currentState;
+      clearTimeoutTimer();
+      retryCount = 0;
+      currentState = 'idle';
 
-        transition(to: LifecycleState, context?: LifecycleTransitionContext): void {
-            assertNotDisposed();
+      // Only emit if we actually changed state
+      if (from !== 'idle') {
+        emit(from, 'idle');
+      }
+    },
 
-            // Special case: error → loading requires retry count check
-            if (currentState === 'error' && to === 'loading') {
-                if (retryCount >= config.maxRetries) {
-                    throw createMaxRetriesExceededError(config.maxRetries);
-                }
-            }
+    dispose(): void {
+      if (isDisposed) {
+        return; // Idempotent — dispose is safe to call multiple times
+      }
+      clearTimeoutTimer();
+      listeners.clear();
+      isDisposed = true;
+    },
+  };
 
-            validateTransition(to);
-
-            const from = currentState;
-            currentState = to;
-
-            // -------------------------------------------------------------------
-            // Post-transition side effects
-            // -------------------------------------------------------------------
-
-            // Track retry count
-            if (from === 'error' && to === 'loading') {
-                retryCount += 1;
-            }
-
-            // Reset retry count on success
-            if (to === 'ready') {
-                retryCount = 0;
-            }
-
-            // Start timeout timer when entering loading
-            if (to === 'loading') {
-                startTimeout();
-            }
-
-            // Clear timeout timer when leaving loading
-            if (from === 'loading') {
-                clearTimeoutTimer();
-            }
-
-            // Enrich context with retry info for error → loading
-            let enrichedContext = context;
-            if (from === 'error' && to === 'loading') {
-                enrichedContext = {
-                    ...context,
-                    retryAttempt: retryCount,
-                };
-            }
-
-            emit(from, to, enrichedContext);
-        },
-
-        on(listener: LifecycleListener): () => void {
-            assertNotDisposed();
-            listeners.add(listener);
-
-            return () => {
-                listeners.delete(listener);
-            };
-        },
-
-        reset(): void {
-            assertNotDisposed();
-
-            const from = currentState;
-            clearTimeoutTimer();
-            retryCount = 0;
-            currentState = 'idle';
-
-            // Only emit if we actually changed state
-            if (from !== 'idle') {
-                emit(from, 'idle');
-            }
-        },
-
-        dispose(): void {
-            if (isDisposed) {
-                return; // Idempotent — dispose is safe to call multiple times
-            }
-            clearTimeoutTimer();
-            listeners.clear();
-            isDisposed = true;
-        },
-    };
-
-    return manager;
+  return manager;
 }

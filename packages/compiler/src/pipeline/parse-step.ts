@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/pipeline/parse-step
+ * @module @enterstellar/compiler/pipeline/parse-step
  * @description Pipeline Step 2: Zod Schema Parse with unknown prop stripping.
  *
  * Validates `intent.props` against the component contract's Zod schema.
@@ -33,12 +33,9 @@ import { schemaParseError } from '../errors.js';
  * @param parsedKeys - Keys from the Zod-parsed output.
  * @returns Array of stripped key names.
  */
-function detectStrippedProps(
-    rawKeys: readonly string[],
-    parsedKeys: readonly string[],
-): string[] {
-    const parsedSet = new Set(parsedKeys);
-    return rawKeys.filter((key) => !parsedSet.has(key));
+function detectStrippedProps(rawKeys: readonly string[], parsedKeys: readonly string[]): string[] {
+  const parsedSet = new Set(parsedKeys);
+  return rawKeys.filter((key) => !parsedSet.has(key));
 }
 
 /**
@@ -50,27 +47,23 @@ function detectStrippedProps(
  * @param issue - A single Zod validation issue.
  * @returns A `CompilationError` with code `'ENS-2001'`.
  */
-function zodIssueToCompilationError(
-    issue: z.core.$ZodIssue,
-): ReturnType<typeof schemaParseError> {
-    const path = issue.path.length > 0
-        ? `props.${issue.path.join('.')}`
-        : 'props';
+function zodIssueToCompilationError(issue: z.core.$ZodIssue): ReturnType<typeof schemaParseError> {
+  const path = issue.path.length > 0 ? `props.${issue.path.join('.')}` : 'props';
 
-    // Build expected description from the Zod issue
-    const expected = 'expected' in issue
-        ? String((issue as unknown as Record<string, unknown>)['expected'])
-        : issue.message;
+  // Build expected description from the Zod issue
+  const expected =
+    'expected' in issue
+      ? String((issue as unknown as Record<string, unknown>)['expected'])
+      : issue.message;
 
-    // Build received value description
-    const received = 'received' in issue
-        ? (issue as unknown as Record<string, unknown>)['received']
-        : undefined;
+  // Build received value description
+  const received =
+    'received' in issue ? (issue as unknown as Record<string, unknown>)['received'] : undefined;
 
-    // Build fix suggestion — expected is always a string at this point
-    const fix = { field: path, was: received, shouldBe: expected };
+  // Build fix suggestion — expected is always a string at this point
+  const fix = { field: path, was: received, shouldBe: expected };
 
-    return schemaParseError(path, received, expected, fix);
+  return schemaParseError(path, received, expected, fix);
 }
 
 // ---------------------------------------------------------------------------
@@ -105,47 +98,47 @@ function zodIssueToCompilationError(
  * ```
  */
 export const parseStep: CompilationStep = async (
-    context: CompilationContext,
-    next: () => Promise<CompilationContext>,
+  context: CompilationContext,
+  next: () => Promise<CompilationContext>,
 ): Promise<CompilationContext> => {
-    const { contract } = context;
-    const rawProps = context.props;
-    const rawKeys = Object.keys(rawProps);
+  const { contract } = context;
+  const rawProps = context.props;
+  const rawKeys = Object.keys(rawProps);
 
-    // Wrap the contract schema with .strip() to remove unknown fields.
-    // Zod v4: z.object().strip() silently removes unrecognized keys.
-    // For non-object schemas (unlikely but defensive), fall through to raw parse.
-    let schema: z.ZodType = contract.props;
+  // Wrap the contract schema with .strip() to remove unknown fields.
+  // Zod v4: z.object().strip() silently removes unrecognized keys.
+  // For non-object schemas (unlikely but defensive), fall through to raw parse.
+  let schema: z.ZodType = contract.props;
 
-    if (schema instanceof z.ZodObject) {
-        schema = schema.strip();
+  if (schema instanceof z.ZodObject) {
+    schema = schema.strip();
+  }
+
+  const result = schema.safeParse(rawProps);
+
+  if (result.success) {
+    // Replace context props with the validated + stripped output
+    const parsed = result.data as Record<string, unknown>;
+    context.props = parsed;
+
+    // Detect stripped props (hallucinated by the LLM)
+    const parsedKeys = Object.keys(parsed);
+    const stripped = detectStrippedProps(rawKeys, parsedKeys);
+
+    if (stripped.length > 0) {
+      context.strippedProps = stripped;
+      context.warnings.push({
+        code: 'ENS-2008',
+        path: 'props',
+        message: `Unknown props stripped: [${stripped.join(', ')}].`,
+      });
     }
-
-    const result = schema.safeParse(rawProps);
-
-    if (result.success) {
-        // Replace context props with the validated + stripped output
-        const parsed = result.data as Record<string, unknown>;
-        context.props = parsed;
-
-        // Detect stripped props (hallucinated by the LLM)
-        const parsedKeys = Object.keys(parsed);
-        const stripped = detectStrippedProps(rawKeys, parsedKeys);
-
-        if (stripped.length > 0) {
-            context.strippedProps = stripped;
-            context.warnings.push({
-                code: 'ENS-2008',
-                path: 'props',
-                message: `Unknown props stripped: [${stripped.join(', ')}].`,
-            });
-        }
-    } else {
-        // Map each Zod issue to a CompilationError
-        for (const issue of result.error.issues) {
-            context.errors.push(zodIssueToCompilationError(issue));
-        }
+  } else {
+    // Map each Zod issue to a CompilationError
+    for (const issue of result.error.issues) {
+      context.errors.push(zodIssueToCompilationError(issue));
     }
+  }
 
-    return next();
+  return next();
 };

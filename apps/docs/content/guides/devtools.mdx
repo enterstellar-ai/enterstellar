@@ -9,8 +9,8 @@ icon: MonitorDot
 Add `<EnterstellarDevTools />` anywhere inside your `<Provider>` tree. It renders a floating panel that is automatically excluded from production builds (zero bytes in `NODE_ENV=production`):
 
 ```tsx
-import { Provider, Zone } from '@enterstellar-ai/react';
-import { EnterstellarDevTools } from '@enterstellar-ai/devtools';
+import { Provider, Zone } from '@enterstellar/react';
+import { EnterstellarDevTools } from '@enterstellar/devtools';
 import { registry } from './enterstellar/registry';
 
 export default function App() {
@@ -29,11 +29,11 @@ export default function App() {
 ### Installation
 
 ```bash
-npm install --save-dev @enterstellar-ai/devtools
+npm install --save-dev @enterstellar/devtools
 ```
 
 <Callout type="info">
-  `@enterstellar-ai/devtools` is a dev dependency. Your production bundle has zero devtools bytes — tree shaking removes the entire import when `NODE_ENV=production`.
+  `@enterstellar/devtools` is a dev dependency. Your production bundle has zero devtools bytes — tree shaking removes the entire import when `NODE_ENV=production`.
 </Callout>
 
 ## Toggle
@@ -109,7 +109,7 @@ The Validation Log is a chronological feed of every compilation attempt — incl
 Export all traces for bug reports or offline analysis:
 
 ```tsx
-import { exportTraces } from '@enterstellar-ai/devtools';
+import { exportTraces } from '@enterstellar/devtools';
 
 // Programmatic export
 const json = exportTraces(store);

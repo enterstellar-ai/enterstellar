@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/components/toggle-button
+ * @module @enterstellar/devtools/components/toggle-button
  * @description Floating action button (⚡) for toggling the DevTools panel.
  *
  * Renders as a fixed-position circular button in one of four viewport
@@ -36,28 +36,28 @@ import { toggleButtonStyles, togglePositionStyles } from '../styles.js';
  * @internal
  */
 export function ToggleButton(props: ToggleButtonProps): React.JSX.Element {
-    const { isOpen, onToggle, position } = props;
+  const { isOpen, onToggle, position } = props;
 
-    /**
-     * Merge base button styles with position-specific offsets.
-     * Position key is validated at the type level via `ToggleButtonProps`.
-     */
-    const positionStyle = togglePositionStyles[position] ?? togglePositionStyles['bottom-right'];
-    const mergedStyle: React.CSSProperties = {
-        ...toggleButtonStyles['button'],
-        ...positionStyle,
-    };
+  /**
+   * Merge base button styles with position-specific offsets.
+   * Position key is validated at the type level via `ToggleButtonProps`.
+   */
+  const positionStyle = togglePositionStyles[position] ?? togglePositionStyles['bottom-right'];
+  const mergedStyle: React.CSSProperties = {
+    ...toggleButtonStyles['button'],
+    ...positionStyle,
+  };
 
-    return (
-        <button
-            type="button"
-            onClick={onToggle}
-            style={mergedStyle}
-            aria-label={isOpen ? 'Close Enterstellar DevTools' : 'Open Enterstellar DevTools'}
-            aria-expanded={isOpen}
-            data-enterstellar-devtools-toggle=""
-        >
-            ⚡
-        </button>
-    );
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      style={mergedStyle}
+      aria-label={isOpen ? 'Close Enterstellar DevTools' : 'Open Enterstellar DevTools'}
+      aria-expanded={isOpen}
+      data-enterstellar-devtools-toggle=""
+    >
+      ⚡
+    </button>
+  );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/components/trace-row
+ * @module @enterstellar/devtools/components/trace-row
  * @description Single trace entry row for the Trace Timeline panel.
  *
  * Renders a compact horizontal row showing:
@@ -41,19 +41,19 @@ import { extractZoneName } from '../use-devtools-traces.js';
  * @internal
  */
 function formatTime(isoTimestamp: string): string {
-    const date = new Date(isoTimestamp);
+  const date = new Date(isoTimestamp);
 
-    // Guard against invalid dates
-    if (Number.isNaN(date.getTime())) {
-        return isoTimestamp;
-    }
+  // Guard against invalid dates
+  if (Number.isNaN(date.getTime())) {
+    return isoTimestamp;
+  }
 
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    const ms = String(date.getMilliseconds()).padStart(3, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const ms = String(date.getMilliseconds()).padStart(3, '0');
 
-    return `${hours}:${minutes}:${seconds}.${ms}`;
+  return `${hours}:${minutes}:${seconds}.${ms}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -74,70 +74,63 @@ function formatTime(isoTimestamp: string): string {
  * @internal
  */
 export function TraceRow(props: TraceRowProps): React.JSX.Element {
-    const { trace, isSelected, onSelect } = props;
+  const { trace, isSelected, onSelect } = props;
 
-    /**
-     * Memoize the click handler to avoid creating a new closure
-     * on every render. Stable reference keyed on trace.id.
-     */
-    const handleClick = useCallback(() => {
-        onSelect(trace.id);
-    }, [onSelect, trace.id]);
+  /**
+   * Memoize the click handler to avoid creating a new closure
+   * on every render. Stable reference keyed on trace.id.
+   */
+  const handleClick = useCallback(() => {
+    onSelect(trace.id);
+  }, [onSelect, trace.id]);
 
-    /**
-     * Extract zone name from trace ID.
-     * Memoized to avoid re-computing on re-renders.
-     */
-    const zoneName = useMemo(
-        () => extractZoneName(trace.id),
-        [trace.id],
-    );
+  /**
+   * Extract zone name from trace ID.
+   * Memoized to avoid re-computing on re-renders.
+   */
+  const zoneName = useMemo(() => extractZoneName(trace.id), [trace.id]);
 
-    /**
-     * Merge base row styles with selected state.
-     */
-    const rowStyle: React.CSSProperties = {
-        ...traceRowStyles['row'],
-        ...(isSelected ? traceRowStyles['rowSelected'] : undefined),
-    };
+  /**
+   * Merge base row styles with selected state.
+   */
+  const rowStyle: React.CSSProperties = {
+    ...traceRowStyles['row'],
+    ...(isSelected ? traceRowStyles['rowSelected'] : undefined),
+  };
 
-    return (
-        <div
-            role="row"
-            tabIndex={0}
-            onClick={handleClick}
-            onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    handleClick();
-                }
-            }}
-            style={rowStyle}
-            aria-selected={isSelected}
-            data-enterstellar-devtools-trace-id={trace.id}
-        >
-            {/* Timestamp */}
-            <span style={traceRowStyles['timestamp']}>
-                {formatTime(trace.timestamp)}
-            </span>
+  return (
+    <div
+      role="row"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
+      style={rowStyle}
+      aria-selected={isSelected}
+      data-enterstellar-devtools-trace-id={trace.id}
+    >
+      {/* Timestamp */}
+      <span style={traceRowStyles['timestamp']}>{formatTime(trace.timestamp)}</span>
 
-            {/* Zone Name */}
-            <span style={traceRowStyles['zone']} title={zoneName}>
-                {zoneName}
-            </span>
+      {/* Zone Name */}
+      <span style={traceRowStyles['zone']} title={zoneName}>
+        {zoneName}
+      </span>
 
-            {/* Component Name */}
-            <span style={traceRowStyles['component']} title={trace.intent.component}>
-                {trace.intent.component}
-            </span>
+      {/* Component Name */}
+      <span style={traceRowStyles['component']} title={trace.intent.component}>
+        {trace.intent.component}
+      </span>
 
-            {/* Status Badge */}
-            <StatusBadge status={trace.compilation.status} />
+      {/* Status Badge */}
+      <StatusBadge status={trace.compilation.status} />
 
-            {/* Latency */}
-            <span style={traceRowStyles['latency']}>
-                {trace.metrics.totalMs}ms
-            </span>
-        </div>
-    );
+      {/* Latency */}
+      <span style={traceRowStyles['latency']}>{trace.metrics.totalMs}ms</span>
+    </div>
+  );
 }

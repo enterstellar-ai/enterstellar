@@ -1,8 +1,8 @@
 /**
- * @module @enterstellar-ai/cli/review/review-flags
+ * @module @enterstellar/cli/review/review-flags
  * @description CLI flag types and parsing for the `enterstellar review` command.
  *
- * This module stays in `@enterstellar-ai/cli` — only the CLI parses `process.argv`.
+ * This module stays in `@enterstellar/cli` — only the CLI parses `process.argv`.
  * The annotation parsing logic in `parse-annotations.ts` is flag-agnostic;
  * it receives file content, not raw CLI arguments.
  *
@@ -41,28 +41,28 @@
  * @see Audit E3 — no `--filter` flag
  */
 export type ReviewFlags = {
-    /**
-     * Output as JSON instead of human-readable text.
-     *
-     * When `true`, output is a `ReviewJsonOutput` structure to stdout.
-     * Designed for CI/CD dashboards and programmatic consumption.
-     *
-     * @default false
-     */
-    readonly json: boolean;
+  /**
+   * Output as JSON instead of human-readable text.
+   *
+   * When `true`, output is a `ReviewJsonOutput` structure to stdout.
+   * Designed for CI/CD dashboards and programmatic consumption.
+   *
+   * @default false
+   */
+  readonly json: boolean;
 
-    /**
-     * Interactive fix mode — walks through each annotation and suggests fixes.
-     *
-     * **v2 stub:** In v1, prints a message explaining the feature is coming
-     * and exits 0. The `--fix` flag is accepted so developers don't get
-     * an error when they try it, but no interactive behavior is implemented.
-     *
-     * @default false
-     */
-    readonly fix: boolean;
+  /**
+   * Interactive fix mode — walks through each annotation and suggests fixes.
+   *
+   * **v2 stub:** In v1, prints a message explaining the feature is coming
+   * and exits 0. The `--fix` flag is accepted so developers don't get
+   * an error when they try it, but no interactive behavior is implemented.
+   *
+   * @default false
+   */
+  readonly fix: boolean;
 
-    // No --filter flag — not in bible spec (Audit E3, Zero Improvisation).
+  // No --filter flag — not in bible spec (Audit E3, Zero Improvisation).
 };
 
 // ---------------------------------------------------------------------------
@@ -103,32 +103,32 @@ export type ReviewFlags = {
  * @see Correction 1 — `enterstellar review` companion command spec
  */
 export function parseReviewFlags(args: readonly string[]): ReviewFlags {
-    let json = false;
-    let fix = false;
+  let json = false;
+  let fix = false;
 
-    for (let i = 0; i < args.length; i++) {
-        const arg = args[i];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
 
-        // noUncheckedIndexedAccess: args[i] is string | undefined.
-        // Guard against undefined (shouldn't occur within bounds, but
-        // satisfies exhaustiveness and compiler constraint).
-        if (arg === undefined) {
-            continue;
-        }
-
-        switch (arg) {
-            case '--json':
-                json = true;
-                break;
-            case '--fix':
-                fix = true;
-                break;
-            // Unknown flags and positional args: silently ignored.
-            // Positional path args are handled by the caller.
-            default:
-                break;
-        }
+    // noUncheckedIndexedAccess: args[i] is string | undefined.
+    // Guard against undefined (shouldn't occur within bounds, but
+    // satisfies exhaustiveness and compiler constraint).
+    if (arg === undefined) {
+      continue;
     }
 
-    return { json, fix };
+    switch (arg) {
+      case '--json':
+        json = true;
+        break;
+      case '--fix':
+        fix = true;
+        break;
+      // Unknown flags and positional args: silently ignored.
+      // Positional path args are handled by the caller.
+      default:
+        break;
+    }
+  }
+
+  return { json, fix };
 }

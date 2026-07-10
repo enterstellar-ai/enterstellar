@@ -59,17 +59,17 @@ export function tabs(): ReactNode {
         <Tabs groupId="package-manager" persist items={['pnpm', 'npm', 'yarn']}>
           <Tab value="pnpm">
             <pre className="p-4 rounded-lg bg-fd-secondary text-fd-secondary-foreground font-mono text-sm">
-              pnpm add @enterstellar-ai/react @enterstellar-ai/compiler zod
+              pnpm add @enterstellar/react @enterstellar/compiler zod
             </pre>
           </Tab>
           <Tab value="npm">
             <pre className="p-4 rounded-lg bg-fd-secondary text-fd-secondary-foreground font-mono text-sm">
-              npm install @enterstellar-ai/react @enterstellar-ai/compiler zod
+              npm install @enterstellar/react @enterstellar/compiler zod
             </pre>
           </Tab>
           <Tab value="yarn">
             <pre className="p-4 rounded-lg bg-fd-secondary text-fd-secondary-foreground font-mono text-sm">
-              yarn add @enterstellar-ai/react @enterstellar-ai/compiler zod
+              yarn add @enterstellar/react @enterstellar/compiler zod
             </pre>
           </Tab>
         </Tabs>
@@ -115,7 +115,8 @@ export function typeTable(): ReactNode {
         <TypeTable
           type={{
             determinism: {
-              description: 'Dial determining agent intent variability (0.0 = rigid contract execution, 1.0 = full generative flexibility)',
+              description:
+                'Dial determining agent intent variability (0.0 = rigid contract execution, 1.0 = full generative flexibility)',
               type: 'number',
               default: '1.0',
             },
@@ -149,10 +150,14 @@ export function accordion(): ReactNode {
     <Wrapper>
       <Accordions type="single" collapsible>
         <Accordion id="registry-metaphor" title="What is the Deck Metaphor?">
-          The LLM does not write or generate custom React components. Instead, it plays predefined cards from a deck (the Component Registry). This guarantees that the LLM cannot hallucinate untyped or unauthorized components.
+          The LLM does not write or generate custom React components. Instead, it plays predefined
+          cards from a deck (the Component Registry). This guarantees that the LLM cannot
+          hallucinate untyped or unauthorized components.
         </Accordion>
         <Accordion id="self-correction" title="What is 3-Tier Self-Correction?">
-          When prop schema validations fail, the Compiler cascades through three recovery Tiers: 1) Pure deterministic coercion, 2) Default contract example extraction, and 3) LLM-powered self-correction callbacks.
+          When prop schema validations fail, the Compiler cascades through three recovery Tiers: 1)
+          Pure deterministic coercion, 2) Default contract example extraction, and 3) LLM-powered
+          self-correction callbacks.
         </Accordion>
       </Accordions>
     </Wrapper>
@@ -163,7 +168,9 @@ export function callout(): ReactNode {
   return (
     <Wrapper>
       <Callout type="warn" title="Strict Type Safety Enforcement">
-        The Compiler enforces `strict: true` at runtime. Any prop validation failure that cannot be self-corrected will automatically render the contract's defined fallback skeleton component instead of throwing fatal runtime UI errors.
+        The Compiler enforces `strict: true` at runtime. Any prop validation failure that cannot be
+        self-corrected will automatically render the contract's defined fallback skeleton component
+        instead of throwing fatal runtime UI errors.
       </Callout>
     </Wrapper>
   );
@@ -218,19 +225,31 @@ export function steps(): ReactNode {
         <Steps>
           <Step>
             <h4>Scaffold the component</h4>
-            <p>Run <code>enterstellar add component StatusCard</code> to create the contracts, rendering stubs, tests, and mock JSON fixtures.</p>
+            <p>
+              Run <code>enterstellar add component StatusCard</code> to create the contracts,
+              rendering stubs, tests, and mock JSON fixtures.
+            </p>
           </Step>
           <Step>
             <h4>Define the Component Contract</h4>
-            <p>Declare the Zod props schema, required design tokens, accessibility roles, and default contract states in the contract file.</p>
+            <p>
+              Declare the Zod props schema, required design tokens, accessibility roles, and default
+              contract states in the contract file.
+            </p>
           </Step>
           <Step>
             <h4>Register in the Registry</h4>
-            <p>Add the StatusCard contract into the system <code>{"createRegistry({ components: [StatusCard] })"}</code> block.</p>
+            <p>
+              Add the StatusCard contract into the system{' '}
+              <code>{'createRegistry({ components: [StatusCard] })'}</code> block.
+            </p>
           </Step>
           <Step>
             <h4>Verify the Intent</h4>
-            <p>Run unit and integration tests using <code>createTestHarness</code> to assert correctness and guarantee compilation and self-correction coverage.</p>
+            <p>
+              Run unit and integration tests using <code>createTestHarness</code> to assert
+              correctness and guarantee compilation and self-correction coverage.
+            </p>
           </Step>
         </Steps>
       </div>
@@ -251,11 +270,13 @@ export function banner(): ReactNode {
     <Wrapper>
       <div className="flex flex-col gap-4">
         <Banner className="z-0" changeLayout={false}>
-          CRITICAL: Production compiler warnings are logged automatically to the system trace interface.
+          CRITICAL: Production compiler warnings are logged automatically to the system trace
+          interface.
         </Banner>
 
         <Banner id="test-rainbow" className="z-0" variant="rainbow" changeLayout={false}>
-          Deterministic Core active: compiling agent intents at <strong>100% safety threshold</strong>.
+          Deterministic Core active: compiling agent intents at{' '}
+          <strong>100% safety threshold</strong>.
         </Banner>
       </div>
     </Wrapper>

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/enterstellar-provider
+ * @module @enterstellar/react/enterstellar-provider
  * @description Root context provider for the Enterstellar ecosystem in React.
  *
  * `<Provider>` wraps the application (or subtree) that uses Enterstellar zones.
@@ -20,9 +20,9 @@
  *
  * @example
  * ```tsx
- * import { Provider } from '@enterstellar-ai/react';
- * import { createRegistry } from '@enterstellar-ai/registry';
- * import { createAgentConnection } from '@enterstellar-ai/connection';
+ * import { Provider } from '@enterstellar/react';
+ * import { createRegistry } from '@enterstellar/registry';
+ * import { createAgentConnection } from '@enterstellar/connection';
  *
  * const registry = createRegistry({ components: [...] });
  * const connection = createAgentConnection({ url: 'wss://agent.example.com' });
@@ -37,30 +37,24 @@
  * ```
  */
 
-import {
-    createContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { createContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { EnterstellarCompiler } from '@enterstellar-ai/compiler';
-import { createCompiler } from '@enterstellar-ai/compiler';
-import type { EnterstellarStore } from '@enterstellar-ai/state';
-import { createEnterstellarStore } from '@enterstellar-ai/state';
-import type { TelemetryCollector } from '@enterstellar-ai/telemetry';
-import { createTelemetryCollector } from '@enterstellar-ai/telemetry';
+import type { EnterstellarCompiler } from '@enterstellar/compiler';
+import { createCompiler } from '@enterstellar/compiler';
+import type { EnterstellarStore } from '@enterstellar/state';
+import { createEnterstellarStore } from '@enterstellar/state';
+import type { TelemetryCollector } from '@enterstellar/telemetry';
+import { createTelemetryCollector } from '@enterstellar/telemetry';
 import { z } from 'zod';
-import { ZoneTraceSchema } from '@enterstellar-ai/types';
+import { ZoneTraceSchema } from '@enterstellar/types';
 
 import { rendererRegistry } from './renderer-registry.js';
 import { GenericCard } from './defaults/generic-card.js';
 import type {
-    EnterstellarContextValue,
-    EnterstellarAgentContextValue,
-    ProviderProps,
-    EnterstellarComponentRenderer,
+  EnterstellarContextValue,
+  EnterstellarAgentContextValue,
+  ProviderProps,
+  EnterstellarComponentRenderer,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -78,13 +72,10 @@ import type {
  * @see Design Choice R6 — renderer registered separately from contract.
  */
 if (!rendererRegistry.has('GenericCard')) {
-    // Cast required: GenericCard accepts typed GenericCardProps, but the
-    // RendererRegistry uses a generic Record<string, unknown> signature.
-    // The compiler pipeline (C6) injects the correct props at runtime.
-    rendererRegistry.register(
-        'GenericCard',
-        GenericCard as unknown as EnterstellarComponentRenderer,
-    );
+  // Cast required: GenericCard accepts typed GenericCardProps, but the
+  // RendererRegistry uses a generic Record<string, unknown> signature.
+  // The compiler pipeline (C6) injects the correct props at runtime.
+  rendererRegistry.register('GenericCard', GenericCard as unknown as EnterstellarComponentRenderer);
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +116,9 @@ export const Enterstellar_CONTEXT_NONE: unique symbol = Symbol('no-enterstellar-
  *
  * @internal
  */
-export const EnterstellarContext = createContext<EnterstellarContextValue | null | typeof Enterstellar_CONTEXT_NONE>(Enterstellar_CONTEXT_NONE);
+export const EnterstellarContext = createContext<
+  EnterstellarContextValue | null | typeof Enterstellar_CONTEXT_NONE
+>(Enterstellar_CONTEXT_NONE);
 
 /**
  * React context for the agent connection.
@@ -136,7 +129,7 @@ export const EnterstellarContext = createContext<EnterstellarContextValue | null
  * @internal
  */
 export const EnterstellarAgentContext = createContext<EnterstellarAgentContextValue>({
-    connection: null,
+  connection: null,
 });
 
 // ---------------------------------------------------------------------------
@@ -150,17 +143,15 @@ export const EnterstellarAgentContext = createContext<EnterstellarAgentContextVa
  *
  * @internal
  */
-function createDefaultCompiler(
-    registry: ProviderProps['registry'],
-): EnterstellarCompiler {
-    return createCompiler({
-        registry,
-        onValidationFailure: {
-            strategy: 'fallback',
-            maxRetries: 2,
-            fallbackComponent: 'GenericCard',
-        },
-    });
+function createDefaultCompiler(registry: ProviderProps['registry']): EnterstellarCompiler {
+  return createCompiler({
+    registry,
+    onValidationFailure: {
+      strategy: 'fallback',
+      maxRetries: 2,
+      fallbackComponent: 'GenericCard',
+    },
+  });
 }
 
 /**
@@ -175,15 +166,13 @@ function createDefaultCompiler(
  *
  * @internal
  */
-async function createDefaultTelemetry(
-    registrySize: number,
-): Promise<TelemetryCollector> {
-    return createTelemetryCollector({
-        platform: 'web',
-        registrySize,
-        queueStrategy: 'indexedDB',
-        flushIntervalMs: 30_000,
-    });
+async function createDefaultTelemetry(registrySize: number): Promise<TelemetryCollector> {
+  return createTelemetryCollector({
+    platform: 'web',
+    registrySize,
+    queueStrategy: 'indexedDB',
+    flushIntervalMs: 30_000,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -193,7 +182,7 @@ async function createDefaultTelemetry(
 /**
  * Schema for the `'traces'` store extension.
  *
- * Uses the canonical `ZoneTraceSchema` from `@enterstellar-ai/types` (F.1 resolution).
+ * Uses the canonical `ZoneTraceSchema` from `@enterstellar/types` (F.1 resolution).
  * Wrapped in `z.array()` because the store extension holds an array of traces.
  *
  * **Why the `Parameters<EnterstellarStore['extend']>[1]` cast?**
@@ -204,12 +193,12 @@ async function createDefaultTelemetry(
  * guaranteeing type-level compatibility without unsafe casts.
  *
  * @see Design Choice S2 — typed extension point.
- * @see ZoneTraceSchema from `@enterstellar-ai/types/trace` — the canonical source.
+ * @see ZoneTraceSchema from `@enterstellar/types/trace` — the canonical source.
  * @internal
  */
-const ZONE_TRACE_ARRAY_SCHEMA = z.array(
-    ZoneTraceSchema,
-) as unknown as Parameters<EnterstellarStore['extend']>[1];
+const ZONE_TRACE_ARRAY_SCHEMA = z.array(ZoneTraceSchema) as unknown as Parameters<
+  EnterstellarStore['extend']
+>[1];
 
 // ---------------------------------------------------------------------------
 // Provider Component
@@ -232,234 +221,234 @@ const ZONE_TRACE_ARRAY_SCHEMA = z.array(
  * @see Appendix E P3 (threadId)
  */
 export function Provider(props: ProviderProps): React.JSX.Element {
-    const {
-        registry,
-        compiler: compilerProp,
-        connection,
-        store: storeProp,
-        telemetry: telemetryProp,
-        threadId,
-        cache: cacheProp,
-        adapters: adaptersProp,
-        children,
-    } = props;
+  const {
+    registry,
+    compiler: compilerProp,
+    connection,
+    store: storeProp,
+    telemetry: telemetryProp,
+    threadId,
+    cache: cacheProp,
+    adapters: adaptersProp,
+    children,
+  } = props;
 
-    // -----------------------------------------------------------------------
-    // Auto-created instances (stable refs across renders)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Auto-created instances (stable refs across renders)
+  // -----------------------------------------------------------------------
 
-    /**
-     * Auto-create compiler if not provided (RE1).
-     * Memoized on `registry` identity — recreated only if registry changes.
-     */
-    const compiler = useMemo<EnterstellarCompiler>(
-        () => compilerProp ?? createDefaultCompiler(registry),
-        [compilerProp, registry],
-    );
+  /**
+   * Auto-create compiler if not provided (RE1).
+   * Memoized on `registry` identity — recreated only if registry changes.
+   */
+  const compiler = useMemo<EnterstellarCompiler>(
+    () => compilerProp ?? createDefaultCompiler(registry),
+    [compilerProp, registry],
+  );
 
-    /**
-     * Auto-create store if not provided (RE2).
-     * `createEnterstellarStore()` is async — we track initialization state.
-     */
-    const [autoStore, setAutoStore] = useState<EnterstellarStore | null>(null);
-    const storeInitRef = useRef(false);
+  /**
+   * Auto-create store if not provided (RE2).
+   * `createEnterstellarStore()` is async — we track initialization state.
+   */
+  const [autoStore, setAutoStore] = useState<EnterstellarStore | null>(null);
+  const storeInitRef = useRef(false);
 
-    useEffect(() => {
-        // Only auto-create if consumer didn't provide a store
-        if (storeProp !== undefined || storeInitRef.current) {
-            return;
+  useEffect(() => {
+    // Only auto-create if consumer didn't provide a store
+    if (storeProp !== undefined || storeInitRef.current) {
+      return;
+    }
+    storeInitRef.current = true;
+
+    void (async () => {
+      const created = await createEnterstellarStore({
+        persistence: 'indexed-db',
+        maxTraces: 100,
+      });
+      setAutoStore(created);
+    })();
+  }, [storeProp]);
+
+  const store = storeProp ?? autoStore;
+
+  /**
+   * Auto-create telemetry if not provided (RE2).
+   * `createTelemetryCollector()` is async (IndexedDB queue opening, TL4)
+   * — same `useState` + `useEffect` + init ref pattern as store above.
+   */
+  const [autoTelemetry, setAutoTelemetry] = useState<TelemetryCollector | null>(null);
+  const telemetryInitRef = useRef(false);
+
+  useEffect(() => {
+    // Only auto-create if consumer didn't provide a collector
+    if (telemetryProp !== undefined || telemetryInitRef.current) {
+      return;
+    }
+    telemetryInitRef.current = true;
+
+    void (async () => {
+      const created = await createDefaultTelemetry(registry.size);
+      setAutoTelemetry(created);
+    })();
+  }, [telemetryProp, registry.size]);
+
+  const telemetry = telemetryProp ?? autoTelemetry;
+
+  // -----------------------------------------------------------------------
+  // Trace Extension Registration (S2, DT7, Q1-resolved)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Registers the `'traces'` store extension for full `ZoneTrace` persistence.
+   *
+   * This runs once when the store becomes available. The provider owns the
+   * store lifecycle, so it is the canonical place for extension registration
+   * — not individual `Zone` instances (which would race on mount).
+   *
+   * The `hasExtension()` guard ensures idempotency for:
+   * - React StrictMode double-mounts
+   * - Consumer-provided stores that already registered the extension
+   *
+   * The schema uses `ZONE_TRACE_ARRAY_SCHEMA` — a `z.array(ZoneTraceSchema)`
+   * wrapping the canonical `ZoneTraceSchema` imported from `@enterstellar/types`
+   * (F.1 resolved). Single-source-of-truth for trace validation.
+   *
+   * @see Design Choice S2 — typed extension point.
+   * @see Design Choice DT7 — DevTools accesses data via EnterstellarStore.
+   * @see Design Choice S14 — max 100 traces with FIFO eviction.
+   */
+  useEffect(() => {
+    if (store === null) {
+      return;
+    }
+
+    if (!store.hasExtension('traces')) {
+      store.extend('traces', ZONE_TRACE_ARRAY_SCHEMA);
+    }
+  }, [store]);
+
+  // -----------------------------------------------------------------------
+  // Thread ID propagation (P3)
+  // -----------------------------------------------------------------------
+
+  useEffect(() => {
+    if (store === null || threadId === undefined) {
+      return;
+    }
+    const currentSession = store.get<{ id: string; threadId?: string }>('session');
+    if (currentSession !== undefined) {
+      store.set('session', { ...currentSession, threadId });
+    }
+  }, [store, threadId]);
+
+  // -----------------------------------------------------------------------
+  // Cleanup on unmount
+  // -----------------------------------------------------------------------
+
+  useEffect(() => {
+    return () => {
+      // Only destroy auto-created instances (not consumer-provided)
+      if (storeProp === undefined && autoStore !== null) {
+        autoStore.destroy();
+      }
+      if (telemetryProp === undefined && autoTelemetry !== null) {
+        void autoTelemetry.dispose();
+      }
+    };
+  }, [storeProp, autoStore, telemetryProp, autoTelemetry]);
+
+  // -----------------------------------------------------------------------
+  // DevTools Hook (dev-only — DT3)
+  // -----------------------------------------------------------------------
+
+  /**
+   * Exposes a global hook for the Chrome Extension's page-hook script.
+   *
+   * The `__Enterstellar_DEVTOOLS_HOOK__` object provides the bridge with access
+   * to the store and trace data. Only set in non-production environments
+   * to ensure zero runtime cost in production bundles.
+   *
+   * The hook is cleaned up on provider unmount to prevent stale references.
+   *
+   * @see @enterstellar/apps-devtools-extension/bridge/page-hook — reads this hook
+   * @see Design Choice DT3 — tree-shakeable, zero prod bytes
+   */
+  useEffect(() => {
+    if (process.env['NODE_ENV'] === 'production') {
+      return;
+    }
+
+    if (store === null) {
+      return;
+    }
+
+    const currentStore = store;
+
+    (window as unknown as Record<string, unknown>)['__Enterstellar_DEVTOOLS_HOOK__'] = {
+      version: '0.0.0',
+      getTraces: (): readonly unknown[] => {
+        const traces: unknown = currentStore.get('traces');
+        if (!Array.isArray(traces)) {
+          return [];
         }
-        storeInitRef.current = true;
+        return traces as readonly unknown[];
+      },
+      getState: (): Readonly<Record<string, unknown>> => {
+        return currentStore.getSnapshot();
+      },
+    };
 
-        void (async () => {
-            const created = await createEnterstellarStore({
-                persistence: 'indexed-db',
-                maxTraces: 100,
-            });
-            setAutoStore(created);
-        })();
-    }, [storeProp]);
+    return () => {
+      delete (window as unknown as Record<string, unknown>)['__Enterstellar_DEVTOOLS_HOOK__'];
+    };
+  }, [store]);
 
-    const store = storeProp ?? autoStore;
+  // -----------------------------------------------------------------------
+  // Context Values
+  // -----------------------------------------------------------------------
 
-    /**
-     * Auto-create telemetry if not provided (RE2).
-     * `createTelemetryCollector()` is async (IndexedDB queue opening, TL4)
-     * — same `useState` + `useEffect` + init ref pattern as store above.
-     */
-    const [autoTelemetry, setAutoTelemetry] = useState<TelemetryCollector | null>(null);
-    const telemetryInitRef = useRef(false);
+  const contextValue = useMemo<EnterstellarContextValue | null>(() => {
+    // Wait for both store and telemetry initialization before providing context.
+    // Zones will detect the missing context and render their fallback.
+    if (store === null || telemetry === null) {
+      return null;
+    }
+    return {
+      registry,
+      compiler,
+      store,
+      telemetry,
+      rendererRegistry,
+      cache: cacheProp ?? null,
+      adapters: adaptersProp ?? {},
+    };
+  }, [registry, compiler, store, telemetry, cacheProp, adaptersProp]);
 
-    useEffect(() => {
-        // Only auto-create if consumer didn't provide a collector
-        if (telemetryProp !== undefined || telemetryInitRef.current) {
-            return;
-        }
-        telemetryInitRef.current = true;
+  const agentContextValue = useMemo<EnterstellarAgentContextValue>(
+    () => ({ connection: connection ?? null }),
+    [connection],
+  );
 
-        void (async () => {
-            const created = await createDefaultTelemetry(registry.size);
-            setAutoTelemetry(created);
-        })();
-    }, [telemetryProp, registry.size]);
+  // -----------------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------------
 
-    const telemetry = telemetryProp ?? autoTelemetry;
-
-    // -----------------------------------------------------------------------
-    // Trace Extension Registration (S2, DT7, Q1-resolved)
-    // -----------------------------------------------------------------------
-
-    /**
-     * Registers the `'traces'` store extension for full `ZoneTrace` persistence.
-     *
-     * This runs once when the store becomes available. The provider owns the
-     * store lifecycle, so it is the canonical place for extension registration
-     * — not individual `Zone` instances (which would race on mount).
-     *
-     * The `hasExtension()` guard ensures idempotency for:
-     * - React StrictMode double-mounts
-     * - Consumer-provided stores that already registered the extension
-     *
-     * The schema uses `ZONE_TRACE_ARRAY_SCHEMA` — a `z.array(ZoneTraceSchema)`
-     * wrapping the canonical `ZoneTraceSchema` imported from `@enterstellar-ai/types`
-     * (F.1 resolved). Single-source-of-truth for trace validation.
-     *
-     * @see Design Choice S2 — typed extension point.
-     * @see Design Choice DT7 — DevTools accesses data via EnterstellarStore.
-     * @see Design Choice S14 — max 100 traces with FIFO eviction.
-     */
-    useEffect(() => {
-        if (store === null) {
-            return;
-        }
-
-        if (!store.hasExtension('traces')) {
-            store.extend('traces', ZONE_TRACE_ARRAY_SCHEMA);
-        }
-    }, [store]);
-
-    // -----------------------------------------------------------------------
-    // Thread ID propagation (P3)
-    // -----------------------------------------------------------------------
-
-    useEffect(() => {
-        if (store === null || threadId === undefined) {
-            return;
-        }
-        const currentSession = store.get<{ id: string; threadId?: string }>('session');
-        if (currentSession !== undefined) {
-            store.set('session', { ...currentSession, threadId });
-        }
-    }, [store, threadId]);
-
-    // -----------------------------------------------------------------------
-    // Cleanup on unmount
-    // -----------------------------------------------------------------------
-
-    useEffect(() => {
-        return () => {
-            // Only destroy auto-created instances (not consumer-provided)
-            if (storeProp === undefined && autoStore !== null) {
-                autoStore.destroy();
-            }
-            if (telemetryProp === undefined && autoTelemetry !== null) {
-                void autoTelemetry.dispose();
-            }
-        };
-    }, [storeProp, autoStore, telemetryProp, autoTelemetry]);
-
-    // -----------------------------------------------------------------------
-    // DevTools Hook (dev-only — DT3)
-    // -----------------------------------------------------------------------
-
-    /**
-     * Exposes a global hook for the Chrome Extension's page-hook script.
-     *
-     * The `__Enterstellar_DEVTOOLS_HOOK__` object provides the bridge with access
-     * to the store and trace data. Only set in non-production environments
-     * to ensure zero runtime cost in production bundles.
-     *
-     * The hook is cleaned up on provider unmount to prevent stale references.
-     *
-     * @see @enterstellar-ai/apps-devtools-extension/bridge/page-hook — reads this hook
-     * @see Design Choice DT3 — tree-shakeable, zero prod bytes
-     */
-    useEffect(() => {
-        if (process.env['NODE_ENV'] === 'production') {
-            return;
-        }
-
-        if (store === null) {
-            return;
-        }
-
-        const currentStore = store;
-
-        (window as unknown as Record<string, unknown>)['__Enterstellar_DEVTOOLS_HOOK__'] = {
-            version: '0.0.0',
-            getTraces: (): readonly unknown[] => {
-                const traces: unknown = currentStore.get('traces');
-                if (!Array.isArray(traces)) {
-                    return [];
-                }
-                return traces as readonly unknown[];
-            },
-            getState: (): Readonly<Record<string, unknown>> => {
-                return currentStore.getSnapshot();
-            },
-        };
-
-        return () => {
-            delete (window as unknown as Record<string, unknown>)['__Enterstellar_DEVTOOLS_HOOK__'];
-        };
-    }, [store]);
-
-    // -----------------------------------------------------------------------
-    // Context Values
-    // -----------------------------------------------------------------------
-
-    const contextValue = useMemo<EnterstellarContextValue | null>(() => {
-        // Wait for both store and telemetry initialization before providing context.
-        // Zones will detect the missing context and render their fallback.
-        if (store === null || telemetry === null) {
-            return null;
-        }
-        return {
-            registry,
-            compiler,
-            store,
-            telemetry,
-            rendererRegistry,
-            cache: cacheProp ?? null,
-            adapters: adaptersProp ?? {},
-        };
-    }, [registry, compiler, store, telemetry, cacheProp, adaptersProp]);
-
-    const agentContextValue = useMemo<EnterstellarAgentContextValue>(
-        () => ({ connection: connection ?? null }),
-        [connection],
-    );
-
-    // -----------------------------------------------------------------------
-    // Render
-    // -----------------------------------------------------------------------
-
-    // Always wrap children in EnterstellarContext.Provider — even during init.
-    //
-    // During init (contextValue === null): zones detect null and render
-    // their fallback prop (Bible §4.3 Rule 6: "never show empty zone").
-    //
-    // After init: zones receive a fully-populated EnterstellarContextValue and
-    // proceed with normal compilation.
-    //
-    // Zones genuinely outside any <Provider> receive the
-    // Enterstellar_CONTEXT_NONE sentinel (the createContext default) and throw
-    // ENS-3001 per RE5 — no silent degradation.
-    return (
-        <EnterstellarContext.Provider value={contextValue}>
-            <EnterstellarAgentContext.Provider value={agentContextValue}>
-                {children}
-            </EnterstellarAgentContext.Provider>
-        </EnterstellarContext.Provider>
-    );
+  // Always wrap children in EnterstellarContext.Provider — even during init.
+  //
+  // During init (contextValue === null): zones detect null and render
+  // their fallback prop (Bible §4.3 Rule 6: "never show empty zone").
+  //
+  // After init: zones receive a fully-populated EnterstellarContextValue and
+  // proceed with normal compilation.
+  //
+  // Zones genuinely outside any <Provider> receive the
+  // Enterstellar_CONTEXT_NONE sentinel (the createContext default) and throw
+  // ENS-3001 per RE5 — no silent degradation.
+  return (
+    <EnterstellarContext.Provider value={contextValue}>
+      <EnterstellarAgentContext.Provider value={agentContextValue}>
+        {children}
+      </EnterstellarAgentContext.Provider>
+    </EnterstellarContext.Provider>
+  );
 }

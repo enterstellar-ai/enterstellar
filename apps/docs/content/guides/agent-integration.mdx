@@ -6,12 +6,12 @@ icon: Bot
 
 ## The Agent SDK
 
-`@enterstellar-ai/agent-sdk` turns your Enterstellar registry and compiler into a set of tools your AI agent can call. The agent doesn't need to know how Enterstellar works internally — it calls tools and gets structured responses.
+`@enterstellar/agent-sdk` turns your Enterstellar registry and compiler into a set of tools your AI agent can call. The agent doesn't need to know how Enterstellar works internally — it calls tools and gets structured responses.
 
 ## Creating the SDK
 
 ```ts
-import { createAgentSDK } from '@enterstellar-ai/agent-sdk';
+import { createAgentSDK } from '@enterstellar/agent-sdk';
 import { registry } from './enterstellar/registry';
 import { compiler } from './enterstellar/compiler';
 import { semanticIndex } from './enterstellar/semantic-index';
@@ -47,7 +47,7 @@ Plus 1 composite tool:
 ## Creating the MCP Server
 
 ```ts
-import { createAgentSDK, createMCPServer } from '@enterstellar-ai/agent-sdk';
+import { createAgentSDK, createMCPServer } from '@enterstellar/agent-sdk';
 
 const sdk = createAgentSDK({ registry, compiler, semanticIndex, forge });
 const server = createMCPServer(sdk);

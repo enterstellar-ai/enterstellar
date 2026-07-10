@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapter-supabase/__tests__/create-supabase-auth-adapter
+ * @module @enterstellar/adapter-supabase/__tests__/create-supabase-auth-adapter
  * @description Unit tests for `createSupabaseAuthAdapter()`.
  *
  * Tests run against a **mock Supabase client** (`vi.fn()` stubs — no real DB).
@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { createSupabaseAuthAdapter } from '../src/create-supabase-auth-adapter.js';
 
@@ -35,19 +35,19 @@ import { createSupabaseAuthAdapter } from '../src/create-supabase-auth-adapter.j
  * @returns A mock session object that mimics Supabase's `Session` shape.
  */
 function createMockSession(overrides?: {
-    userId?: string;
-    roles?: unknown[];
-    appMetadata?: Record<string, unknown>;
+  userId?: string;
+  roles?: unknown[];
+  appMetadata?: Record<string, unknown>;
 }) {
-    return {
-        user: {
-            id: overrides?.userId ?? 'user-123',
-            user_metadata: {
-                roles: overrides?.roles ?? ['clinician'],
-            },
-            app_metadata: overrides?.appMetadata ?? {},
-        },
-    };
+  return {
+    user: {
+      id: overrides?.userId ?? 'user-123',
+      user_metadata: {
+        roles: overrides?.roles ?? ['clinician'],
+      },
+      app_metadata: overrides?.appMetadata ?? {},
+    },
+  };
 }
 
 /**
@@ -60,53 +60,57 @@ function createMockSession(overrides?: {
  * @param session - The session to return from `getSession()` (default: valid session).
  * @returns A mock Supabase client and utilities for test assertions.
  */
-function createMockClient(session: ReturnType<typeof createMockSession> | null = createMockSession()) {
-    const unsubscribeSpy = vi.fn();
+function createMockClient(
+  session: ReturnType<typeof createMockSession> | null = createMockSession(),
+) {
+  const unsubscribeSpy = vi.fn();
 
-    /** Captured `onAuthStateChange` callback — call it to simulate auth events. */
-    let capturedAuthCallback: ((event: string, session: unknown) => void) | null = null;
+  /** Captured `onAuthStateChange` callback — call it to simulate auth events. */
+  let capturedAuthCallback: ((event: string, session: unknown) => void) | null = null;
 
-    const client = {
-        auth: {
-            getSession: vi.fn().mockResolvedValue({
-                data: { session },
-            }),
+  const client = {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: { session },
+      }),
 
-            onAuthStateChange: vi.fn().mockImplementation(
-                (cb: (event: string, session: unknown) => void) => {
-                    capturedAuthCallback = cb;
-                    return {
-                        data: {
-                            subscription: {
-                                unsubscribe: unsubscribeSpy,
-                            },
-                        },
-                    };
-                },
-            ),
-        },
-    };
+      onAuthStateChange: vi
+        .fn()
+        .mockImplementation((cb: (event: string, session: unknown) => void) => {
+          capturedAuthCallback = cb;
+          return {
+            data: {
+              subscription: {
+                unsubscribe: unsubscribeSpy,
+              },
+            },
+          };
+        }),
+    },
+  };
 
-    return {
-        /** The mock Supabase client. Pass to `createSupabaseAuthAdapter()`. */
-        client: client as unknown as Parameters<typeof createSupabaseAuthAdapter>[0]['client'],
+  return {
+    /** The mock Supabase client. Pass to `createSupabaseAuthAdapter()`. */
+    client: client as unknown as Parameters<typeof createSupabaseAuthAdapter>[0]['client'],
 
-        /** Spy on the unsubscribe function returned by `onAuthStateChange`. */
-        unsubscribeSpy,
+    /** Spy on the unsubscribe function returned by `onAuthStateChange`. */
+    unsubscribeSpy,
 
-        /**
-         * Simulates a Supabase auth state change event.
-         *
-         * @param event - The auth event type (e.g., `'SIGNED_IN'`, `'SIGNED_OUT'`).
-         * @param newSession - The new session (or `null` for sign-out).
-         */
-        fireAuthChange(event: string, newSession: ReturnType<typeof createMockSession> | null) {
-            if (!capturedAuthCallback) {
-                throw new Error('onAuthStateChange callback not captured — call adapter.onAuthChange() first');
-            }
-            capturedAuthCallback(event, newSession);
-        },
-    };
+    /**
+     * Simulates a Supabase auth state change event.
+     *
+     * @param event - The auth event type (e.g., `'SIGNED_IN'`, `'SIGNED_OUT'`).
+     * @param newSession - The new session (or `null` for sign-out).
+     */
+    fireAuthChange(event: string, newSession: ReturnType<typeof createMockSession> | null) {
+      if (!capturedAuthCallback) {
+        throw new Error(
+          'onAuthStateChange callback not captured — call adapter.onAuthChange() first',
+        );
+      }
+      capturedAuthCallback(event, newSession);
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,31 +118,31 @@ function createMockClient(session: ReturnType<typeof createMockSession> | null =
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — valid creation', () => {
-    it('creates an adapter from a valid Supabase client', () => {
-        const { client } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('creates an adapter from a valid Supabase client', () => {
+    const { client } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        expect(adapter).toBeDefined();
-        expect(typeof adapter.getSession).toBe('function');
-        expect(typeof adapter.hasRole).toBe('function');
-        expect(typeof adapter.onAuthChange).toBe('function');
-    });
+    expect(adapter).toBeDefined();
+    expect(typeof adapter.getSession).toBe('function');
+    expect(typeof adapter.hasRole).toBe('function');
+    expect(typeof adapter.onAuthChange).toBe('function');
+  });
 
-    it('returns a frozen object (R4 pattern)', () => {
-        const { client } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns a frozen object (R4 pattern)', () => {
+    const { client } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        expect(Object.isFrozen(adapter)).toBe(true);
-    });
+    expect(Object.isFrozen(adapter)).toBe(true);
+  });
 
-    it('accepts a custom adapter name', () => {
-        const { client } = createMockClient();
+  it('accepts a custom adapter name', () => {
+    const { client } = createMockClient();
 
-        // Should not throw — name is used for error messages and DevTools
-        expect(() => {
-            createSupabaseAuthAdapter({ client, name: 'custom-supabase-auth' });
-        }).not.toThrow();
-    });
+    // Should not throw — name is used for error messages and DevTools
+    expect(() => {
+      createSupabaseAuthAdapter({ client, name: 'custom-supabase-auth' });
+    }).not.toThrow();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -146,38 +150,40 @@ describe('createSupabaseAuthAdapter — valid creation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — getSession() delegation', () => {
-    it('returns Enterstellar session shape from valid Supabase session', async () => {
-        const { client } = createMockClient(createMockSession({
-            userId: 'user-456',
-            roles: ['clinician', 'admin'],
-        }));
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns Enterstellar session shape from valid Supabase session', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        userId: 'user-456',
+        roles: ['clinician', 'admin'],
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const session = await adapter.getSession();
+    const session = await adapter.getSession();
 
-        expect(session).toEqual({
-            userId: 'user-456',
-            roles: ['clinician', 'admin'],
-        });
+    expect(session).toEqual({
+      userId: 'user-456',
+      roles: ['clinician', 'admin'],
     });
+  });
 
-    it('calls client.auth.getSession() under the hood', async () => {
-        const { client } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('calls client.auth.getSession() under the hood', async () => {
+    const { client } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        await adapter.getSession();
+    await adapter.getSession();
 
-        expect(client.auth.getSession).toHaveBeenCalledOnce();
-    });
+    expect(client.auth.getSession).toHaveBeenCalledOnce();
+  });
 
-    it('returns null when Supabase session is null (unauthenticated)', async () => {
-        const { client } = createMockClient(null);
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns null when Supabase session is null (unauthenticated)', async () => {
+    const { client } = createMockClient(null);
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const session = await adapter.getSession();
+    const session = await adapter.getSession();
 
-        expect(session).toBeNull();
-    });
+    expect(session).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -185,56 +191,60 @@ describe('createSupabaseAuthAdapter — getSession() delegation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — default role extraction', () => {
-    it('extracts roles from user_metadata.roles', async () => {
-        const { client } = createMockClient(createMockSession({
-            roles: ['clinician', 'researcher'],
-        }));
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('extracts roles from user_metadata.roles', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        roles: ['clinician', 'researcher'],
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const session = await adapter.getSession();
+    const session = await adapter.getSession();
 
-        expect(session?.roles).toEqual(['clinician', 'researcher']);
-    });
+    expect(session?.roles).toEqual(['clinician', 'researcher']);
+  });
 
-    it('returns empty array when user_metadata.roles is missing', async () => {
-        const session = {
-            user: {
-                id: 'user-789',
-                user_metadata: {},
-            },
-        };
-        const { client } = createMockClient(session as ReturnType<typeof createMockSession>);
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns empty array when user_metadata.roles is missing', async () => {
+    const session = {
+      user: {
+        id: 'user-789',
+        user_metadata: {},
+      },
+    };
+    const { client } = createMockClient(session as ReturnType<typeof createMockSession>);
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const result = await adapter.getSession();
+    const result = await adapter.getSession();
 
-        expect(result?.roles).toEqual([]);
-    });
+    expect(result?.roles).toEqual([]);
+  });
 
-    it('filters non-string values from roles array', async () => {
-        const { client } = createMockClient(createMockSession({
-            roles: ['clinician', 42, null, 'admin', undefined],
-        }));
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('filters non-string values from roles array', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        roles: ['clinician', 42, null, 'admin', undefined],
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const session = await adapter.getSession();
+    const session = await adapter.getSession();
 
-        expect(session?.roles).toEqual(['clinician', 'admin']);
-    });
+    expect(session?.roles).toEqual(['clinician', 'admin']);
+  });
 
-    it('returns empty array when user_metadata is missing', async () => {
-        const session = {
-            user: {
-                id: 'user-no-meta',
-            },
-        };
-        const { client } = createMockClient(session as ReturnType<typeof createMockSession>);
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns empty array when user_metadata is missing', async () => {
+    const session = {
+      user: {
+        id: 'user-no-meta',
+      },
+    };
+    const { client } = createMockClient(session as ReturnType<typeof createMockSession>);
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const result = await adapter.getSession();
+    const result = await adapter.getSession();
 
-        expect(result?.roles).toEqual([]);
-    });
+    expect(result?.roles).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -242,40 +252,44 @@ describe('createSupabaseAuthAdapter — default role extraction', () => {
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — hasRole() delegation', () => {
-    it('returns true when user has the requested role', async () => {
-        const { client } = createMockClient(createMockSession({
-            roles: ['clinician', 'admin'],
-        }));
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns true when user has the requested role', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        roles: ['clinician', 'admin'],
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        expect(await adapter.hasRole('clinician')).toBe(true);
-        expect(await adapter.hasRole('admin')).toBe(true);
-    });
+    expect(await adapter.hasRole('clinician')).toBe(true);
+    expect(await adapter.hasRole('admin')).toBe(true);
+  });
 
-    it('returns false when user does not have the requested role', async () => {
-        const { client } = createMockClient(createMockSession({
-            roles: ['clinician'],
-        }));
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns false when user does not have the requested role', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        roles: ['clinician'],
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        expect(await adapter.hasRole('admin')).toBe(false);
-    });
+    expect(await adapter.hasRole('admin')).toBe(false);
+  });
 
-    it('returns false when session is null (unauthenticated)', async () => {
-        const { client } = createMockClient(null);
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns false when session is null (unauthenticated)', async () => {
+    const { client } = createMockClient(null);
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        expect(await adapter.hasRole('clinician')).toBe(false);
-    });
+    expect(await adapter.hasRole('clinician')).toBe(false);
+  });
 
-    it('calls client.auth.getSession() under the hood', async () => {
-        const { client } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('calls client.auth.getSession() under the hood', async () => {
+    const { client } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        await adapter.hasRole('admin');
+    await adapter.hasRole('admin');
 
-        expect(client.auth.getSession).toHaveBeenCalledOnce();
-    });
+    expect(client.auth.getSession).toHaveBeenCalledOnce();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -283,55 +297,55 @@ describe('createSupabaseAuthAdapter — hasRole() delegation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — onAuthChange() delegation', () => {
-    it('subscribes via client.auth.onAuthStateChange()', () => {
-        const { client } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('subscribes via client.auth.onAuthStateChange()', () => {
+    const { client } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        adapter.onAuthChange(vi.fn());
+    adapter.onAuthChange(vi.fn());
 
-        expect(client.auth.onAuthStateChange).toHaveBeenCalledOnce();
+    expect(client.auth.onAuthStateChange).toHaveBeenCalledOnce();
+  });
+
+  it('translates Supabase session to Enterstellar shape in callback', () => {
+    const { client, fireAuthChange } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
+    const callback = vi.fn();
+
+    adapter.onAuthChange(callback);
+
+    const newSession = createMockSession({
+      userId: 'user-new',
+      roles: ['admin'],
     });
+    fireAuthChange('SIGNED_IN', newSession);
 
-    it('translates Supabase session to Enterstellar shape in callback', () => {
-        const { client, fireAuthChange } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
-        const callback = vi.fn();
-
-        adapter.onAuthChange(callback);
-
-        const newSession = createMockSession({
-            userId: 'user-new',
-            roles: ['admin'],
-        });
-        fireAuthChange('SIGNED_IN', newSession);
-
-        expect(callback).toHaveBeenCalledWith({
-            userId: 'user-new',
-            roles: ['admin'],
-        });
+    expect(callback).toHaveBeenCalledWith({
+      userId: 'user-new',
+      roles: ['admin'],
     });
+  });
 
-    it('calls callback with null on sign-out', () => {
-        const { client, fireAuthChange } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
-        const callback = vi.fn();
+  it('calls callback with null on sign-out', () => {
+    const { client, fireAuthChange } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
+    const callback = vi.fn();
 
-        adapter.onAuthChange(callback);
-        fireAuthChange('SIGNED_OUT', null);
+    adapter.onAuthChange(callback);
+    fireAuthChange('SIGNED_OUT', null);
 
-        expect(callback).toHaveBeenCalledWith(null);
-    });
+    expect(callback).toHaveBeenCalledWith(null);
+  });
 
-    it('returns a working unsubscribe function', () => {
-        const { client, unsubscribeSpy } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('returns a working unsubscribe function', () => {
+    const { client, unsubscribeSpy } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        const unsubscribe = adapter.onAuthChange(vi.fn());
+    const unsubscribe = adapter.onAuthChange(vi.fn());
 
-        expect(typeof unsubscribe).toBe('function');
-        unsubscribe();
-        expect(unsubscribeSpy).toHaveBeenCalledOnce();
-    });
+    expect(typeof unsubscribe).toBe('function');
+    unsubscribe();
+    expect(unsubscribeSpy).toHaveBeenCalledOnce();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -339,53 +353,57 @@ describe('createSupabaseAuthAdapter — onAuthChange() delegation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — custom roleExtractor', () => {
-    it('uses custom roleExtractor instead of default', async () => {
-        const { client } = createMockClient(createMockSession({
-            userId: 'user-custom',
-            roles: ['from-user-metadata'], // default would use this
-        }));
-        const adapter = createSupabaseAuthAdapter({
-            client,
-            roleExtractor: (user) => {
-                const u = user as { app_metadata?: { roles?: string[] } };
-                return u.app_metadata?.roles ?? ['custom-role'];
-            },
-        });
-
-        const session = await adapter.getSession();
-
-        // Should use custom extractor, not default user_metadata.roles
-        expect(session?.roles).toEqual(['custom-role']);
+  it('uses custom roleExtractor instead of default', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        userId: 'user-custom',
+        roles: ['from-user-metadata'], // default would use this
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({
+      client,
+      roleExtractor: (user) => {
+        const u = user as { app_metadata?: { roles?: string[] } };
+        return u.app_metadata?.roles ?? ['custom-role'];
+      },
     });
 
-    it('custom roleExtractor applies to hasRole() as well', async () => {
-        const { client } = createMockClient(createMockSession({
-            roles: [], // default would return no roles
-        }));
-        const adapter = createSupabaseAuthAdapter({
-            client,
-            roleExtractor: () => ['injected-role'],
-        });
+    const session = await adapter.getSession();
 
-        expect(await adapter.hasRole('injected-role')).toBe(true);
-        expect(await adapter.hasRole('other-role')).toBe(false);
+    // Should use custom extractor, not default user_metadata.roles
+    expect(session?.roles).toEqual(['custom-role']);
+  });
+
+  it('custom roleExtractor applies to hasRole() as well', async () => {
+    const { client } = createMockClient(
+      createMockSession({
+        roles: [], // default would return no roles
+      }),
+    );
+    const adapter = createSupabaseAuthAdapter({
+      client,
+      roleExtractor: () => ['injected-role'],
     });
 
-    it('custom roleExtractor applies to onAuthChange() callback', () => {
-        const { client, fireAuthChange } = createMockClient();
-        const adapter = createSupabaseAuthAdapter({
-            client,
-            roleExtractor: () => ['custom-from-extractor'],
-        });
-        const callback = vi.fn();
+    expect(await adapter.hasRole('injected-role')).toBe(true);
+    expect(await adapter.hasRole('other-role')).toBe(false);
+  });
 
-        adapter.onAuthChange(callback);
-        fireAuthChange('SIGNED_IN', createMockSession());
-
-        expect(callback).toHaveBeenCalledWith(
-            expect.objectContaining({ roles: ['custom-from-extractor'] }),
-        );
+  it('custom roleExtractor applies to onAuthChange() callback', () => {
+    const { client, fireAuthChange } = createMockClient();
+    const adapter = createSupabaseAuthAdapter({
+      client,
+      roleExtractor: () => ['custom-from-extractor'],
     });
+    const callback = vi.fn();
+
+    adapter.onAuthChange(callback);
+    fireAuthChange('SIGNED_IN', createMockSession());
+
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({ roles: ['custom-from-extractor'] }),
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -393,71 +411,71 @@ describe('createSupabaseAuthAdapter — custom roleExtractor', () => {
 // ---------------------------------------------------------------------------
 
 describe('createSupabaseAuthAdapter — AD5 error wrapping', () => {
-    it('wraps getSession() SDK errors as EnterstellarError (ENS-7005)', async () => {
-        const { client } = createMockClient();
-        (client.auth.getSession as ReturnType<typeof vi.fn>).mockRejectedValue(
-            new Error('Supabase network error'),
-        );
-        const adapter = createSupabaseAuthAdapter({ client });
+  it('wraps getSession() SDK errors as EnterstellarError (ENS-7005)', async () => {
+    const { client } = createMockClient();
+    (client.auth.getSession as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Supabase network error'),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
 
-        try {
-            await adapter.getSession();
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7005');
-            expect(error.module).toBe('adapters');
-            expect(error.recoverable).toBe(true);
-        }
+    try {
+      await adapter.getSession();
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7005');
+      expect(error.module).toBe('adapters');
+      expect(error.recoverable).toBe(true);
+    }
+  });
+
+  it('wraps hasRole() SDK errors as EnterstellarError (ENS-7005)', async () => {
+    const { client } = createMockClient();
+    (client.auth.getSession as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Supabase timeout'),
+    );
+    const adapter = createSupabaseAuthAdapter({ client });
+
+    try {
+      await adapter.hasRole('admin');
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7005');
+    }
+  });
+
+  it('wraps onAuthChange() registration errors as EnterstellarError (ENS-7002)', () => {
+    const { client } = createMockClient();
+    (client.auth.onAuthStateChange as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      throw new Error('Auth subscription failed');
     });
+    const adapter = createSupabaseAuthAdapter({ client });
 
-    it('wraps hasRole() SDK errors as EnterstellarError (ENS-7005)', async () => {
-        const { client } = createMockClient();
-        (client.auth.getSession as ReturnType<typeof vi.fn>).mockRejectedValue(
-            new Error('Supabase timeout'),
-        );
-        const adapter = createSupabaseAuthAdapter({ client });
+    try {
+      adapter.onAuthChange(vi.fn());
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7002');
+    }
+  });
 
-        try {
-            await adapter.hasRole('admin');
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7005');
-        }
-    });
+  it('preserves original error in cause', async () => {
+    const originalError = new TypeError('Supabase client not initialized');
+    const { client } = createMockClient();
+    (client.auth.getSession as ReturnType<typeof vi.fn>).mockRejectedValue(originalError);
+    const adapter = createSupabaseAuthAdapter({ client });
 
-    it('wraps onAuthChange() registration errors as EnterstellarError (ENS-7002)', () => {
-        const { client } = createMockClient();
-        (client.auth.onAuthStateChange as ReturnType<typeof vi.fn>).mockImplementation(() => {
-            throw new Error('Auth subscription failed');
-        });
-        const adapter = createSupabaseAuthAdapter({ client });
-
-        try {
-            adapter.onAuthChange(vi.fn());
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7002');
-        }
-    });
-
-    it('preserves original error in cause', async () => {
-        const originalError = new TypeError('Supabase client not initialized');
-        const { client } = createMockClient();
-        (client.auth.getSession as ReturnType<typeof vi.fn>).mockRejectedValue(originalError);
-        const adapter = createSupabaseAuthAdapter({ client });
-
-        try {
-            await adapter.getSession();
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.cause).toBe(originalError);
-        }
-    });
+    try {
+      await adapter.getSession();
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.cause).toBe(originalError);
+    }
+  });
 });

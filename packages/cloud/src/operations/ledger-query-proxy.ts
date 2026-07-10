@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/operations/ledger-query-proxy
+ * @module @enterstellar/cloud/operations/ledger-query-proxy
  * @description Proxies paginated IPU ledger queries to Enterstellar Cloud.
  *
  * Provides `getLedger(options?)` → `GET /v1/usage/ledger` — paginated
@@ -19,12 +19,7 @@
 
 import type { IPUTracker } from '../metering/ipu-tracker.js';
 import type { CloudHttpTransport } from '../transport/cloud-http.js';
-import type {
-    CloudIPU,
-    CloudResult,
-    LedgerListOptions,
-    LedgerPage,
-} from '../types.js';
+import type { CloudIPU, CloudResult, LedgerListOptions, LedgerPage } from '../types.js';
 
 import { IPU_COSTS } from '../metering/ipu-costs.js';
 
@@ -38,15 +33,15 @@ import { IPU_COSTS } from '../metering/ipu-costs.js';
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface LedgerQueryProxy {
-    /**
-     * Query the per-operation IPU ledger.
-     *
-     * @param options - Pagination options. All optional.
-     * @returns Paginated ledger entries wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    getLedger(options?: LedgerListOptions): Promise<CloudResult<LedgerPage>>;
+  /**
+   * Query the per-operation IPU ledger.
+   *
+   * @param options - Pagination options. All optional.
+   * @returns Paginated ledger entries wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  getLedger(options?: LedgerListOptions): Promise<CloudResult<LedgerPage>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -63,19 +58,17 @@ export interface LedgerQueryProxy {
  * @returns Query string prefixed with `?`, or empty string.
  */
 function buildQueryString(
-    params: Readonly<Record<string, string | number | undefined | null>>,
+  params: Readonly<Record<string, string | number | undefined | null>>,
 ): string {
-    const entries: string[] = [];
+  const entries: string[] = [];
 
-    for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null) {
-            entries.push(
-                `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
-            );
-        }
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      entries.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
     }
+  }
 
-    return entries.length > 0 ? `?${entries.join('&')}` : '';
+  return entries.length > 0 ? `?${entries.join('&')}` : '';
 }
 
 /**
@@ -91,20 +84,20 @@ function buildQueryString(
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -142,61 +135,54 @@ function buildIPU(
  * @internal
  */
 export function createLedgerQueryProxy(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
 ): LedgerQueryProxy {
-    return {
-        async getLedger(
-            options?: LedgerListOptions,
-        ): Promise<CloudResult<LedgerPage>> {
-            // ---------------------------------------------------------------
-            // No pre-flight quota check — queries are free (0 IPU).
-            // ---------------------------------------------------------------
+  return {
+    async getLedger(options?: LedgerListOptions): Promise<CloudResult<LedgerPage>> {
+      // ---------------------------------------------------------------
+      // No pre-flight quota check — queries are free (0 IPU).
+      // ---------------------------------------------------------------
 
-            // ---------------------------------------------------------------
-            // Build query string from optional parameters.
-            // ---------------------------------------------------------------
-            const queryString = buildQueryString({
-                cursor: options?.cursor,
-                limit: options?.limit,
-            });
+      // ---------------------------------------------------------------
+      // Build query string from optional parameters.
+      // ---------------------------------------------------------------
+      const queryString = buildQueryString({
+        cursor: options?.cursor,
+        limit: options?.limit,
+      });
 
-            // ---------------------------------------------------------------
-            // Execute the cloud API call.
-            // GET request — no body, params in URL.
-            // ipuCost: 0 → no X-Idempotency-Key (F8).
-            // ---------------------------------------------------------------
-            const response = await transport.request<LedgerPage>({
-                method: 'GET',
-                path: `/v1/usage/ledger${queryString}`,
-                ipuCost: IPU_COSTS.LEDGER_QUERY,
-            });
+      // ---------------------------------------------------------------
+      // Execute the cloud API call.
+      // GET request — no body, params in URL.
+      // ipuCost: 0 → no X-Idempotency-Key (F8).
+      // ---------------------------------------------------------------
+      const response = await transport.request<LedgerPage>({
+        method: 'GET',
+        path: `/v1/usage/ledger${queryString}`,
+        ipuCost: IPU_COSTS.LEDGER_QUERY,
+      });
 
-            // ---------------------------------------------------------------
-            // Reconcile IPU tracker if server provides headers.
-            // ---------------------------------------------------------------
-            if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-                tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-            }
+      // ---------------------------------------------------------------
+      // Reconcile IPU tracker if server provides headers.
+      // ---------------------------------------------------------------
+      if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+        tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+      }
 
-            // ---------------------------------------------------------------
-            // Build CloudResult<LedgerPage> (SD7).
-            // ---------------------------------------------------------------
-            const ipu = buildIPU(
-                response.ipuUsed,
-                response.ipuRemaining,
-                response.ipuCost,
-                isAnonymous,
-            );
+      // ---------------------------------------------------------------
+      // Build CloudResult<LedgerPage> (SD7).
+      // ---------------------------------------------------------------
+      const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
 
-            const data: LedgerPage = response.data ?? {
-                items: [],
-                cursor: null,
-                hasMore: false,
-            };
+      const data: LedgerPage = response.data ?? {
+        items: [],
+        cursor: null,
+        hasMore: false,
+      };
 
-            return { data, ipu };
-        },
-    };
+      return { data, ipu };
+    },
+  };
 }

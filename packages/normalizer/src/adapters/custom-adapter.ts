@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/normalizer/adapters/custom-adapter
+ * @module @enterstellar/normalizer/adapters/custom-adapter
  * @description Factory for custom protocol adapters.
  *
  * Wraps a user-provided normalization function into a `ProtocolNormalizer`.
@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { createCustomAdapter } from '@enterstellar-ai/normalizer';
+ * import { createCustomAdapter } from '@enterstellar/normalizer';
  *
  * const myAdapter = createCustomAdapter({
  *   normalize: (msg) => {
@@ -33,7 +33,7 @@
  * @see Design Choice N3 — explicit factory, no auto-detection
  */
 
-import type { ComponentIntent } from '@enterstellar-ai/types';
+import type { ComponentIntent } from '@enterstellar/types';
 import type { ProtocolNormalizer, CustomAdapterConfig } from '../types.js';
 import { CUSTOM_PROTOCOL } from '../constants.js';
 
@@ -72,31 +72,31 @@ import { CUSTOM_PROTOCOL } from '../constants.js';
  * @see Design Choice N2
  */
 export function createCustomAdapter(config: CustomAdapterConfig): ProtocolNormalizer {
-    const { normalize, canHandle } = config;
+  const { normalize, canHandle } = config;
 
-    return {
-        protocol: CUSTOM_PROTOCOL,
+  return {
+    protocol: CUSTOM_PROTOCOL,
 
-        canHandle: canHandle ?? ((_event: unknown): boolean => true),
+    canHandle: canHandle ?? ((_event: unknown): boolean => true),
 
-        normalize(event: unknown): ComponentIntent | null {
-            const result = normalize(event);
+    normalize(event: unknown): ComponentIntent | null {
+      const result = normalize(event);
 
-            // Null propagation — event has no UI implication
-            if (result === null) {
-                return null;
-            }
+      // Null propagation — event has no UI implication
+      if (result === null) {
+        return null;
+      }
 
-            // Inject _source metadata without mutating the consumer's object.
-            // If the consumer already provided _source, preserve their fields
-            // but ensure protocol is always 'custom'.
-            return {
-                ...result,
-                _source: {
-                    ...result._source,
-                    protocol: CUSTOM_PROTOCOL,
-                },
-            };
+      // Inject _source metadata without mutating the consumer's object.
+      // If the consumer already provided _source, preserve their fields
+      // but ensure protocol is always 'custom'.
+      return {
+        ...result,
+        _source: {
+          ...result._source,
+          protocol: CUSTOM_PROTOCOL,
         },
-    };
+      };
+    },
+  };
 }

@@ -14,10 +14,10 @@ The `EnterstellarAgentConnection` is the bridge between them. It carries intents
 
 ## `createAgentConnection()`
 
-The simplest way to connect is `createAgentConnection()` from `@enterstellar-ai/connection`:
+The simplest way to connect is `createAgentConnection()` from `@enterstellar/connection`:
 
 ```ts
-import { createAgentConnection } from '@enterstellar-ai/connection';
+import { createAgentConnection } from '@enterstellar/connection';
 
 export const connection = createAgentConnection({
   url: process.env.NEXT_PUBLIC_AGENT_URL!,
@@ -72,7 +72,7 @@ Your agent backend receives this signal and decides what to render next. This is
 If you need full control over the transport — custom auth headers, a proprietary binary protocol, an existing WebSocket you don't want to replace — implement `EnterstellarAgentConnection` directly:
 
 ```ts
-import type { EnterstellarAgentConnection } from '@enterstellar-ai/connection';
+import type { EnterstellarAgentConnection } from '@enterstellar/connection';
 
 export class MyCustomConnection implements EnterstellarAgentConnection {
   private listeners = new Map<string, Set<(data: unknown) => void>>();

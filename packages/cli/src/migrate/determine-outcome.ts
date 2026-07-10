@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/migrate/determine-outcome
+ * @module @enterstellar/cli/migrate/determine-outcome
  * @description Standalone outcome utilities for `ContractAssemblyResult`.
  *
  * Provides three public functions for deriving and applying
@@ -33,8 +33,8 @@
  * @see Implementation Plan §3 Component 2 — Outcome Determination
  */
 
-import type { MigrationOutcome, MigrationProvenance } from '@enterstellar-ai/migration';
-import type { ContractAssemblyResult } from '@enterstellar-ai/migration';
+import type { MigrationOutcome, MigrationProvenance } from '@enterstellar/migration';
+import type { ContractAssemblyResult } from '@enterstellar/migration';
 
 // ---------------------------------------------------------------------------
 // Outcome Determination
@@ -73,15 +73,15 @@ import type { ContractAssemblyResult } from '@enterstellar-ai/migration';
  * @see Correction 1 — 4-Level Outcome Model
  */
 export function determineOutcome(result: ContractAssemblyResult): MigrationOutcome {
-    if (result.reviewAnnotations.length > 0) {
-        return 'review';
-    }
+  if (result.reviewAnnotations.length > 0) {
+    return 'review';
+  }
 
-    if (result.warnAnnotations.length > 0) {
-        return 'warn';
-    }
+  if (result.warnAnnotations.length > 0) {
+    return 'warn';
+  }
 
-    return 'clean';
+  return 'clean';
 }
 
 // ---------------------------------------------------------------------------
@@ -126,16 +126,13 @@ const OUTCOME_PLACEHOLDER = '@outcome clean';
  *
  * @see Audit E1 — `@outcome clean` baked into content string
  */
-export function patchContractContent(
-    content: string,
-    outcome: MigrationOutcome,
-): string {
-    // Fast path: if the outcome is 'clean', the placeholder is already correct.
-    if (outcome === 'clean') {
-        return content;
-    }
+export function patchContractContent(content: string, outcome: MigrationOutcome): string {
+  // Fast path: if the outcome is 'clean', the placeholder is already correct.
+  if (outcome === 'clean') {
+    return content;
+  }
 
-    return content.replace(OUTCOME_PLACEHOLDER, `@outcome ${outcome}`);
+  return content.replace(OUTCOME_PLACEHOLDER, `@outcome ${outcome}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -167,11 +164,11 @@ export function patchContractContent(
  * @see types.ts L481 — `readonly outcome: MigrationOutcome`
  */
 export function reconstructProvenance(
-    provenance: MigrationProvenance,
-    outcome: MigrationOutcome,
+  provenance: MigrationProvenance,
+  outcome: MigrationOutcome,
 ): MigrationProvenance {
-    return {
-        ...provenance,
-        outcome,
-    };
+  return {
+    ...provenance,
+    outcome,
+  };
 }

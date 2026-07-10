@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/compile
+ * @module @enterstellar/compiler/compile
  * @description Core compilation orchestration logic.
  *
  * This module is the central assembly point of the compiler. It:
@@ -22,19 +22,19 @@
  */
 
 import type {
-    CompilationResult,
-    CompilationError,
-    ComponentContract,
-    ComponentIntent,
-} from '@enterstellar-ai/types';
+  CompilationResult,
+  CompilationError,
+  ComponentContract,
+  ComponentIntent,
+} from '@enterstellar/types';
 
-import type { EnterstellarRegistry } from '@enterstellar-ai/registry';
+import type { EnterstellarRegistry } from '@enterstellar/registry';
 
 import type {
-    CompilationContext,
-    CompilationStep,
-    CompilerConfig,
-    CompileOptions,
+  CompilationContext,
+  CompilationStep,
+  CompilerConfig,
+  CompileOptions,
 } from './types.js';
 import type { CompilationCache } from './cache.js';
 import type { NamedStep } from './pipeline/types.js';
@@ -47,10 +47,7 @@ import { createTraceStep } from './pipeline/trace-step.js';
 import { snapshotProps } from './diff.js';
 import { validateNestingDepth } from './nesting.js';
 import { executeSelfCorrection } from './self-correction.js';
-import {
-    unknownComponentError,
-    fallbackRenderedError,
-} from './errors.js';
+import { unknownComponentError, fallbackRenderedError } from './errors.js';
 import { attemptDeterministicCorrection } from './deterministic-correction.js';
 import type { CorrectionTraceEntry } from './types.js';
 import { COMPILER_VERSION } from './version.js';
@@ -71,23 +68,23 @@ import { COMPILER_VERSION } from './version.js';
  * @returns A complete `CompilationResult` with `status: 'fail'`.
  */
 function buildFailResult(
-    componentName: string,
-    errors: readonly CompilationError[],
-    agent: string,
+  componentName: string,
+  errors: readonly CompilationError[],
+  agent: string,
 ): CompilationResult {
-    return {
-        componentName,
-        props: Object.freeze({}),
-        status: 'fail',
-        provenance: {
-            agent,
-            registry: 'local',
-            compiledAt: new Date().toISOString(),
-            compilerVersion: COMPILER_VERSION,
-        },
-        errors: Object.freeze([...errors]),
-        selfCorrectionAttempts: 0,
-    };
+  return {
+    componentName,
+    props: Object.freeze({}),
+    status: 'fail',
+    provenance: {
+      agent,
+      registry: 'local',
+      compiledAt: new Date().toISOString(),
+      compilerVersion: COMPILER_VERSION,
+    },
+    errors: Object.freeze([...errors]),
+    selfCorrectionAttempts: 0,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -110,41 +107,39 @@ function buildFailResult(
  * @param startTime - `performance.now()` timestamp from compile() entry.
  */
 function emitTelemetry(
-    config: CompilerConfig,
-    result: CompilationResult,
-    options: CompileOptions,
-    intent: ComponentIntent,
-    startTime: number,
-    deterministicCorrectionCount?: number,
-    templateCorrectionCount?: number,
-    correctionTierValue?: 0 | 1 | 2 | 3,
+  config: CompilerConfig,
+  result: CompilationResult,
+  options: CompileOptions,
+  intent: ComponentIntent,
+  startTime: number,
+  deterministicCorrectionCount?: number,
+  templateCorrectionCount?: number,
+  correctionTierValue?: 0 | 1 | 2 | 3,
 ): void {
-    if (config.onTelemetry === undefined) {
-        return;
-    }
+  if (config.onTelemetry === undefined) {
+    return;
+  }
 
-    const latencyMs = Math.round(performance.now() - startTime);
-    config.onTelemetry({
-        rawIntent: options.rawIntent ?? intent.component,
-        componentName: result.componentName,
-        intentCategory: options.intentCategory ?? 'utility',
-        compilationStatus: result.status === 'corrected' ? 'corrected' : result.status,
-        forgeMode: 'none',
-        forgeUsed: false,
-        latencyMs,
-        selfCorrectionAttempts: result.selfCorrectionAttempts,
-        correctionTokensUsed: 0,
-        // SC-18: Correction tier breakdown (optional fields for backward compat)
-        ...(deterministicCorrectionCount !== undefined
-            ? { deterministicCorrections: deterministicCorrectionCount }
-            : {}),
-        ...(templateCorrectionCount !== undefined
-            ? { templateCorrections: templateCorrectionCount }
-            : {}),
-        ...(correctionTierValue !== undefined
-            ? { correctionTier: correctionTierValue }
-            : {}),
-    });
+  const latencyMs = Math.round(performance.now() - startTime);
+  config.onTelemetry({
+    rawIntent: options.rawIntent ?? intent.component,
+    componentName: result.componentName,
+    intentCategory: options.intentCategory ?? 'utility',
+    compilationStatus: result.status === 'corrected' ? 'corrected' : result.status,
+    forgeMode: 'none',
+    forgeUsed: false,
+    latencyMs,
+    selfCorrectionAttempts: result.selfCorrectionAttempts,
+    correctionTokensUsed: 0,
+    // SC-18: Correction tier breakdown (optional fields for backward compat)
+    ...(deterministicCorrectionCount !== undefined
+      ? { deterministicCorrections: deterministicCorrectionCount }
+      : {}),
+    ...(templateCorrectionCount !== undefined
+      ? { templateCorrections: templateCorrectionCount }
+      : {}),
+    ...(correctionTierValue !== undefined ? { correctionTier: correctionTierValue } : {}),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -162,29 +157,29 @@ function emitTelemetry(
  * @returns A fresh `CompilationContext` with zeroed accumulators.
  */
 function buildContext(
-    intent: ComponentIntent,
-    contract: ComponentContract,
-    registry: EnterstellarRegistry,
-    config: CompilerConfig,
-    agent: string,
+  intent: ComponentIntent,
+  contract: ComponentContract,
+  registry: EnterstellarRegistry,
+  config: CompilerConfig,
+  agent: string,
 ): CompilationContext {
-    return {
-        // Immutable
-        intent,
-        contract,
-        registry,
-        config,
-        designTokens: registry.getDesignTokens(),
-        agent,
+  return {
+    // Immutable
+    intent,
+    contract,
+    registry,
+    config,
+    designTokens: registry.getDesignTokens(),
+    agent,
 
-        // Mutable accumulators
-        props: { ...intent.props },
-        errors: [],
-        warnings: [],
-        strippedProps: [],
-        tokenCoercions: 0,
-        accessibilityInjections: [],
-    };
+    // Mutable accumulators
+    props: { ...intent.props },
+    errors: [],
+    warnings: [],
+    strippedProps: [],
+    tokenCoercions: 0,
+    accessibilityInjections: [],
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -198,10 +193,8 @@ function buildContext(
  * @param context - The completed context.
  * @returns The `CompilationResult`, or `undefined` if trace step didn't run.
  */
-function extractResult(
-    context: CompilationContext,
-): CompilationResult | undefined {
-    return (context as CompilationContext & { __result?: CompilationResult }).__result;
+function extractResult(context: CompilationContext): CompilationResult | undefined {
+  return (context as CompilationContext & { __result?: CompilationResult }).__result;
 }
 
 // ---------------------------------------------------------------------------
@@ -237,225 +230,195 @@ function extractResult(
  * @see Principle L3 — compiler never bypassed.
  */
 export async function compile(
-    intent: ComponentIntent,
-    config: CompilerConfig,
-    customSteps: readonly CompilationStep[],
-    cache: CompilationCache | undefined,
-    options: CompileOptions = {},
+  intent: ComponentIntent,
+  config: CompilerConfig,
+  customSteps: readonly CompilationStep[],
+  cache: CompilationCache | undefined,
+  options: CompileOptions = {},
 ): Promise<CompilationResult> {
-    const { registry } = config;
-    const agent = options.agent ?? 'unknown';
-    const startTime = performance.now();
+  const { registry } = config;
+  const agent = options.agent ?? 'unknown';
+  const startTime = performance.now();
 
-    // --- 1. Resolve component from registry ---
-    const contract = registry.get(intent.component);
+  // --- 1. Resolve component from registry ---
+  const contract = registry.get(intent.component);
 
-    if (contract === undefined) {
-        const result = buildFailResult(
-            intent.component,
-            [unknownComponentError(intent.component)],
-            agent,
-        );
-        emitTelemetry(config, result, options, intent, startTime);
-        return result;
+  if (contract === undefined) {
+    const result = buildFailResult(
+      intent.component,
+      [unknownComponentError(intent.component)],
+      agent,
+    );
+    emitTelemetry(config, result, options, intent, startTime);
+    return result;
+  }
+
+  // --- 2. Validate nesting depth (P4) ---
+  const nestingResult = validateNestingDepth(intent.props, config.maxNestingDepth);
+
+  if (!nestingResult.valid && nestingResult.error !== undefined) {
+    const result = buildFailResult(intent.component, [nestingResult.error], agent);
+    emitTelemetry(config, result, options, intent, startTime);
+    return result;
+  }
+
+  // --- 3. Check parse cache (C17) ---
+  if (cache !== undefined) {
+    const cached = cache.get(intent.component, intent.props);
+    if (cached !== undefined) {
+      // Cache hit — build a pass result from cached props
+      const result: CompilationResult = {
+        componentName: contract.name,
+        props: Object.freeze({ ...cached }),
+        status: 'pass',
+        provenance: {
+          agent,
+          registry: 'local',
+          compiledAt: new Date().toISOString(),
+          compilerVersion: COMPILER_VERSION,
+        },
+        errors: Object.freeze([]),
+        selfCorrectionAttempts: 0,
+      };
+      emitTelemetry(config, result, options, intent, startTime);
+      return result;
     }
+  }
 
-    // --- 2. Validate nesting depth (P4) ---
-    const nestingResult = validateNestingDepth(
-        intent.props,
-        config.maxNestingDepth,
+  // --- 4. Snapshot raw props for diff (C13) ---
+  const rawPropsSnapshot = snapshotProps(intent.props);
+
+  // --- 5. First compilation pass ---
+  let result = await runPipeline(intent, contract, config, customSteps, agent, rawPropsSnapshot, 0);
+
+  // --- 5a. Deterministic correction: Tier 1 + Tier 2 [SC-01] ---
+  // Runs BEFORE the LLM self-correction loop (Step 6).
+  // Enabled by default — disabled only via explicit `selfCorrection.deterministic: false`.
+  let deterministicTrace: readonly CorrectionTraceEntry[] = [];
+  let deterministicCount = 0;
+  let templateCount = 0;
+  let correctionTier: 0 | 1 | 2 | 3 = 0;
+
+  if (
+    result.status === 'fail' &&
+    config.selfCorrection?.deterministic !== false // default: true (SC-08)
+  ) {
+    const correction = attemptDeterministicCorrection(
+      result.errors,
+      intent.props,
+      contract,
+      config.registry.getDesignTokens(),
+      config.selfCorrection?.enumMatchThreshold,
     );
 
-    if (!nestingResult.valid && nestingResult.error !== undefined) {
-        const result = buildFailResult(
-            intent.component,
-            [nestingResult.error],
-            agent,
-        );
-        emitTelemetry(config, result, options, intent, startTime);
-        return result;
-    }
+    // Track correction counts for telemetry (SC-18)
+    deterministicCount = correction.trace.filter((t) => t.tier === 1).length;
+    templateCount = correction.trace.filter((t) => t.tier === 2).length;
+    deterministicTrace = correction.trace;
 
-    // --- 3. Check parse cache (C17) ---
-    if (cache !== undefined) {
-        const cached = cache.get(intent.component, intent.props);
-        if (cached !== undefined) {
-            // Cache hit — build a pass result from cached props
-            const result: CompilationResult = {
-                componentName: contract.name,
-                props: Object.freeze({ ...cached }),
-                status: 'pass',
-                provenance: {
-                    agent,
-                    registry: 'local',
-                    compiledAt: new Date().toISOString(),
-                    compilerVersion: COMPILER_VERSION,
-                },
-                errors: Object.freeze([]),
-                selfCorrectionAttempts: 0,
-            };
-            emitTelemetry(config, result, options, intent, startTime);
-            return result;
-        }
-    }
-
-    // --- 4. Snapshot raw props for diff (C13) ---
-    const rawPropsSnapshot = snapshotProps(intent.props);
-
-    // --- 5. First compilation pass ---
-    let result = await runPipeline(
-        intent,
+    // Only re-validate if at least one correction was applied (SC-16)
+    if (correction.trace.length > 0) {
+      // Re-validate through FULL pipeline (SC-10: mandatory re-validation)
+      const correctedIntent: ComponentIntent = {
+        ...intent,
+        props: correction.props,
+      };
+      result = await runPipeline(
+        correctedIntent,
         contract,
         config,
         customSteps,
         agent,
         rawPropsSnapshot,
         0,
-    );
+      );
 
-    // --- 5a. Deterministic correction: Tier 1 + Tier 2 [SC-01] ---
-    // Runs BEFORE the LLM self-correction loop (Step 6).
-    // Enabled by default — disabled only via explicit `selfCorrection.deterministic: false`.
-    let deterministicTrace: readonly CorrectionTraceEntry[] = [];
-    let deterministicCount = 0;
-    let templateCount = 0;
-    let correctionTier: 0 | 1 | 2 | 3 = 0;
+      // Attach correction trace if configured (SC-11)
+      if (config.selfCorrection?.trace === true && deterministicTrace.length > 0) {
+        result = {
+          ...result,
+          correctionTrace: deterministicTrace.map((entry) => ({
+            tier: entry.tier,
+            errorCode: entry.errorCode,
+            field: entry.field,
+            was: entry.was,
+            correctedTo: entry.correctedTo,
+            strategy: entry.strategy,
+          })),
+        };
+      }
 
-    if (
-        result.status === 'fail' &&
-        config.selfCorrection?.deterministic !== false  // default: true (SC-08)
-    ) {
-        const correction = attemptDeterministicCorrection(
-            result.errors,
-            intent.props,
-            contract,
-            config.registry.getDesignTokens(),
-            config.selfCorrection?.enumMatchThreshold,
-        );
-
-        // Track correction counts for telemetry (SC-18)
-        deterministicCount = correction.trace.filter((t) => t.tier === 1).length;
-        templateCount = correction.trace.filter((t) => t.tier === 2).length;
-        deterministicTrace = correction.trace;
-
-        // Only re-validate if at least one correction was applied (SC-16)
-        if (correction.trace.length > 0) {
-            // Re-validate through FULL pipeline (SC-10: mandatory re-validation)
-            const correctedIntent: ComponentIntent = {
-                ...intent,
-                props: correction.props,
-            };
-            result = await runPipeline(
-                correctedIntent,
-                contract,
-                config,
-                customSteps,
-                agent,
-                rawPropsSnapshot,
-                0,
-            );
-
-            // Attach correction trace if configured (SC-11)
-            if (config.selfCorrection?.trace === true && deterministicTrace.length > 0) {
-                result = {
-                    ...result,
-                    correctionTrace: deterministicTrace.map((entry) => ({
-                        tier: entry.tier,
-                        errorCode: entry.errorCode,
-                        field: entry.field,
-                        was: entry.was,
-                        correctedTo: entry.correctedTo,
-                        strategy: entry.strategy,
-                    })),
-                };
-            }
-
-            // Determine which tier earned the correction (SC-18)
-            if (result.status !== 'fail') {
-                correctionTier = templateCount > 0 ? 2 : 1;
-            }
-        }
+      // Determine which tier earned the correction (SC-18)
+      if (result.status !== 'fail') {
+        correctionTier = templateCount > 0 ? 2 : 1;
+      }
     }
+  }
 
-    // --- 6. Self-correction loop (C4–C7) ---
-    if (
-        result.status === 'fail' &&
-        config.onValidationFailure.strategy === 'self-correct'
-    ) {
-        const correction = await executeSelfCorrection(
-            result.errors,
-            intent,
-            contract.props,
-            config,
-        );
+  // --- 6. Self-correction loop (C4–C7) ---
+  if (result.status === 'fail' && config.onValidationFailure.strategy === 'self-correct') {
+    const correction = await executeSelfCorrection(result.errors, intent, contract.props, config);
 
-        if (correction.corrected && correction.correctedIntent !== undefined) {
-            // Re-run pipeline with corrected intent
-            const correctedIntent: ComponentIntent = {
-                ...intent,
-                component: correction.correctedIntent.component,
-                props: correction.correctedIntent.props,
-            };
+    if (correction.corrected && correction.correctedIntent !== undefined) {
+      // Re-run pipeline with corrected intent
+      const correctedIntent: ComponentIntent = {
+        ...intent,
+        component: correction.correctedIntent.component,
+        props: correction.correctedIntent.props,
+      };
 
-            result = await runPipeline(
-                correctedIntent,
-                contract,
-                config,
-                customSteps,
-                agent,
-                rawPropsSnapshot,
-                correction.attempts,
-            );
-        } else {
-            // Correction exhausted — handle fallback (C6)
-            result = await handleFallback(
-                intent,
-                config,
-                customSteps,
-                agent,
-                rawPropsSnapshot,
-                result.errors,
-                correction.attempts,
-            );
-        }
-    } else if (
-        result.status === 'fail' &&
-        config.onValidationFailure.strategy === 'fallback'
-    ) {
-        // Direct fallback — no self-correction attempt
-        result = await handleFallback(
-            intent,
-            config,
-            customSteps,
-            agent,
-            rawPropsSnapshot,
-            result.errors,
-            0,
-        );
-    }
-
-    // --- 7. Cache successful parse results (C17) ---
-    if (result.status === 'pass' && cache !== undefined) {
-        cache.set(
-            intent.component,
-            intent.props,
-            result.props,
-        );
-    }
-
-    // --- 8. Emit telemetry signal (TL1 + SC-18) ---
-    emitTelemetry(
+      result = await runPipeline(
+        correctedIntent,
+        contract,
         config,
-        result,
-        options,
+        customSteps,
+        agent,
+        rawPropsSnapshot,
+        correction.attempts,
+      );
+    } else {
+      // Correction exhausted — handle fallback (C6)
+      result = await handleFallback(
         intent,
-        startTime,
-        deterministicCount,
-        templateCount,
-        correctionTier,
+        config,
+        customSteps,
+        agent,
+        rawPropsSnapshot,
+        result.errors,
+        correction.attempts,
+      );
+    }
+  } else if (result.status === 'fail' && config.onValidationFailure.strategy === 'fallback') {
+    // Direct fallback — no self-correction attempt
+    result = await handleFallback(
+      intent,
+      config,
+      customSteps,
+      agent,
+      rawPropsSnapshot,
+      result.errors,
+      0,
     );
+  }
 
-    return result;
+  // --- 7. Cache successful parse results (C17) ---
+  if (result.status === 'pass' && cache !== undefined) {
+    cache.set(intent.component, intent.props, result.props);
+  }
+
+  // --- 8. Emit telemetry signal (TL1 + SC-18) ---
+  emitTelemetry(
+    config,
+    result,
+    options,
+    intent,
+    startTime,
+    deterministicCount,
+    templateCount,
+    correctionTier,
+  );
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -475,47 +438,48 @@ export async function compile(
  * @returns A `CompilationResult`.
  */
 async function runPipeline(
-    intent: ComponentIntent,
-    contract: ComponentContract,
-    config: CompilerConfig,
-    customSteps: readonly CompilationStep[],
-    agent: string,
-    rawPropsSnapshot: Readonly<Record<string, unknown>>,
-    selfCorrectionAttempts: number,
+  intent: ComponentIntent,
+  contract: ComponentContract,
+  config: CompilerConfig,
+  customSteps: readonly CompilationStep[],
+  agent: string,
+  rawPropsSnapshot: Readonly<Record<string, unknown>>,
+  selfCorrectionAttempts: number,
 ): Promise<CompilationResult> {
-    const context = buildContext(intent, contract, config.registry, config, agent);
+  const context = buildContext(intent, contract, config.registry, config, agent);
 
-    // Build the step chain
-    const builtInSteps: readonly NamedStep[] = [
-        { name: 'resolve', execute: resolveStep },
-        { name: 'parse', execute: parseStep },
-        { name: 'token', execute: tokenStep },
-        { name: 'accessibility', execute: accessibilityStep },
-    ];
+  // Build the step chain
+  const builtInSteps: readonly NamedStep[] = [
+    { name: 'resolve', execute: resolveStep },
+    { name: 'parse', execute: parseStep },
+    { name: 'token', execute: tokenStep },
+    { name: 'accessibility', execute: accessibilityStep },
+  ];
 
-    const namedCustomSteps: readonly NamedStep[] = customSteps.map(
-        (step) => ({ name: 'custom' as const, execute: step }),
-    );
+  const namedCustomSteps: readonly NamedStep[] = customSteps.map((step) => ({
+    name: 'custom' as const,
+    execute: step,
+  }));
 
-    const traceStep: NamedStep = {
-        name: 'trace',
-        execute: createTraceStep(rawPropsSnapshot, selfCorrectionAttempts),
-    };
+  const traceStep: NamedStep = {
+    name: 'trace',
+    execute: createTraceStep(rawPropsSnapshot, selfCorrectionAttempts),
+  };
 
-    const pipeline = buildPipeline(builtInSteps, namedCustomSteps, traceStep);
+  const pipeline = buildPipeline(builtInSteps, namedCustomSteps, traceStep);
 
-    // Execute
-    const finalContext = await executePipeline(pipeline, context);
+  // Execute
+  const finalContext = await executePipeline(pipeline, context);
 
-    // Extract the CompilationResult attached by the trace step
-    const result = extractResult(finalContext);
+  // Extract the CompilationResult attached by the trace step
+  const result = extractResult(finalContext);
 
-    if (result !== undefined) {
-        return result;
-    }
+  if (result !== undefined) {
+    return result;
+  }
 
-    // Fallback: trace step didn't run (pipeline was short-circuited)
-    return buildFailResult(intent.component, finalContext.errors, agent);
+  // Fallback: trace step didn't run (pipeline was short-circuited)
+  return buildFailResult(intent.component, finalContext.errors, agent);
 }
 
 // ---------------------------------------------------------------------------
@@ -533,79 +497,79 @@ async function runPipeline(
  * @see Design Choice C6 — fallback component, NOT best attempt.
  */
 async function handleFallback(
-    originalIntent: ComponentIntent,
-    config: CompilerConfig,
-    customSteps: readonly CompilationStep[],
-    agent: string,
-    rawPropsSnapshot: Readonly<Record<string, unknown>>,
-    originalErrors: readonly CompilationError[],
-    selfCorrectionAttempts: number,
+  originalIntent: ComponentIntent,
+  config: CompilerConfig,
+  customSteps: readonly CompilationStep[],
+  agent: string,
+  rawPropsSnapshot: Readonly<Record<string, unknown>>,
+  originalErrors: readonly CompilationError[],
+  selfCorrectionAttempts: number,
 ): Promise<CompilationResult> {
-    const { registry } = config;
-    const { fallbackComponent } = config.onValidationFailure;
+  const { registry } = config;
+  const { fallbackComponent } = config.onValidationFailure;
 
-    // Check if fallback component exists in registry
-    const fallbackContract = registry.get(fallbackComponent);
+  // Check if fallback component exists in registry
+  const fallbackContract = registry.get(fallbackComponent);
 
-    if (fallbackContract === undefined) {
-        // Fallback component not registered — hard fail
-        return buildFailResult(
-            originalIntent.component,
-            [
-                ...originalErrors,
-                fallbackRenderedError(originalIntent.component, fallbackComponent),
-                unknownComponentError(fallbackComponent),
-            ],
-            agent,
-        );
-    }
-
-    // Build a minimal intent for the fallback component
-    // The fallback receives error details as props (C6)
-    const fallbackIntent: ComponentIntent = {
-        component: fallbackComponent,
-        props: {
-            originalComponent: originalIntent.component,
-            errors: originalErrors.map((e) => ({
-                code: e.code,
-                message: e.message,
-                path: e.path,
-            })),
-            originalProps: originalIntent.props,
-        },
-        confidence: 1.0,
-        _source: originalIntent._source,
-    } as ComponentIntent;
-
-    // Compile the fallback through the full pipeline (L3: never bypassed)
-    const fallbackResult = await runPipeline(
-        fallbackIntent,
-        fallbackContract,
-        config,
-        customSteps,
-        agent,
-        rawPropsSnapshot,
-        selfCorrectionAttempts,
+  if (fallbackContract === undefined) {
+    // Fallback component not registered — hard fail
+    return buildFailResult(
+      originalIntent.component,
+      [
+        ...originalErrors,
+        fallbackRenderedError(originalIntent.component, fallbackComponent),
+        unknownComponentError(fallbackComponent),
+      ],
+      agent,
     );
+  }
 
-    // If fallback itself fails, return a hard fail with all errors
-    if (fallbackResult.status === 'fail') {
-        return {
-            ...fallbackResult,
-            errors: Object.freeze([
-                ...originalErrors,
-                fallbackRenderedError(originalIntent.component, fallbackComponent),
-                ...fallbackResult.errors,
-            ]),
-        };
-    }
+  // Build a minimal intent for the fallback component
+  // The fallback receives error details as props (C6)
+  const fallbackIntent: ComponentIntent = {
+    component: fallbackComponent,
+    props: {
+      originalComponent: originalIntent.component,
+      errors: originalErrors.map((e) => ({
+        code: e.code,
+        message: e.message,
+        path: e.path,
+      })),
+      originalProps: originalIntent.props,
+    },
+    confidence: 1.0,
+    _source: originalIntent._source,
+  } as ComponentIntent;
 
-    // Successful fallback — return with ENS-2006 informational error
+  // Compile the fallback through the full pipeline (L3: never bypassed)
+  const fallbackResult = await runPipeline(
+    fallbackIntent,
+    fallbackContract,
+    config,
+    customSteps,
+    agent,
+    rawPropsSnapshot,
+    selfCorrectionAttempts,
+  );
+
+  // If fallback itself fails, return a hard fail with all errors
+  if (fallbackResult.status === 'fail') {
     return {
-        ...fallbackResult,
-        errors: Object.freeze([
-            ...originalErrors,
-            fallbackRenderedError(originalIntent.component, fallbackComponent),
-        ]),
+      ...fallbackResult,
+      errors: Object.freeze([
+        ...originalErrors,
+        fallbackRenderedError(originalIntent.component, fallbackComponent),
+        ...fallbackResult.errors,
+      ]),
     };
+  }
+
+  // Successful fallback — return with ENS-2006 informational error
+  return {
+    ...fallbackResult,
+    errors: Object.freeze([
+      ...originalErrors,
+      fallbackRenderedError(originalIntent.component, fallbackComponent),
+    ]),
+  };
 }

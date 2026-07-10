@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/extract/heuristics
+ * @module @enterstellar/migration/extract/heuristics
  * @description Heuristic fallback functions for enrichable fields.
  *
  * When Phase 1 cannot extract a field value from the AST (no JSDoc,
@@ -24,7 +24,7 @@
  * @see Correction 2 — AST-Determined vs. Heuristic-Fallback decision rules
  */
 
-import type { ComponentCategory } from '@enterstellar-ai/types';
+import type { ComponentCategory } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Known Categories (R11 — ComponentCategory predefined values)
@@ -36,14 +36,14 @@ import type { ComponentCategory } from '@enterstellar-ai/types';
  *
  * Derived from `ComponentCategory` via `Exclude` — NOT a manual copy.
  * This ensures the compiler catches any drift between this array and
- * the source-of-truth type in `@enterstellar-ai/types`.
+ * the source-of-truth type in `@enterstellar/types`.
  *
  * @see Design Choice R11 — predefined component categories
  */
 type PredefinedCategory = Exclude<ComponentCategory, `custom:${string}`>;
 
 /**
- * The 8 predefined `ComponentCategory` values from `@enterstellar-ai/types`.
+ * The 8 predefined `ComponentCategory` values from `@enterstellar/types`.
  *
  * Used by `inferCategory()` to match directory path segments against
  * known category names. The `custom:${string}` extensible variant is
@@ -57,21 +57,21 @@ type PredefinedCategory = Exclude<ComponentCategory, `custom:${string}`>;
  *    is present in the array. Catches additions to `ComponentCategory`
  *    that aren't reflected here.
  *
- * If `ComponentCategory` in `@enterstellar-ai/types` is updated, `tsc` will error
+ * If `ComponentCategory` in `@enterstellar/types` is updated, `tsc` will error
  * here until this array is brought into sync.
  *
  * @see Design Choice R11 — predefined component categories
- * @see `@enterstellar-ai/compiler/pipeline/accessibility-step.ts` — CATEGORY_ROLE_DEFAULTS
+ * @see `@enterstellar/compiler/pipeline/accessibility-step.ts` — CATEGORY_ROLE_DEFAULTS
  */
 const KNOWN_CATEGORIES = [
-    'clinical',
-    'admin',
-    'navigation',
-    'data-display',
-    'form',
-    'feedback',
-    'layout',
-    'utility',
+  'clinical',
+  'admin',
+  'navigation',
+  'data-display',
+  'form',
+  'feedback',
+  'layout',
+  'utility',
 ] as const satisfies readonly PredefinedCategory[];
 
 /**
@@ -93,9 +93,9 @@ const KNOWN_CATEGORIES = [
  * The `void` call satisfies `noUnusedLocals`.
  */
 function assertCategoriesExhaustive(
-    _missing: Exclude<PredefinedCategory, (typeof KNOWN_CATEGORIES)[number]>,
+  _missing: Exclude<PredefinedCategory, (typeof KNOWN_CATEGORIES)[number]>,
 ): void {
-    // Intentionally empty — compile-time only.
+  // Intentionally empty — compile-time only.
 }
 void assertCategoriesExhaustive;
 
@@ -144,27 +144,27 @@ void assertCategoriesExhaustive;
  * @see Correction 2 — category decision rule
  */
 export function inferCategory(filePath: string): string {
-    // Normalize Windows backslashes → forward slashes for consistent splitting.
-    const normalized = filePath.replace(/\\/g, '/');
+  // Normalize Windows backslashes → forward slashes for consistent splitting.
+  const normalized = filePath.replace(/\\/g, '/');
 
-    // Split into path segments and discard the filename (last segment).
-    const segments = normalized.split('/');
-    segments.pop(); // Remove filename — only directories are relevant.
+  // Split into path segments and discard the filename (last segment).
+  const segments = normalized.split('/');
+  segments.pop(); // Remove filename — only directories are relevant.
 
-    // Check each directory segment against known categories.
-    // Leftmost match wins (parent directory is stronger signal).
-    for (const segment of segments) {
-        const lower = segment.toLowerCase();
+  // Check each directory segment against known categories.
+  // Leftmost match wins (parent directory is stronger signal).
+  for (const segment of segments) {
+    const lower = segment.toLowerCase();
 
-        for (const category of KNOWN_CATEGORIES) {
-            if (lower === category) {
-                return category;
-            }
-        }
+    for (const category of KNOWN_CATEGORIES) {
+      if (lower === category) {
+        return category;
+      }
     }
+  }
 
-    // No known category found in path — default to 'utility'.
-    return 'utility';
+  // No known category found in path — default to 'utility'.
+  return 'utility';
 }
 
 // ---------------------------------------------------------------------------
@@ -196,7 +196,7 @@ export function inferCategory(filePath: string): string {
  * ```
  */
 export function generateHeuristicIntent(componentName: string): string {
-    return `Render ${componentName}`;
+  return `Render ${componentName}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -227,18 +227,15 @@ export function generateHeuristicIntent(componentName: string): string {
  * // → 'TODO: Add description (note: component is deprecated — Use NewWidget instead)'
  * ```
  */
-export function generateHeuristicDescription(
-    componentName: string,
-    deprecated?: string,
-): string {
-    // The componentName is available for future heuristic refinement
-    // (e.g., PascalCase splitting → "Patient Card" → sentence generation).
-    // v1 uses a static placeholder per the Correction 2 spec.
-    void componentName;
+export function generateHeuristicDescription(componentName: string, deprecated?: string): string {
+  // The componentName is available for future heuristic refinement
+  // (e.g., PascalCase splitting → "Patient Card" → sentence generation).
+  // v1 uses a static placeholder per the Correction 2 spec.
+  void componentName;
 
-    if (deprecated !== undefined) {
-        return `TODO: Add description (note: component is @deprecated — ${deprecated})`;
-    }
+  if (deprecated !== undefined) {
+    return `TODO: Add description (note: component is @deprecated — ${deprecated})`;
+  }
 
-    return 'TODO: Add description';
+  return 'TODO: Add description';
 }

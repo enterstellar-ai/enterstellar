@@ -1,4 +1,4 @@
-# @enterstellar-ai/normalizer
+# @enterstellar/normalizer
 
 > Protocol-agnostic intake — normalizes AG-UI, custom, and future protocols into unified `ComponentIntent` objects.
 
@@ -7,11 +7,7 @@ The normalizer sits at the entry point of the Enterstellar rendering pipeline, c
 ## Quick Start
 
 ```ts
-import {
-  createNormalizer,
-  createAGUIAdapter,
-  createCustomAdapter,
-} from '@enterstellar-ai/normalizer';
+import { createNormalizer, createAGUIAdapter, createCustomAdapter } from '@enterstellar/normalizer';
 
 // 1. Create protocol adapters
 const agui = createAGUIAdapter();
@@ -155,7 +151,7 @@ const intent = normalize({
 | `tsconfig.json`  | Extends `tsconfig.base.json` — 15 strict flags.                           |
 | `tsup.config.ts` | Builds ESM + CJS + DTS. `composite: false`, `incremental: false` for DTS. |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `zod ^4.3.6`
+**Peer dependencies:** `@enterstellar/types`, `zod ^4.3.6`
 
 ## See Also
 

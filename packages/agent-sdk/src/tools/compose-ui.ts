@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/compose-ui
+ * @module @enterstellar/agent-sdk/tools/compose-ui
  * @description Implements the `enterstellar_compose_ui` MCP tool.
  *
  * Constructs a validated `UISpec` from an array of `ZoneSpec` assignments.
@@ -51,63 +51,63 @@ import { composeFailedError } from '../errors.js';
  * ```
  */
 export function executeComposeUI(
-    registry: AgentSDKRegistry,
-    zones: readonly ZoneSpec[],
-    _layout?: string,
+  registry: AgentSDKRegistry,
+  zones: readonly ZoneSpec[],
+  _layout?: string,
 ): UISpec {
-    // Empty zones → valid empty spec (clears all zones)
-    if (zones.length === 0) {
-        return { zones: [] };
+  // Empty zones → valid empty spec (clears all zones)
+  if (zones.length === 0) {
+    return { zones: [] };
+  }
+
+  // -----------------------------------------------------------------------
+  // Validation Pass 1: Unique zone names
+  // -----------------------------------------------------------------------
+
+  const seenNames = new Set<string>();
+
+  for (const zone of zones) {
+    if (seenNames.has(zone.name)) {
+      throw composeFailedError(
+        `Duplicate zone name '${zone.name}'. Each zone must have a unique name.`,
+      );
+    }
+    seenNames.add(zone.name);
+  }
+
+  // -----------------------------------------------------------------------
+  // Validation Pass 2: Component existence + determinism range
+  // -----------------------------------------------------------------------
+
+  for (const zone of zones) {
+    // Validate component exists in registry
+    const contract = registry.get(zone.component);
+    if (contract === undefined) {
+      throw composeFailedError(
+        `Zone '${zone.name}' references unknown component '${zone.component}'. ` +
+          `Use enterstellar_search_components to discover available components.`,
+      );
     }
 
-    // -----------------------------------------------------------------------
-    // Validation Pass 1: Unique zone names
-    // -----------------------------------------------------------------------
-
-    const seenNames = new Set<string>();
-
-    for (const zone of zones) {
-        if (seenNames.has(zone.name)) {
-            throw composeFailedError(
-                `Duplicate zone name '${zone.name}'. Each zone must have a unique name.`,
-            );
-        }
-        seenNames.add(zone.name);
+    // Validate determinism range (T13: raw number, Zod-validated)
+    if (zone.determinism < 0 || zone.determinism > 1) {
+      throw composeFailedError(
+        `Zone '${zone.name}' has invalid determinism ${String(zone.determinism)}. ` +
+          `Must be between 0.0 (locked) and 1.0 (generative).`,
+      );
     }
+  }
 
-    // -----------------------------------------------------------------------
-    // Validation Pass 2: Component existence + determinism range
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Assemble validated UISpec
+  // -----------------------------------------------------------------------
 
-    for (const zone of zones) {
-        // Validate component exists in registry
-        const contract = registry.get(zone.component);
-        if (contract === undefined) {
-            throw composeFailedError(
-                `Zone '${zone.name}' references unknown component '${zone.component}'. ` +
-                `Use enterstellar_search_components to discover available components.`,
-            );
-        }
-
-        // Validate determinism range (T13: raw number, Zod-validated)
-        if (zone.determinism < 0 || zone.determinism > 1) {
-            throw composeFailedError(
-                `Zone '${zone.name}' has invalid determinism ${String(zone.determinism)}. ` +
-                `Must be between 0.0 (locked) and 1.0 (generative).`,
-            );
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Assemble validated UISpec
-    // -----------------------------------------------------------------------
-
-    return {
-        zones: zones.map((zone) => ({
-            name: zone.name,
-            component: zone.component,
-            props: zone.props,
-            determinism: zone.determinism,
-        })),
-    };
+  return {
+    zones: zones.map((zone) => ({
+      name: zone.name,
+      component: zone.component,
+      props: zone.props,
+      determinism: zone.determinism,
+    })),
+  };
 }

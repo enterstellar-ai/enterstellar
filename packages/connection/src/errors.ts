@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/connection/errors
+ * @module @enterstellar/connection/errors
  * @description Connection-specific error helper factories.
  *
- * All errors in `@enterstellar-ai/connection` are instances of `EnterstellarError` from
- * `@enterstellar-ai/types`, with `module: 'connection'` pre-filled. These helpers
+ * All errors in `@enterstellar/connection` are instances of `EnterstellarError` from
+ * `@enterstellar/types`, with `module: 'connection'` pre-filled. These helpers
  * eliminate boilerplate and enforce consistent error shape across the module.
  *
  * Error code range for connection: `ENS-3xxx` (lifecycle / zone / connection).
@@ -22,8 +22,8 @@
  * @see Design Choice P5 — ENS-3010 backpressure warning
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
-import type { EnterstellarErrorCode } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
+import type { EnterstellarErrorCode } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Helper Factories
@@ -39,11 +39,8 @@ import type { EnterstellarErrorCode } from '@enterstellar-ai/types';
  * @param cause - Optional underlying error that caused the failure.
  * @returns An `EnterstellarError` with code `ENS-3003`, recoverable.
  */
-export function connectionFailedError(
-    message: string,
-    cause?: unknown,
-): EnterstellarError {
-    return new EnterstellarError('ENS-3003', 'connection', message, true, cause);
+export function connectionFailedError(message: string, cause?: unknown): EnterstellarError {
+  return new EnterstellarError('ENS-3003', 'connection', message, true, cause);
 }
 
 /**
@@ -56,12 +53,12 @@ export function connectionFailedError(
  * @returns An `EnterstellarError` with code `ENS-3004`, non-recoverable.
  */
 export function sendDisconnectedError(transport: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3004',
-        'connection',
-        `Cannot send: ${transport} transport is not connected.`,
-        false,
-    );
+  return new EnterstellarError(
+    'ENS-3004',
+    'connection',
+    `Cannot send: ${transport} transport is not connected.`,
+    false,
+  );
 }
 
 /**
@@ -74,17 +71,14 @@ export function sendDisconnectedError(transport: string): EnterstellarError {
  * @param cause - The underlying JSON parse error.
  * @returns An `EnterstellarError` with code `ENS-3005`, recoverable.
  */
-export function messageParseError(
-    transport: string,
-    cause: unknown,
-): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3005',
-        'connection',
-        `Failed to parse inbound ${transport} message as JSON.`,
-        true,
-        cause,
-    );
+export function messageParseError(transport: string, cause: unknown): EnterstellarError {
+  return new EnterstellarError(
+    'ENS-3005',
+    'connection',
+    `Failed to parse inbound ${transport} message as JSON.`,
+    true,
+    cause,
+  );
 }
 
 /**
@@ -100,13 +94,13 @@ export function messageParseError(
  * @see Design Choice P5
  */
 export function backpressureDropWarning(componentName: string): EnterstellarError {
-    return new EnterstellarError(
-        'ENS-3010',
-        'connection',
-        `Intent for component "${componentName}" was dropped due to backpressure. ` +
-        'Consider increasing backpressure.maxBuffer or processing intents faster.',
-        true,
-    );
+  return new EnterstellarError(
+    'ENS-3010',
+    'connection',
+    `Intent for component "${componentName}" was dropped due to backpressure. ` +
+      'Consider increasing backpressure.maxBuffer or processing intents faster.',
+    true,
+  );
 }
 
 /**
@@ -121,11 +115,8 @@ export function backpressureDropWarning(componentName: string): EnterstellarErro
  *
  * @see Coding Rules — Developer errors → fatal throw
  */
-export function configValidationError(
-    message: string,
-    cause?: unknown,
-): EnterstellarError {
-    return new EnterstellarError('ENS-3001', 'connection', message, false, cause);
+export function configValidationError(message: string, cause?: unknown): EnterstellarError {
+  return new EnterstellarError('ENS-3001', 'connection', message, false, cause);
 }
 
 // ---------------------------------------------------------------------------
@@ -133,13 +124,13 @@ export function configValidationError(
 // ---------------------------------------------------------------------------
 
 /**
- * All error codes used by the `@enterstellar-ai/connection` module.
+ * All error codes used by the `@enterstellar/connection` module.
  * Useful for programmatic error handling and filtering.
  */
 export const CONNECTION_ERROR_CODES: readonly EnterstellarErrorCode[] = [
-    'ENS-3001', // Invalid zone/connection config (developer error)
-    'ENS-3003', // Connection failed (timeout, create error)
-    'ENS-3004', // Send on disconnected transport
-    'ENS-3005', // Inbound message parse failure
-    'ENS-3010', // Intent dropped due to backpressure
+  'ENS-3001', // Invalid zone/connection config (developer error)
+  'ENS-3003', // Connection failed (timeout, create error)
+  'ENS-3004', // Send on disconnected transport
+  'ENS-3005', // Inbound message parse failure
+  'ENS-3010', // Intent dropped due to backpressure
 ] as const;

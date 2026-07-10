@@ -1,10 +1,10 @@
-# @enterstellar-ai/react
+# @enterstellar/react
 
 > React integration for Enterstellar OS — Provider, Zone, lifecycle management, cache integration, adapters, hooks, and renderer registry.
 
 ## Purpose
 
-`@enterstellar-ai/react` is the adoption surface for Enterstellar in React applications. It provides `<Provider>` as the root context, `<Zone>` as the determinism-controlled container for AI-rendered content, six hooks for accessing Enterstellar services, lifecycle state management via `LifecycleManager`, cache integration via `RenderCache`, adapter wiring for error handling, and a module-level `RendererRegistry` that maps component names to React implementations.
+`@enterstellar/react` is the adoption surface for Enterstellar in React applications. It provides `<Provider>` as the root context, `<Zone>` as the determinism-controlled container for AI-rendered content, six hooks for accessing Enterstellar services, lifecycle state management via `LifecycleManager`, cache integration via `RenderCache`, adapter wiring for error handling, and a module-level `RendererRegistry` that maps component names to React implementations.
 
 **Key properties:**
 
@@ -18,24 +18,24 @@
 - **RE11:** `useEnterstellarStore` uses `useSyncExternalStore` with shallow equality for tear-free reads.
 - **RE12:** Spatial context via `ResizeObserver` + `IntersectionObserver` — no `mousemove` tracking.
 - **RE13:** String-based renderer lookup in a module-level singleton (not React context).
-- **RE14:** Streaming prop assembly via `StreamingAssembler` from `@enterstellar-ai/lifecycle`; zone-level state via `useSyncExternalStore`.
+- **RE14:** Streaming prop assembly via `StreamingAssembler` from `@enterstellar/lifecycle`; zone-level state via `useSyncExternalStore`.
 - **RE16:** Per-zone error boundary — one zone crashing never takes down other zones.
 - **RE17:** Configurable retry policy with exponential backoff (default: 3 retries).
 - **RE18:** `onError={(error, trace) => ...}` callback on `<Zone>` for error handling.
 - **P13:** Passive spatial context by default; active capture via `captureContext()` on demand.
 - **P14:** Latest-intent-wins — new intent cancels all in-flight compilations for the zone.
 - **L15:** `RendererRegistry` is React-specific; `EnterstellarRegistry` (pure data contracts) has zero framework imports.
-- **RE19:** All Enterstellar engine packages are regular `dependencies` of `@enterstellar-ai/react` — consumers install `@enterstellar-ai/react` and get the full engine transitively.
+- **RE19:** All Enterstellar engine packages are regular `dependencies` of `@enterstellar/react` — consumers install `@enterstellar/react` and get the full engine transitively.
 
 ---
 
 ## Installation
 
 ```bash
-npm install @enterstellar-ai/react @enterstellar-ai/registry zod
+npm install @enterstellar/react @enterstellar/registry zod
 ```
 
-> Engine packages (`@enterstellar-ai/compiler`, `@enterstellar-ai/state`, `@enterstellar-ai/telemetry`, `@enterstellar-ai/connection`, `@enterstellar-ai/lifecycle`, `@enterstellar-ai/adapters`, `@enterstellar-ai/types`) are regular dependencies of `@enterstellar-ai/react` — they are installed automatically. Only `react`, `react-dom`, and `zod` are peer dependencies that the consumer must install.
+> Engine packages (`@enterstellar/compiler`, `@enterstellar/state`, `@enterstellar/telemetry`, `@enterstellar/connection`, `@enterstellar/lifecycle`, `@enterstellar/adapters`, `@enterstellar/types`) are regular dependencies of `@enterstellar/react` — they are installed automatically. Only `react`, `react-dom`, and `zod` are peer dependencies that the consumer must install.
 
 ---
 
@@ -52,8 +52,8 @@ import {
   useEnterstellarTrace,
   useEnterstellarAdapters,
   useSpatialContext,
-} from '@enterstellar-ai/react';
-import { createRegistry } from '@enterstellar-ai/registry';
+} from '@enterstellar/react';
+import { createRegistry } from '@enterstellar/registry';
 import { z } from 'zod';
 
 // 1. Define a component (contract + renderer in one call)
@@ -99,7 +99,7 @@ function App() {
 ### Advanced: Custom Cache
 
 ```tsx
-import { createRenderCache } from '@enterstellar-ai/cache';
+import { createRenderCache } from '@enterstellar/cache';
 
 const cache = createRenderCache({ maxEntries: 100 });
 
@@ -211,7 +211,7 @@ Default empty state component (LC8). "No content available" message with decorat
 
 ### Lifecycle & Streaming
 
-Streaming prop assembly is handled internally by `StreamingAssembler` from `@enterstellar-ai/lifecycle`. Lifecycle state transitions are managed by `LifecycleManager`. These are zone-internal — consumers interact via `Zone` props and callbacks.
+Streaming prop assembly is handled internally by `StreamingAssembler` from `@enterstellar/lifecycle`. Lifecycle state transitions are managed by `LifecycleManager`. These are zone-internal — consumers interact via `Zone` props and callbacks.
 
 | Export                   | Description                                                           |
 | :----------------------- | :-------------------------------------------------------------------- |

@@ -1,19 +1,19 @@
 ---
-title: "@enterstellar-ai/types"
+title: "@enterstellar/types"
 description: Shared type definitions, Zod schemas, and type guards for the entire Enterstellar ecosystem. The single source of truth — every other package has this as a peer dependency.
 icon: Type
 ---
 
 ## Purpose
 
-`@enterstellar-ai/types` is the foundational type layer. It defines every domain type as a TypeScript interface, a Zod schema, and (where applicable) a type guard. No logic. No side effects. Just types.
+`@enterstellar/types` is the foundational type layer. It defines every domain type as a TypeScript interface, a Zod schema, and (where applicable) a type guard. No logic. No side effects. Just types.
 
-Every other package lists `@enterstellar-ai/types` as a `peerDependency` — never bundled, never duplicated.
+Every other package lists `@enterstellar/types` as a `peerDependency` — never bundled, never duplicated.
 
 ## Installation
 
 ```bash
-npm install @enterstellar-ai/types zod
+npm install @enterstellar/types zod
 ```
 
 ## Core Types
@@ -153,7 +153,7 @@ interface EnterstellarAgentConnection {
 
 ### `EnterstellarStore`
 
-Interface for the state store. Detailed in the State Management architecture. Full implementation: `@enterstellar-ai/state`.
+Interface for the state store. Detailed in the State Management architecture. Full implementation: `@enterstellar/state`.
 
 ```typescript
 interface EnterstellarStore {
@@ -281,7 +281,7 @@ The universal error class for all Enterstellar packages.
 ```typescript
 class EnterstellarError extends Error {
   readonly code: string;       // e.g. 'ENS-2001'
-  readonly module: string;     // e.g. '@enterstellar-ai/compiler'
+  readonly module: string;     // e.g. '@enterstellar/compiler'
   readonly recoverable: boolean;
 }
 ```

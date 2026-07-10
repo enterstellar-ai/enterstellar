@@ -1,19 +1,19 @@
 ---
-title: "@enterstellar-ai/react"
+title: "@enterstellar/react"
 description: React integration for Enterstellar OS — Provider, Zone, lifecycle management, hooks, and renderer registry.
 icon: Atom
 ---
 
 ## Purpose
 
-`@enterstellar-ai/react` is the React render target for the Enterstellar engine. It provides the `<Provider>` context root, the `<Zone>` component that renders AI-generated content, six hooks for accessing engine services, and the renderer registry that maps contract names to React component implementations.
+`@enterstellar/react` is the React render target for the Enterstellar engine. It provides the `<Provider>` context root, the `<Zone>` component that renders AI-generated content, six hooks for accessing engine services, and the renderer registry that maps contract names to React component implementations.
 
 This is the only Enterstellar package that imports React. All engine packages (`compiler`, `registry`, `state`, etc.) are framework-agnostic (L15).
 
 ## Installation
 
 ```bash
-npm install @enterstellar-ai/react @enterstellar-ai/registry zod react react-dom
+npm install @enterstellar/react @enterstellar/registry zod react react-dom
 ```
 
 ## Components
@@ -39,7 +39,7 @@ The root context provider. Wrap your app (or a section of it) with `<Provider>` 
 **Example:**
 
 ```tsx
-import { Provider } from '@enterstellar-ai/react';
+import { Provider } from '@enterstellar/react';
 import { registry } from './enterstellar/registry';
 import { connection } from './enterstellar/connection';
 
@@ -84,7 +84,7 @@ Renders AI-generated content within a determinism-controlled, error-isolated con
 **Example:**
 
 ```tsx
-import { Zone } from '@enterstellar-ai/react';
+import { Zone } from '@enterstellar/react';
 
 <Zone
   name="patient-overview"
@@ -128,7 +128,7 @@ Renders a trust indicator badge inside a zone wrapper when `showProvenance={true
 Returns the full Enterstellar context value. Use this to access the registry, compiler, store, cache, and adapters directly.
 
 ```tsx
-import { useEnterstellar } from '@enterstellar-ai/react';
+import { useEnterstellar } from '@enterstellar/react';
 
 function MyComponent() {
   const { registry, compiler, store, cache, adapters } = useEnterstellar();
@@ -203,14 +203,14 @@ const spatial = useSpatialContext();
 
 ---
 
-## Factories (Re-exports from `@enterstellar-ai/registry`)
+## Factories (Re-exports from `@enterstellar/registry`)
 
-`@enterstellar-ai/react` also re-exports `defineComponent()` for convenience — this is the same function exported by `@enterstellar-ai/registry`.
+`@enterstellar/react` also re-exports `defineComponent()` for convenience — this is the same function exported by `@enterstellar/registry`.
 
 ```tsx
-import { defineComponent } from '@enterstellar-ai/react';
+import { defineComponent } from '@enterstellar/react';
 // equivalent to:
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 ```
 
 ---

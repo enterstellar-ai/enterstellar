@@ -1,9 +1,9 @@
 /**
- * @module @enterstellar-ai/state
+ * @module @enterstellar/state
  * @description Framework-agnostic persistent state management for Enterstellar OS.
  *
- * The `@enterstellar-ai/state` package provides the `createEnterstellarStore()` factory
- * that implements the `EnterstellarStore` interface from `@enterstellar-ai/types`.
+ * The `@enterstellar/state` package provides the `createEnterstellarStore()` factory
+ * that implements the `EnterstellarStore` interface from `@enterstellar/types`.
  *
  * Features:
  * - Pluggable persistence (memory, localStorage, IndexedDB, custom).
@@ -16,7 +16,7 @@
  *
  * @example
  * ```ts
- * import { createEnterstellarStore } from '@enterstellar-ai/state';
+ * import { createEnterstellarStore } from '@enterstellar/state';
  *
  * const store = await createEnterstellarStore({
  *   persistence: 'indexed-db',
@@ -56,15 +56,15 @@ export { createEmptyState } from './snapshot.js';
 export type { EnterstellarStoreConfig, PersistenceAdapter, EncryptionConfig } from './types.js';
 
 // ---------------------------------------------------------------------------
-// Re-exports from @enterstellar-ai/types (convenience)
+// Re-exports from @enterstellar/types (convenience)
 // ---------------------------------------------------------------------------
 
 export type {
-    EnterstellarStore,
-    SerializedState,
-    ZoneState,
-    SessionState,
-    MigrationConfig,
-    PersistenceStrategy,
-    SyncConfig,
-} from '@enterstellar-ai/types';
+  EnterstellarStore,
+  SerializedState,
+  ZoneState,
+  SessionState,
+  MigrationConfig,
+  PersistenceStrategy,
+  SyncConfig,
+} from '@enterstellar/types';

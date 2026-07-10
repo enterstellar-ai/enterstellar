@@ -1,17 +1,17 @@
 ---
-title: "@enterstellar-ai/devtools"
+title: "@enterstellar/devtools"
 description: React DevTools for Enterstellar — trace timeline, component inspector, validation log, and JSON export. Zero bytes in production.
 icon: Bug
 ---
 
 ## Purpose
 
-`@enterstellar-ai/devtools` provides the `<EnterstellarDevTools />` component — an embedded panel for debugging, inspecting, and profiling Enterstellar-powered applications. It is the "React DevTools for GenUI."
+`@enterstellar/devtools` provides the `<EnterstellarDevTools />` component — an embedded panel for debugging, inspecting, and profiling Enterstellar-powered applications. It is the "React DevTools for GenUI."
 
 **Zero production overhead.** `<EnterstellarDevTools />` is tree-shaken in production builds (`NODE_ENV=production`). Add it unconditionally — it ships no bytes to users.
 
 ```bash
-npm install --save-dev @enterstellar-ai/devtools
+npm install --save-dev @enterstellar/devtools
 ```
 
 ---
@@ -19,8 +19,8 @@ npm install --save-dev @enterstellar-ai/devtools
 ## Quick Start
 
 ```tsx
-import { EnterstellarDevTools } from '@enterstellar-ai/devtools';
-import { Provider } from '@enterstellar-ai/react';
+import { EnterstellarDevTools } from '@enterstellar/devtools';
+import { Provider } from '@enterstellar/react';
 
 export default function App() {
   return (
@@ -128,10 +128,10 @@ type DevToolsTab =
 
 ## Cache Dashboard Integration
 
-To enable the Cache Dashboard, pass a `DevToolsCacheAdapter` to `<EnterstellarDevTools />`. The `RenderCache` from `@enterstellar-ai/cache` satisfies this interface:
+To enable the Cache Dashboard, pass a `DevToolsCacheAdapter` to `<EnterstellarDevTools />`. The `RenderCache` from `@enterstellar/cache` satisfies this interface:
 
 ```tsx
-import { createRenderCache } from '@enterstellar-ai/cache';
+import { createRenderCache } from '@enterstellar/cache';
 
 const cache = createRenderCache({ maxEntries: 1000 });
 
@@ -159,7 +159,7 @@ type DevToolsCacheAdapter = {
 ## JSON Export
 
 ```ts
-import { exportTraces } from '@enterstellar-ai/devtools';
+import { exportTraces } from '@enterstellar/devtools';
 
 const bundle = exportTraces(traces, zoneConfigs);
 // {

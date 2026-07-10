@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/state/snapshot
- * @description Snapshot creation and restore logic for `@enterstellar-ai/state`.
+ * @module @enterstellar/state/snapshot
+ * @description Snapshot creation and restore logic for `@enterstellar/state`.
  *
  * Handles serialization, size limits, version comparison, migration chaining,
  * and Zod validation. The restore path is the most complex piece of state
@@ -18,8 +18,8 @@
  * @see Design Choice S10 — full overwrite on restore.
  */
 
-import type { SerializedState, SessionState, MigrationConfig } from '@enterstellar-ai/types';
-import { SerializedStateSchema } from '@enterstellar-ai/types';
+import type { SerializedState, SessionState, MigrationConfig } from '@enterstellar/types';
+import { SerializedStateSchema } from '@enterstellar/types';
 import { STATE_SCHEMA_VERSION } from './version.js';
 import { snapshotSizeLimitError, majorVersionMismatchError } from './errors.js';
 import type { MigrationRegistry } from './types.js';
@@ -46,9 +46,9 @@ const MAX_SNAPSHOT_BYTES = 1024 * 1024; // 1 MB
  * @internal
  */
 type SemverParts = {
-    readonly major: number;
-    readonly minor: number;
-    readonly patch: number;
+  readonly major: number;
+  readonly minor: number;
+  readonly patch: number;
 };
 
 /**
@@ -60,12 +60,12 @@ type SemverParts = {
  * @internal
  */
 function parseSemver(version: string): SemverParts {
-    const parts = version.split('.');
-    return {
-        major: Number(parts[0] ?? 0),
-        minor: Number(parts[1] ?? 0),
-        patch: Number(parts[2] ?? 0),
-    };
+  const parts = version.split('.');
+  return {
+    major: Number(parts[0] ?? 0),
+    minor: Number(parts[1] ?? 0),
+    patch: Number(parts[2] ?? 0),
+  };
 }
 
 /**
@@ -77,12 +77,12 @@ function parseSemver(version: string): SemverParts {
  * @internal
  */
 function compareSemver(a: string, b: string): number {
-    const pa = parseSemver(a);
-    const pb = parseSemver(b);
+  const pa = parseSemver(a);
+  const pb = parseSemver(b);
 
-    if (pa.major !== pb.major) return pa.major - pb.major;
-    if (pa.minor !== pb.minor) return pa.minor - pb.minor;
-    return pa.patch - pb.patch;
+  if (pa.major !== pb.major) return pa.major - pb.major;
+  if (pa.minor !== pb.minor) return pa.minor - pb.minor;
+  return pa.patch - pb.patch;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,16 +100,16 @@ function compareSemver(a: string, b: string): number {
  * @returns A valid `SerializedState` with empty zones, traces, and extensions.
  */
 export function createEmptyState(session?: SessionState): SerializedState {
-    return {
-        schemaVersion: STATE_SCHEMA_VERSION,
-        zones: {},
-        traceIds: [],
-        session: session ?? {
-            id: globalThis.crypto.randomUUID(),
-            startedAt: new Date().toISOString(),
-        },
-        extensions: {},
-    };
+  return {
+    schemaVersion: STATE_SCHEMA_VERSION,
+    zones: {},
+    traceIds: [],
+    session: session ?? {
+      id: globalThis.crypto.randomUUID(),
+      startedAt: new Date().toISOString(),
+    },
+    extensions: {},
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -129,14 +129,14 @@ export function createEmptyState(session?: SessionState): SerializedState {
  * @see Design Choice S9 — 1MB hard limit.
  */
 export function createSnapshot(state: SerializedState): SerializedState {
-    const json = JSON.stringify(state);
-    const sizeBytes = new TextEncoder().encode(json).byteLength;
+  const json = JSON.stringify(state);
+  const sizeBytes = new TextEncoder().encode(json).byteLength;
 
-    if (sizeBytes > MAX_SNAPSHOT_BYTES) {
-        throw snapshotSizeLimitError(sizeBytes);
-    }
+  if (sizeBytes > MAX_SNAPSHOT_BYTES) {
+    throw snapshotSizeLimitError(sizeBytes);
+  }
 
-    return state;
+  return state;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,32 +159,32 @@ export function createSnapshot(state: SerializedState): SerializedState {
  * @internal
  */
 function chainMigrations(
-    state: SerializedState,
-    fromVersion: string,
-    toVersion: string,
-    migrations: MigrationRegistry,
+  state: SerializedState,
+  fromVersion: string,
+  toVersion: string,
+  migrations: MigrationRegistry,
 ): SerializedState {
-    let current = state;
-    let currentVersion = fromVersion;
+  let current = state;
+  let currentVersion = fromVersion;
 
-    // Safety limit to prevent infinite loops from circular migrations
-    const maxIterations = 100;
-    let iterations = 0;
+  // Safety limit to prevent infinite loops from circular migrations
+  const maxIterations = 100;
+  let iterations = 0;
 
-    while (compareSemver(currentVersion, toVersion) < 0 && iterations < maxIterations) {
-        const migration: MigrationConfig | undefined = migrations.get(currentVersion);
-        if (migration === undefined) {
-            // No migration found for this version — stop chaining.
-            // The state is at the latest version we can reach.
-            break;
-        }
-
-        current = migration.migrate(current);
-        currentVersion = migration.to;
-        iterations++;
+  while (compareSemver(currentVersion, toVersion) < 0 && iterations < maxIterations) {
+    const migration: MigrationConfig | undefined = migrations.get(currentVersion);
+    if (migration === undefined) {
+      // No migration found for this version — stop chaining.
+      // The state is at the latest version we can reach.
+      break;
     }
 
-    return current;
+    current = migration.migrate(current);
+    currentVersion = migration.to;
+    iterations++;
+  }
+
+  return current;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,74 +215,74 @@ function chainMigrations(
  * @see Design Choice S10 — full overwrite on restore.
  */
 export function applyRestore(
-    snapshot: SerializedState,
-    currentVersion: string,
-    migrations: MigrationRegistry,
+  snapshot: SerializedState,
+  currentVersion: string,
+  migrations: MigrationRegistry,
 ): SerializedState {
-    const snapshotVersion = snapshot.schemaVersion;
-    const sv = parseSemver(snapshotVersion);
-    const cv = parseSemver(currentVersion);
+  const snapshotVersion = snapshot.schemaVersion;
+  const sv = parseSemver(snapshotVersion);
+  const cv = parseSemver(currentVersion);
 
-    // -----------------------------------------------------------------------
-    // Major forward — hard reject (ENS-4007)
-    // -----------------------------------------------------------------------
-    if (sv.major > cv.major) {
-        throw majorVersionMismatchError(snapshotVersion, currentVersion);
+  // -----------------------------------------------------------------------
+  // Major forward — hard reject (ENS-4007)
+  // -----------------------------------------------------------------------
+  if (sv.major > cv.major) {
+    throw majorVersionMismatchError(snapshotVersion, currentVersion);
+  }
+
+  // -----------------------------------------------------------------------
+  // Older snapshot — chain migrations
+  // -----------------------------------------------------------------------
+  if (compareSemver(snapshotVersion, currentVersion) < 0) {
+    const migrated = chainMigrations(snapshot, snapshotVersion, currentVersion, migrations);
+
+    // Post-migration validation
+    const result = SerializedStateSchema.safeParse(migrated);
+    if (result.success) {
+      return result.data as SerializedState;
     }
 
-    // -----------------------------------------------------------------------
-    // Older snapshot — chain migrations
-    // -----------------------------------------------------------------------
-    if (compareSemver(snapshotVersion, currentVersion) < 0) {
-        const migrated = chainMigrations(snapshot, snapshotVersion, currentVersion, migrations);
+    // Migration produced invalid state — fall back to empty.
+    // This should never happen with correct migrations, but guard against it.
+    return createEmptyState(snapshot.session);
+  }
 
-        // Post-migration validation
-        const result = SerializedStateSchema.safeParse(migrated);
-        if (result.success) {
-            return result.data as SerializedState;
-        }
-
-        // Migration produced invalid state — fall back to empty.
-        // This should never happen with correct migrations, but guard against it.
-        return createEmptyState(snapshot.session);
-    }
-
-    // -----------------------------------------------------------------------
-    // Same version or patch diff — Zod validate only
-    // -----------------------------------------------------------------------
-    if (sv.major === cv.major && sv.minor === cv.minor) {
-        const result = SerializedStateSchema.safeParse(snapshot);
-        if (result.success) {
-            return result.data as SerializedState;
-        }
-
-        // Validation failed — fall back to empty state.
-        return createEmptyState(snapshot.session);
-    }
-
-    // -----------------------------------------------------------------------
-    // Minor forward (e.g., 1.3 on 1.2 client) — passthrough
-    // -----------------------------------------------------------------------
-    if (sv.major === cv.major && sv.minor > cv.minor) {
-        // Use .loose() to preserve unknown fields from the newer version.
-        // (Zod v4 equivalent of .passthrough() — preserves unrecognized keys.)
-        // This prevents data loss when re-syncing back to the newer client.
-        const result = SerializedStateSchema.loose().safeParse(snapshot);
-        if (result.success) {
-            return result.data as SerializedState;
-        }
-
-        // Even passthrough validation failed — fall back to empty.
-        return createEmptyState(snapshot.session);
-    }
-
-    // -----------------------------------------------------------------------
-    // Fallback — validate normally
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Same version or patch diff — Zod validate only
+  // -----------------------------------------------------------------------
+  if (sv.major === cv.major && sv.minor === cv.minor) {
     const result = SerializedStateSchema.safeParse(snapshot);
     if (result.success) {
-        return result.data as SerializedState;
+      return result.data as SerializedState;
     }
 
+    // Validation failed — fall back to empty state.
     return createEmptyState(snapshot.session);
+  }
+
+  // -----------------------------------------------------------------------
+  // Minor forward (e.g., 1.3 on 1.2 client) — passthrough
+  // -----------------------------------------------------------------------
+  if (sv.major === cv.major && sv.minor > cv.minor) {
+    // Use .loose() to preserve unknown fields from the newer version.
+    // (Zod v4 equivalent of .passthrough() — preserves unrecognized keys.)
+    // This prevents data loss when re-syncing back to the newer client.
+    const result = SerializedStateSchema.loose().safeParse(snapshot);
+    if (result.success) {
+      return result.data as SerializedState;
+    }
+
+    // Even passthrough validation failed — fall back to empty.
+    return createEmptyState(snapshot.session);
+  }
+
+  // -----------------------------------------------------------------------
+  // Fallback — validate normally
+  // -----------------------------------------------------------------------
+  const result = SerializedStateSchema.safeParse(snapshot);
+  if (result.success) {
+    return result.data as SerializedState;
+  }
+
+  return createEmptyState(snapshot.session);
 }

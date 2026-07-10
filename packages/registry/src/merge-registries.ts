@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/registry/merge-registries
+ * @module @enterstellar/registry/merge-registries
  * @description `mergeRegistries()` — utility for combining multiple registries.
  *
  * Enterstellar supports multiple registries (e.g., `clinicalRegistry`, `adminRegistry`)
@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { createRegistry, mergeRegistries } from '@enterstellar-ai/registry';
+ * import { createRegistry, mergeRegistries } from '@enterstellar/registry';
  *
  * const clinical = createRegistry({ components: [PatientVitals, LabResults] });
  * const admin = createRegistry({ components: [UserSettings, AuditLog] });
@@ -22,7 +22,7 @@
  * ```
  */
 
-import type { ComponentContract } from '@enterstellar-ai/types';
+import type { ComponentContract } from '@enterstellar/types';
 
 import type { EnterstellarRegistry } from './types.js';
 import { createRegistry } from './create-registry.js';
@@ -48,48 +48,50 @@ import { duplicateNameError } from './errors.js';
  *
  * @see Design Choice R2 — single merged registry for `Provider`.
  */
-export function mergeRegistries(...registries: readonly EnterstellarRegistry[]): EnterstellarRegistry {
-    // ----- Collect all contracts and detect cross-registry duplicates -----
-    const allContracts: ComponentContract[] = [];
-    const seenNames = new Set<string>();
+export function mergeRegistries(
+  ...registries: readonly EnterstellarRegistry[]
+): EnterstellarRegistry {
+  // ----- Collect all contracts and detect cross-registry duplicates -----
+  const allContracts: ComponentContract[] = [];
+  const seenNames = new Set<string>();
 
-    for (const registry of registries) {
-        const names = registry.list();
-        for (const name of names) {
-            if (seenNames.has(name)) {
-                throw duplicateNameError(name);
-            }
-            seenNames.add(name);
+  for (const registry of registries) {
+    const names = registry.list();
+    for (const name of names) {
+      if (seenNames.has(name)) {
+        throw duplicateNameError(name);
+      }
+      seenNames.add(name);
 
-            const contract = registry.get(name);
-            if (contract !== undefined) {
-                allContracts.push(contract);
-            }
-        }
+      const contract = registry.get(name);
+      if (contract !== undefined) {
+        allContracts.push(contract);
+      }
     }
+  }
 
-    // ----- Merge design tokens (first-wins across registries) -----
-    const mergedTokens: Record<string, string> = {};
-    for (const registry of registries) {
-        const tokens = registry.getDesignTokens();
-        for (const [key, value] of Object.entries(tokens)) {
-            if (key in mergedTokens) {
-                const existingValue = mergedTokens[key];
-                if (existingValue !== value) {
-                    console.warn(
-                        `[Enterstellar Registry] Design token conflict during merge: '${key}' already defined as ` +
-                        `'${String(existingValue)}', ignoring '${value}'. First-wins policy applied.`,
-                    );
-                }
-            } else {
-                mergedTokens[key] = value;
-            }
+  // ----- Merge design tokens (first-wins across registries) -----
+  const mergedTokens: Record<string, string> = {};
+  for (const registry of registries) {
+    const tokens = registry.getDesignTokens();
+    for (const [key, value] of Object.entries(tokens)) {
+      if (key in mergedTokens) {
+        const existingValue = mergedTokens[key];
+        if (existingValue !== value) {
+          console.warn(
+            `[Enterstellar Registry] Design token conflict during merge: '${key}' already defined as ` +
+              `'${String(existingValue)}', ignoring '${value}'. First-wins policy applied.`,
+          );
         }
+      } else {
+        mergedTokens[key] = value;
+      }
     }
+  }
 
-    // ----- Create merged registry -----
-    return createRegistry({
-        components: allContracts,
-        designTokens: mergedTokens,
-    });
+  // ----- Create merged registry -----
+  return createRegistry({
+    components: allContracts,
+    designTokens: mergedTokens,
+  });
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/normalizer
+ * @module @enterstellar/normalizer
  * @description Protocol-agnostic intake — normalizes AG-UI, custom, and
  * future protocols into unified `ComponentIntent` objects.
  *
@@ -11,7 +11,7 @@
  * ## Quick Start
  *
  * ```ts
- * import { createNormalizer, createAGUIAdapter, createCustomAdapter } from '@enterstellar-ai/normalizer';
+ * import { createNormalizer, createAGUIAdapter, createCustomAdapter } from '@enterstellar/normalizer';
  *
  * // Compose adapters — first match wins
  * const normalize = createNormalizer({
@@ -56,36 +56,36 @@ export { createCustomAdapter } from './adapters/custom-adapter.js';
 // Types (public API surface)
 // ---------------------------------------------------------------------------
 export type {
-    ProtocolNormalizer,
-    NormalizerConfig,
-    NormalizerDispatch,
-    AGUIAdapterConfig,
-    CustomAdapterConfig,
-    AGUIToolCallEvent,
-    AGUITextMessageEvent,
-    AGUILifecycleEvent,
-    AGUIEvent,
+  ProtocolNormalizer,
+  NormalizerConfig,
+  NormalizerDispatch,
+  AGUIAdapterConfig,
+  CustomAdapterConfig,
+  AGUIToolCallEvent,
+  AGUITextMessageEvent,
+  AGUILifecycleEvent,
+  AGUIEvent,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Error Factories
 // ---------------------------------------------------------------------------
 export {
-    createUnknownProtocolError,
-    createNormalizationFailedError,
-    createInvalidIntentError,
+  createUnknownProtocolError,
+  createNormalizationFailedError,
+  createInvalidIntentError,
 } from './errors.js';
 
 // ---------------------------------------------------------------------------
 // Constants (for advanced usage and testing)
 // ---------------------------------------------------------------------------
 export {
-    DEFAULT_AGUI_CONFIDENCE,
-    AGUI_UI_EVENT_TYPES,
-    AGUI_LIFECYCLE_EVENT_TYPES,
-    AGUI_COMPLETION_EVENT_TYPES,
-    AGUI_PROTOCOL,
-    CUSTOM_PROTOCOL,
+  DEFAULT_AGUI_CONFIDENCE,
+  AGUI_UI_EVENT_TYPES,
+  AGUI_LIFECYCLE_EVENT_TYPES,
+  AGUI_COMPLETION_EVENT_TYPES,
+  AGUI_PROTOCOL,
+  CUSTOM_PROTOCOL,
 } from './constants.js';
 
 export type { AGUIEventType } from './constants.js';

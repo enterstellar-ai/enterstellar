@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cache/create-render-cache
+ * @module @enterstellar/cache/create-render-cache
  * @description Factory function for creating an Enterstellar Render Cache.
  *
  * Returns a plain object with closures (per R1 — no class instance, no
@@ -19,19 +19,19 @@
 
 import { z } from 'zod';
 
-import { EnterstellarError } from '@enterstellar-ai/types';
-import type { CompilationResult } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
+import type { CompilationResult } from '@enterstellar/types';
 
 import { buildCacheKey, extractComponentName } from './cache-key.js';
 import { LRUCache } from './lru-cache.js';
 import type {
-    CachedRender,
-    CacheStats,
-    CompileFn,
-    EvictionReason,
-    RenderCache,
-    RenderCacheConfig,
-    WarmupEntry,
+  CachedRender,
+  CacheStats,
+  CompileFn,
+  EvictionReason,
+  RenderCache,
+  RenderCacheConfig,
+  WarmupEntry,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -49,15 +49,12 @@ import type {
  * @internal
  */
 const RenderCacheConfigSchema = z.object({
-    strategy: z.literal('lru'),
-    maxEntries: z
-        .number()
-        .int('maxEntries must be an integer.')
-        .min(1, 'maxEntries must be at least 1.'),
-    ttl: z
-        .number()
-        .int('ttl must be an integer.')
-        .min(1, 'ttl must be at least 1 second.'),
+  strategy: z.literal('lru'),
+  maxEntries: z
+    .number()
+    .int('maxEntries must be an integer.')
+    .min(1, 'maxEntries must be at least 1.'),
+  ttl: z.number().int('ttl must be an integer.').min(1, 'ttl must be at least 1 second.'),
 });
 
 // ---------------------------------------------------------------------------
@@ -70,9 +67,9 @@ const RenderCacheConfigSchema = z.object({
  * @internal
  */
 const DEFAULT_CONFIG: RenderCacheConfig = {
-    strategy: 'lru',
-    maxEntries: 1000,
-    ttl: 3600,
+  strategy: 'lru',
+  maxEntries: 1000,
+  ttl: 3600,
 };
 
 // ---------------------------------------------------------------------------
@@ -100,7 +97,7 @@ const DEFAULT_CONFIG: RenderCacheConfig = {
  *
  * @example
  * ```ts
- * import { createRenderCache, buildCacheKey } from '@enterstellar-ai/cache';
+ * import { createRenderCache, buildCacheKey } from '@enterstellar/cache';
  *
  * const cache = createRenderCache({ maxEntries: 500, ttl: 1800 });
  * const key = buildCacheKey(intentHash, 'PatientVitals');
@@ -116,205 +113,206 @@ const DEFAULT_CONFIG: RenderCacheConfig = {
  * ```
  */
 export function createRenderCache(config?: Partial<RenderCacheConfig>): RenderCache {
-    // -----------------------------------------------------------------------
-    // Configuration validation (fail-fast per R5 pattern)
-    // -----------------------------------------------------------------------
-    const merged: RenderCacheConfig = {
-        ...DEFAULT_CONFIG,
-        ...config,
-    };
+  // -----------------------------------------------------------------------
+  // Configuration validation (fail-fast per R5 pattern)
+  // -----------------------------------------------------------------------
+  const merged: RenderCacheConfig = {
+    ...DEFAULT_CONFIG,
+    ...config,
+  };
 
-    // Validate serializable data fields via Zod (fail-fast per R5)
-    const parseResult = RenderCacheConfigSchema.safeParse(merged);
-    if (!parseResult.success) {
-        const firstIssue = parseResult.error.issues[0];
-        const message = firstIssue !== undefined
-            ? `Invalid RenderCache config: ${firstIssue.message}`
-            : 'Invalid RenderCache config.';
-        throw new EnterstellarError(
-            'ENS-3001',
-            'cache',
-            message,
-            false, // Not recoverable — dev error
-        );
-    }
-
-    // Use merged config (includes onEvict callback, which Zod doesn't validate)
-    const resolvedConfig = merged;
-
-    // -----------------------------------------------------------------------
-    // Internal state
-    // -----------------------------------------------------------------------
-
-    /** Cache hit counter. */
-    let hits = 0;
-    /** Cache miss counter. */
-    let misses = 0;
-
-    /**
-     * LRU cache instance with eviction callback for stats tracking.
-     * The eviction callback forwards to the consumer's `onEvict` hook.
-     */
-    const lru = new LRUCache<CachedRender>(
-        resolvedConfig.maxEntries,
-        (key: string, _value: CachedRender) => {
-            if (resolvedConfig.onEvict !== undefined) {
-                resolvedConfig.onEvict(key, 'capacity');
-            }
-        },
+  // Validate serializable data fields via Zod (fail-fast per R5)
+  const parseResult = RenderCacheConfigSchema.safeParse(merged);
+  if (!parseResult.success) {
+    const firstIssue = parseResult.error.issues[0];
+    const message =
+      firstIssue !== undefined
+        ? `Invalid RenderCache config: ${firstIssue.message}`
+        : 'Invalid RenderCache config.';
+    throw new EnterstellarError(
+      'ENS-3001',
+      'cache',
+      message,
+      false, // Not recoverable — dev error
     );
+  }
 
-    // -----------------------------------------------------------------------
-    // Helper: TTL check
-    // -----------------------------------------------------------------------
+  // Use merged config (includes onEvict callback, which Zod doesn't validate)
+  const resolvedConfig = merged;
 
-    /**
-     * Checks if a cached entry has expired.
-     *
-     * @param entry - The cached render entry.
-     * @returns `true` if the entry's `expiresAt` has passed.
-     */
-    function isExpired(entry: CachedRender): boolean {
-        return Date.now() >= entry.expiresAt;
+  // -----------------------------------------------------------------------
+  // Internal state
+  // -----------------------------------------------------------------------
+
+  /** Cache hit counter. */
+  let hits = 0;
+  /** Cache miss counter. */
+  let misses = 0;
+
+  /**
+   * LRU cache instance with eviction callback for stats tracking.
+   * The eviction callback forwards to the consumer's `onEvict` hook.
+   */
+  const lru = new LRUCache<CachedRender>(
+    resolvedConfig.maxEntries,
+    (key: string, _value: CachedRender) => {
+      if (resolvedConfig.onEvict !== undefined) {
+        resolvedConfig.onEvict(key, 'capacity');
+      }
+    },
+  );
+
+  // -----------------------------------------------------------------------
+  // Helper: TTL check
+  // -----------------------------------------------------------------------
+
+  /**
+   * Checks if a cached entry has expired.
+   *
+   * @param entry - The cached render entry.
+   * @returns `true` if the entry's `expiresAt` has passed.
+   */
+  function isExpired(entry: CachedRender): boolean {
+    return Date.now() >= entry.expiresAt;
+  }
+
+  // -----------------------------------------------------------------------
+  // Helper: Notify eviction
+  // -----------------------------------------------------------------------
+
+  /**
+   * Notifies the consumer's `onEvict` callback if configured.
+   *
+   * @param key - The evicted cache key.
+   * @param reason - Why the entry was evicted.
+   */
+  function notifyEvict(key: string, reason: EvictionReason): void {
+    if (resolvedConfig.onEvict !== undefined) {
+      resolvedConfig.onEvict(key, reason);
     }
+  }
 
-    // -----------------------------------------------------------------------
-    // Helper: Notify eviction
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // RenderCache implementation (plain object with closures per R1)
+  // -----------------------------------------------------------------------
 
-    /**
-     * Notifies the consumer's `onEvict` callback if configured.
-     *
-     * @param key - The evicted cache key.
-     * @param reason - Why the entry was evicted.
-     */
-    function notifyEvict(key: string, reason: EvictionReason): void {
-        if (resolvedConfig.onEvict !== undefined) {
-            resolvedConfig.onEvict(key, reason);
+  const renderCache: RenderCache = {
+    get(key: string): CachedRender | undefined {
+      const entry = lru.get(key);
+
+      if (entry === undefined) {
+        misses++;
+        return undefined;
+      }
+
+      // Lazy TTL expiry (CA4)
+      if (isExpired(entry)) {
+        lru.delete(key);
+        misses++;
+        notifyEvict(key, 'expired');
+        return undefined;
+      }
+
+      hits++;
+      return entry;
+    },
+
+    set(key: string, render: CachedRender): void {
+      lru.set(key, render);
+    },
+
+    invalidate(key: string): boolean {
+      const deleted = lru.delete(key);
+      if (deleted) {
+        notifyEvict(key, 'manual');
+      }
+      return deleted;
+    },
+
+    invalidateByComponent(componentName: string): number {
+      // Collect keys to evict (cannot modify LRU during iteration)
+      const keysToEvict: string[] = [];
+
+      lru.forEach((key: string, value: CachedRender) => {
+        // Fast path: extract component name from key directly
+        const nameFromKey = extractComponentName(key);
+        if (nameFromKey === componentName) {
+          keysToEvict.push(key);
+          return;
         }
-    }
 
-    // -----------------------------------------------------------------------
-    // RenderCache implementation (plain object with closures per R1)
-    // -----------------------------------------------------------------------
+        // Fallback: check the compilationResult for the component name
+        if (value.compilationResult.componentName === componentName) {
+          keysToEvict.push(key);
+        }
+      });
 
-    const renderCache: RenderCache = {
-        get(key: string): CachedRender | undefined {
-            const entry = lru.get(key);
+      // Evict collected keys
+      for (const key of keysToEvict) {
+        lru.delete(key);
+        notifyEvict(key, 'component-update');
+      }
 
-            if (entry === undefined) {
-                misses++;
-                return undefined;
-            }
+      return keysToEvict.length;
+    },
 
-            // Lazy TTL expiry (CA4)
-            if (isExpired(entry)) {
-                lru.delete(key);
-                misses++;
-                notifyEvict(key, 'expired');
-                return undefined;
-            }
+    invalidateAll(): void {
+      lru.clear();
+      hits = 0;
+      misses = 0;
+      if (resolvedConfig.onEvict !== undefined) {
+        resolvedConfig.onEvict('*', 'manual');
+      }
+    },
 
-            hits++;
-            return entry;
-        },
+    getStats(): CacheStats {
+      const total = hits + misses;
+      return {
+        hits,
+        misses,
+        entries: lru.size,
+        hitRate: total === 0 ? 0 : hits / total,
+      };
+    },
 
-        set(key: string, render: CachedRender): void {
-            lru.set(key, render);
-        },
+    async warmup(entries: readonly WarmupEntry[], compile: CompileFn): Promise<void> {
+      for (const entry of entries) {
+        try {
+          const compilationResult: CompilationResult = await compile(entry.intent);
 
-        invalidate(key: string): boolean {
-            const deleted = lru.delete(key);
-            if (deleted) {
-                notifyEvict(key, 'manual');
-            }
-            return deleted;
-        },
+          // Only cache successful compilations
+          if (compilationResult.status === 'fail') {
+            continue;
+          }
 
-        invalidateByComponent(componentName: string): number {
-            // Collect keys to evict (cannot modify LRU during iteration)
-            const keysToEvict: string[] = [];
+          const now = Date.now();
+          const cachedRender: CachedRender = {
+            compiledIntent: entry.intent,
+            compilationResult,
+            cachedAt: now,
+            expiresAt: now + resolvedConfig.ttl * 1000,
+          };
 
-            lru.forEach((key: string, value: CachedRender) => {
-                // Fast path: extract component name from key directly
-                const nameFromKey = extractComponentName(key);
-                if (nameFromKey === componentName) {
-                    keysToEvict.push(key);
-                    return;
-                }
+          // Build cache key via buildCacheKey() for consistent format
+          // with runtime lookups (CA1). During warmup, the intent's
+          // component name serves as the intentHash stand-in — this
+          // is the same value Zone uses for cache key construction
+          // when the intent arrives for the first time.
+          const key = buildCacheKey(entry.intent.component, compilationResult.componentName);
+          lru.set(key, cachedRender);
+        } catch {
+          // Warmup failures are silently skipped (CA7 — never blocking).
+          // The warmup is best-effort: if a compile call fails,
+          // we continue with the next entry.
+          continue;
+        }
+      }
+    },
 
-                // Fallback: check the compilationResult for the component name
-                if (value.compilationResult.componentName === componentName) {
-                    keysToEvict.push(key);
-                }
-            });
+    get size(): number {
+      return lru.size;
+    },
+  };
 
-            // Evict collected keys
-            for (const key of keysToEvict) {
-                lru.delete(key);
-                notifyEvict(key, 'component-update');
-            }
-
-            return keysToEvict.length;
-        },
-
-        invalidateAll(): void {
-            lru.clear();
-            hits = 0;
-            misses = 0;
-            if (resolvedConfig.onEvict !== undefined) {
-                resolvedConfig.onEvict('*', 'manual');
-            }
-        },
-
-        getStats(): CacheStats {
-            const total = hits + misses;
-            return {
-                hits,
-                misses,
-                entries: lru.size,
-                hitRate: total === 0 ? 0 : hits / total,
-            };
-        },
-
-        async warmup(entries: readonly WarmupEntry[], compile: CompileFn): Promise<void> {
-            for (const entry of entries) {
-                try {
-                    const compilationResult: CompilationResult = await compile(entry.intent);
-
-                    // Only cache successful compilations
-                    if (compilationResult.status === 'fail') {
-                        continue;
-                    }
-
-                    const now = Date.now();
-                    const cachedRender: CachedRender = {
-                        compiledIntent: entry.intent,
-                        compilationResult,
-                        cachedAt: now,
-                        expiresAt: now + resolvedConfig.ttl * 1000,
-                    };
-
-                    // Build cache key via buildCacheKey() for consistent format
-                    // with runtime lookups (CA1). During warmup, the intent's
-                    // component name serves as the intentHash stand-in — this
-                    // is the same value Zone uses for cache key construction
-                    // when the intent arrives for the first time.
-                    const key = buildCacheKey(entry.intent.component, compilationResult.componentName);
-                    lru.set(key, cachedRender);
-                } catch {
-                    // Warmup failures are silently skipped (CA7 — never blocking).
-                    // The warmup is best-effort: if a compile call fails,
-                    // we continue with the next entry.
-                    continue;
-                }
-            }
-        },
-
-        get size(): number {
-            return lru.size;
-        },
-    };
-
-    return renderCache;
+  return renderCache;
 }

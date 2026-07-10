@@ -1,16 +1,16 @@
 /**
- * @module @enterstellar-ai/global-index
+ * @module @enterstellar/global-index
  * @description Federated registry discovery and search — the npm for ComponentContracts.
  *
- * This is the public API surface of `@enterstellar-ai/global-index`.
+ * This is the public API surface of `@enterstellar/global-index`.
  * Internal modules (transport, errors, crawlers, search-index, publish-handler)
  * are NOT exported — they are implementation details.
  *
  * ## Quick Start
  *
  * ```ts
- * import { createGlobalIndex } from '@enterstellar-ai/global-index';
- * import { createEnterstellarCloudClient } from '@enterstellar-ai/cloud';
+ * import { createGlobalIndex } from '@enterstellar/global-index';
+ * import { createEnterstellarCloudClient } from '@enterstellar/cloud';
  *
  * const cloud = createEnterstellarCloudClient({ apiKey: 'cloud-key', tier: 'pro' });
  * const index = createGlobalIndex({ apiKey: 'index-key', cloudClient: cloud });
@@ -32,38 +32,35 @@ export { createGlobalIndex } from './create-global-index.js';
 // ---------------------------------------------------------------------------
 
 export type {
-    CertificationTier,
-    CloudClientLike,
-    ContractVerification,
-    ContractVerificationIssue,
-    FederatedRegistry,
-    GlobalIndex,
-    GlobalIndexConfig,
-    GlobalSearchFilters,
-    GlobalSearchOptions,
-    GlobalSearchResult,
-    PublishEarnings,
-    RegistryRegistration,
+  CertificationTier,
+  CloudClientLike,
+  ContractVerification,
+  ContractVerificationIssue,
+  FederatedRegistry,
+  GlobalIndex,
+  GlobalIndexConfig,
+  GlobalSearchFilters,
+  GlobalSearchOptions,
+  GlobalSearchResult,
+  PublishEarnings,
+  RegistryRegistration,
 } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Contract Verification Utilities
 // ---------------------------------------------------------------------------
 
-export {
-    isValidContract,
-    verifyContract,
-} from './discovery/contract-verifier.js';
+export { isValidContract, verifyContract } from './discovery/contract-verifier.js';
 
 // ---------------------------------------------------------------------------
 // Badge / Certification Utilities
 // ---------------------------------------------------------------------------
 
 export {
-    getCertificationTier,
-    getRelevanceScore,
-    getScreenshotUrl,
-    hasScreenshot,
-    isCertified,
-    isIndexed,
+  getCertificationTier,
+  getRelevanceScore,
+  getScreenshotUrl,
+  hasScreenshot,
+  isCertified,
+  isIndexed,
 } from './publishing/badge-service.js';

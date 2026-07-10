@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/assembly/generate-example-props
+ * @module @enterstellar/migration/assembly/generate-example-props
  * @description Generates minimal valid props from a Zod schema.
  *
  * Used by Phase 3 to produce the `examples[0].props` entry in the
@@ -76,18 +76,18 @@ const OMIT_FIELD = Symbol('OMIT_FIELD');
  * We accept the fragility because there's no public introspection API.
  */
 type ZodDef = {
-    readonly type: string;
-    readonly defaultValue?: unknown;
-    readonly innerType?: z.ZodType;
-    readonly values?: readonly unknown[];
-    readonly entries?: Readonly<Record<string, unknown>>;
-    readonly element?: z.ZodType;
-    readonly items?: readonly z.ZodType[];
-    readonly options?: readonly z.ZodType[];
-    readonly left?: z.ZodType;
-    readonly right?: z.ZodType;
-    readonly keyType?: z.ZodType;
-    readonly valueType?: z.ZodType;
+  readonly type: string;
+  readonly defaultValue?: unknown;
+  readonly innerType?: z.ZodType;
+  readonly values?: readonly unknown[];
+  readonly entries?: Readonly<Record<string, unknown>>;
+  readonly element?: z.ZodType;
+  readonly items?: readonly z.ZodType[];
+  readonly options?: readonly z.ZodType[];
+  readonly left?: z.ZodType;
+  readonly right?: z.ZodType;
+  readonly keyType?: z.ZodType;
+  readonly valueType?: z.ZodType;
 };
 
 // ---------------------------------------------------------------------------
@@ -104,9 +104,10 @@ type ZodDef = {
  * @returns The internal `_zod.def` object, or `undefined` if not accessible.
  */
 function getZodDef(schema: z.ZodType): ZodDef | undefined {
-    const def = (schema as unknown as Record<string, unknown>)['_zod'] as
-        { readonly def?: ZodDef } | undefined;
-    return def?.def;
+  const def = (schema as unknown as Record<string, unknown>)['_zod'] as
+    | { readonly def?: ZodDef }
+    | undefined;
+  return def?.def;
 }
 
 /**
@@ -128,172 +129,170 @@ function getZodDef(schema: z.ZodType): ZodDef | undefined {
  * @returns The minimal valid value, or `OMIT_FIELD` symbol if the field
  *   should be omitted from the output.
  */
-function zodTypeToMinimalValue(
-    schema: z.ZodType,
-    depth: number,
-): unknown {
-    // --- Depth guard ---
-    if (depth >= MAX_DEPTH) {
-        return OMIT_FIELD;
+function zodTypeToMinimalValue(schema: z.ZodType, depth: number): unknown {
+  // --- Depth guard ---
+  if (depth >= MAX_DEPTH) {
+    return OMIT_FIELD;
+  }
+
+  const def = getZodDef(schema);
+  if (def === undefined) {
+    return OMIT_FIELD;
+  }
+
+  switch (def.type) {
+    // --- Wrapper types (unwrap first) ---
+
+    case 'default': {
+      // ZodDefault — extract the default value directly.
+      // This is the highest-priority source for a field value.
+      if (def.defaultValue !== undefined) {
+        return def.defaultValue;
+      }
+      // Fallback: unwrap and recurse into inner type
+      if (def.innerType !== undefined) {
+        return zodTypeToMinimalValue(def.innerType, depth + 1);
+      }
+      return OMIT_FIELD;
     }
 
-    const def = getZodDef(schema);
-    if (def === undefined) {
-        return OMIT_FIELD;
+    case 'optional': {
+      // ZodOptional — optional fields should be omitted from
+      // the minimal example. The contract doesn't require them.
+      return OMIT_FIELD;
     }
 
-    switch (def.type) {
-        // --- Wrapper types (unwrap first) ---
-
-        case 'default': {
-            // ZodDefault — extract the default value directly.
-            // This is the highest-priority source for a field value.
-            if (def.defaultValue !== undefined) {
-                return def.defaultValue;
-            }
-            // Fallback: unwrap and recurse into inner type
-            if (def.innerType !== undefined) {
-                return zodTypeToMinimalValue(def.innerType, depth + 1);
-            }
-            return OMIT_FIELD;
-        }
-
-        case 'optional': {
-            // ZodOptional — optional fields should be omitted from
-            // the minimal example. The contract doesn't require them.
-            return OMIT_FIELD;
-        }
-
-        case 'nullable': {
-            // ZodNullable — `null` is a valid minimal value for nullable fields.
-            return null;
-        }
-
-        // --- Primitive types ---
-
-        case 'string':
-            return '';
-
-        case 'number':
-            return 0;
-
-        case 'boolean':
-            return false;
-
-        case 'null':
-            return null;
-
-        case 'undefined':
-            return OMIT_FIELD;
-
-        // --- Literal and enum types ---
-
-        case 'literal': {
-            // Zod v4 stores literal values in `def.values` (array).
-            const firstValue = def.values?.[0];
-            return firstValue !== undefined ? firstValue : OMIT_FIELD;
-        }
-
-        case 'enum': {
-            // Zod v4 stores enum entries as Record<string, string>.
-            // Use the first entry's value.
-            if (def.entries !== undefined) {
-                const entryValues = Object.values(def.entries);
-                const first = entryValues[0];
-                return first !== undefined ? first : OMIT_FIELD;
-            }
-            return OMIT_FIELD;
-        }
-
-        // --- Composite types ---
-
-        case 'array': {
-            // Minimal valid array is empty — satisfies z.array(T).
-            return [];
-        }
-
-        case 'object': {
-            // Recurse into shape — produce minimal valid nested object.
-            if (schema instanceof z.ZodObject) {
-                return buildMinimalObject(schema, {}, depth + 1);
-            }
-            return {};
-        }
-
-        case 'record': {
-            // Minimal valid record is empty — satisfies z.record(K, V).
-            return {};
-        }
-
-        case 'tuple': {
-            // Produce an array with minimal values for each positional element.
-            if (def.items !== undefined) {
-                const tupleValues: unknown[] = [];
-                for (const item of def.items) {
-                    const value = zodTypeToMinimalValue(item, depth + 1);
-                    // For tuple elements, we can't omit — use null as fallback
-                    tupleValues.push(value === OMIT_FIELD ? null : value);
-                }
-                return tupleValues;
-            }
-            return [];
-        }
-
-        case 'union': {
-            // Use the first option's minimal value.
-            // For discriminated unions, this is also correct — the first
-            // variant is as valid as any other for a minimal example.
-            if (def.options !== undefined) {
-                const firstOption = def.options[0];
-                if (firstOption !== undefined) {
-                    return zodTypeToMinimalValue(firstOption, depth + 1);
-                }
-            }
-            return OMIT_FIELD;
-        }
-
-        case 'intersection': {
-            // For intersections, merge the minimal values of both sides.
-            // This produces a valid value for `z.intersection(A, B)` by
-            // combining the fields of both A and B.
-            const leftValue = def.left !== undefined
-                ? zodTypeToMinimalValue(def.left, depth + 1)
-                : {};
-            const rightValue = def.right !== undefined
-                ? zodTypeToMinimalValue(def.right, depth + 1)
-                : {};
-
-            // If both sides are objects, merge them
-            if (
-                typeof leftValue === 'object' && leftValue !== null &&
-                typeof rightValue === 'object' && rightValue !== null
-            ) {
-                return { ...leftValue as Record<string, unknown>, ...rightValue as Record<string, unknown> };
-            }
-            // If only one side is an object, use it
-            if (typeof leftValue === 'object' && leftValue !== null) return leftValue;
-            if (typeof rightValue === 'object' && rightValue !== null) return rightValue;
-            // Fallback: use left
-            return leftValue === OMIT_FIELD ? rightValue : leftValue;
-        }
-
-        // --- Function type (callback props) ---
-
-        case 'function': {
-            // Function props cannot have meaningful minimal values.
-            // Omit from examples — the developer must provide callbacks.
-            return OMIT_FIELD;
-        }
-
-        // --- Fallback for unknown/unresolvable types ---
-
-        case 'unknown':
-        case 'any':
-        case 'never':
-        case 'void':
-        default:
-            return OMIT_FIELD;
+    case 'nullable': {
+      // ZodNullable — `null` is a valid minimal value for nullable fields.
+      return null;
     }
+
+    // --- Primitive types ---
+
+    case 'string':
+      return '';
+
+    case 'number':
+      return 0;
+
+    case 'boolean':
+      return false;
+
+    case 'null':
+      return null;
+
+    case 'undefined':
+      return OMIT_FIELD;
+
+    // --- Literal and enum types ---
+
+    case 'literal': {
+      // Zod v4 stores literal values in `def.values` (array).
+      const firstValue = def.values?.[0];
+      return firstValue !== undefined ? firstValue : OMIT_FIELD;
+    }
+
+    case 'enum': {
+      // Zod v4 stores enum entries as Record<string, string>.
+      // Use the first entry's value.
+      if (def.entries !== undefined) {
+        const entryValues = Object.values(def.entries);
+        const first = entryValues[0];
+        return first !== undefined ? first : OMIT_FIELD;
+      }
+      return OMIT_FIELD;
+    }
+
+    // --- Composite types ---
+
+    case 'array': {
+      // Minimal valid array is empty — satisfies z.array(T).
+      return [];
+    }
+
+    case 'object': {
+      // Recurse into shape — produce minimal valid nested object.
+      if (schema instanceof z.ZodObject) {
+        return buildMinimalObject(schema, {}, depth + 1);
+      }
+      return {};
+    }
+
+    case 'record': {
+      // Minimal valid record is empty — satisfies z.record(K, V).
+      return {};
+    }
+
+    case 'tuple': {
+      // Produce an array with minimal values for each positional element.
+      if (def.items !== undefined) {
+        const tupleValues: unknown[] = [];
+        for (const item of def.items) {
+          const value = zodTypeToMinimalValue(item, depth + 1);
+          // For tuple elements, we can't omit — use null as fallback
+          tupleValues.push(value === OMIT_FIELD ? null : value);
+        }
+        return tupleValues;
+      }
+      return [];
+    }
+
+    case 'union': {
+      // Use the first option's minimal value.
+      // For discriminated unions, this is also correct — the first
+      // variant is as valid as any other for a minimal example.
+      if (def.options !== undefined) {
+        const firstOption = def.options[0];
+        if (firstOption !== undefined) {
+          return zodTypeToMinimalValue(firstOption, depth + 1);
+        }
+      }
+      return OMIT_FIELD;
+    }
+
+    case 'intersection': {
+      // For intersections, merge the minimal values of both sides.
+      // This produces a valid value for `z.intersection(A, B)` by
+      // combining the fields of both A and B.
+      const leftValue = def.left !== undefined ? zodTypeToMinimalValue(def.left, depth + 1) : {};
+      const rightValue = def.right !== undefined ? zodTypeToMinimalValue(def.right, depth + 1) : {};
+
+      // If both sides are objects, merge them
+      if (
+        typeof leftValue === 'object' &&
+        leftValue !== null &&
+        typeof rightValue === 'object' &&
+        rightValue !== null
+      ) {
+        return {
+          ...(leftValue as Record<string, unknown>),
+          ...(rightValue as Record<string, unknown>),
+        };
+      }
+      // If only one side is an object, use it
+      if (typeof leftValue === 'object' && leftValue !== null) return leftValue;
+      if (typeof rightValue === 'object' && rightValue !== null) return rightValue;
+      // Fallback: use left
+      return leftValue === OMIT_FIELD ? rightValue : leftValue;
+    }
+
+    // --- Function type (callback props) ---
+
+    case 'function': {
+      // Function props cannot have meaningful minimal values.
+      // Omit from examples — the developer must provide callbacks.
+      return OMIT_FIELD;
+    }
+
+    // --- Fallback for unknown/unresolvable types ---
+
+    case 'unknown':
+    case 'any':
+    case 'never':
+    case 'void':
+    default:
+      return OMIT_FIELD;
+  }
 }
 
 /**
@@ -312,33 +311,33 @@ function zodTypeToMinimalValue(
  * @returns A record of minimal valid prop values.
  */
 function buildMinimalObject(
-    schema: z.ZodObject,
-    defaultProps: Readonly<Record<string, unknown>>,
-    depth: number,
+  schema: z.ZodObject,
+  defaultProps: Readonly<Record<string, unknown>>,
+  depth: number,
 ): Record<string, unknown> {
-    const result: Record<string, unknown> = {};
-    const shape = schema.shape as Record<string, z.ZodType>;
+  const result: Record<string, unknown> = {};
+  const shape = schema.shape as Record<string, z.ZodType>;
 
-    for (const key of Object.keys(shape)) {
-        const fieldSchema = shape[key];
-        if (fieldSchema === undefined) continue;
+  for (const key of Object.keys(shape)) {
+    const fieldSchema = shape[key];
+    if (fieldSchema === undefined) continue;
 
-        // Priority 1: Developer-provided default from the manifest
-        const developerDefault = defaultProps[key];
-        if (developerDefault !== undefined) {
-            result[key] = developerDefault;
-            continue;
-        }
-
-        // Priority 2+3: Zod default or type-derived minimal value
-        // (zodTypeToMinimalValue handles ZodDefault internally as Priority 2)
-        const minimalValue = zodTypeToMinimalValue(fieldSchema, depth);
-        if (minimalValue !== OMIT_FIELD) {
-            result[key] = minimalValue;
-        }
+    // Priority 1: Developer-provided default from the manifest
+    const developerDefault = defaultProps[key];
+    if (developerDefault !== undefined) {
+      result[key] = developerDefault;
+      continue;
     }
 
-    return result;
+    // Priority 2+3: Zod default or type-derived minimal value
+    // (zodTypeToMinimalValue handles ZodDefault internally as Priority 2)
+    const minimalValue = zodTypeToMinimalValue(fieldSchema, depth);
+    if (minimalValue !== OMIT_FIELD) {
+      result[key] = minimalValue;
+    }
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -390,18 +389,18 @@ function buildMinimalObject(
  * @see ComponentExample — { intent: string, props: Record<string, unknown> }
  */
 export function generateExampleProps(
-    propsSchema: z.ZodType,
-    defaultProps: Readonly<Record<string, unknown>>,
+  propsSchema: z.ZodType,
+  defaultProps: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
-    // Non-ZodObject schemas cannot have shape — return empty props.
-    // This handles z.unknown(), z.string(), z.record(), etc.
-    if (!(propsSchema instanceof z.ZodObject)) {
-        // Still apply developer defaults if provided
-        if (Object.keys(defaultProps).length > 0) {
-            return { ...defaultProps };
-        }
-        return {};
+  // Non-ZodObject schemas cannot have shape — return empty props.
+  // This handles z.unknown(), z.string(), z.record(), etc.
+  if (!(propsSchema instanceof z.ZodObject)) {
+    // Still apply developer defaults if provided
+    if (Object.keys(defaultProps).length > 0) {
+      return { ...defaultProps };
     }
+    return {};
+  }
 
-    return buildMinimalObject(propsSchema, defaultProps, 0);
+  return buildMinimalObject(propsSchema, defaultProps, 0);
 }

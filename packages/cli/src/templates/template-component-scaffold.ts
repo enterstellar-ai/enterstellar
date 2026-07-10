@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-component-scaffold
+ * @module @enterstellar/cli/templates/template-component-scaffold
  * @description Generates the 4-file scaffold for `enterstellar add component <Name>`.
  *
  * Per Design Choice CLI2, `enterstellar add component PatientVitals` produces:
@@ -22,10 +22,10 @@
 
 /** A single scaffolded file with its relative filename and content. */
 export interface ScaffoldFile {
-    /** Filename relative to the components directory (e.g., `PatientVitals.contract.ts`). */
-    readonly filename: string;
-    /** Full file content as a string. */
-    readonly content: string;
+  /** Filename relative to the components directory (e.g., `PatientVitals.contract.ts`). */
+  readonly filename: string;
+  /** Full file content as a string. */
+  readonly content: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,27 +53,25 @@ export interface ScaffoldFile {
  * }
  * ```
  */
-export function generateComponentScaffold(
-    componentName: string,
-): readonly ScaffoldFile[] {
-    return [
-        {
-            filename: `${componentName}.contract.ts`,
-            content: generateContract(componentName),
-        },
-        {
-            filename: `${componentName}.tsx`,
-            content: generateRender(componentName),
-        },
-        {
-            filename: `${componentName}.test.ts`,
-            content: generateComponentTest(componentName),
-        },
-        {
-            filename: `${componentName}.fixture.json`,
-            content: generateFixture(componentName),
-        },
-    ];
+export function generateComponentScaffold(componentName: string): readonly ScaffoldFile[] {
+  return [
+    {
+      filename: `${componentName}.contract.ts`,
+      content: generateContract(componentName),
+    },
+    {
+      filename: `${componentName}.tsx`,
+      content: generateRender(componentName),
+    },
+    {
+      filename: `${componentName}.test.ts`,
+      content: generateComponentTest(componentName),
+    },
+    {
+      filename: `${componentName}.fixture.json`,
+      content: generateFixture(componentName),
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +88,7 @@ export function generateComponentScaffold(
  * - `render` imported from the companion `.tsx` file
  */
 function generateContract(name: string): string {
-    return `/**
+  return `/**
  * ${name} — Component Contract
  *
  * This file defines the Zod props schema and Enterstellar ComponentContract
@@ -101,7 +99,7 @@ function generateContract(name: string): string {
  */
 
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 import { ${name}Render } from './${name}.js';
 
@@ -177,7 +175,7 @@ export const ${name}Contract = defineComponent({
  * from the companion contract file.
  */
 function generateRender(name: string): string {
-    return `/**
+  return `/**
  * ${name} — Render Function
  *
  * This file contains the React render function for the ${name} component.
@@ -248,9 +246,12 @@ export function ${name}Render(props: ${name}PropsType): React.ReactElement {
  * 3. Verifies the compilation passes with valid props
  */
 function generateComponentTest(name: string): string {
-    const intentPhrase = `Show ${name.replace(/([A-Z])/g, ' $1').trim().toLowerCase()}`;
+  const intentPhrase = `Show ${name
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
+    .toLowerCase()}`;
 
-    return `/**
+  return `/**
  * ${name} — Intent Tests
  *
  * Tests that the ${name} component correctly resolves from intents
@@ -260,7 +261,7 @@ function generateComponentTest(name: string): string {
  */
 
 import { describe, it, expect } from 'vitest';
-import { createTestHarness } from '@enterstellar-ai/test';
+import { createTestHarness } from '@enterstellar/test';
 
 import { registry } from '../../enterstellar/registry.js';
 
@@ -309,10 +310,10 @@ describe('${name}', () => {
  * default Zod schema (title + description).
  */
 function generateFixture(name: string): string {
-    const fixture = {
-        title: `Example ${name}`,
-        description: `This is an example ${name} component with sample data. Replace these values with real content.`,
-    };
+  const fixture = {
+    title: `Example ${name}`,
+    description: `This is an example ${name} component with sample data. Replace these values with real content.`,
+  };
 
-    return JSON.stringify(fixture, null, 2) + '\n';
+  return JSON.stringify(fixture, null, 2) + '\n';
 }

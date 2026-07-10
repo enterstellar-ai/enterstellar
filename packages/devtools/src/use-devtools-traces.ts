@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/use-devtools-traces
+ * @module @enterstellar/devtools/use-devtools-traces
  * @description Internal hook for DevTools trace subscription, buffering, and filtering.
  *
  * Subscribes to `EnterstellarStore` traces via `useSyncExternalStore` + `store.get('traces')`
@@ -23,8 +23,8 @@
 
 import { useCallback, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
 
-import type { EnterstellarStore, ZoneTrace } from '@enterstellar-ai/types';
-import { EnterstellarContext } from '@enterstellar-ai/react';
+import type { EnterstellarStore, ZoneTrace } from '@enterstellar/types';
+import { EnterstellarContext } from '@enterstellar/react';
 
 import type { TraceFilter } from './types.js';
 import { DEVTOOLS_MAX_TRACES } from './constants.js';
@@ -58,8 +58,10 @@ const EMPTY_TRACES: readonly ZoneTrace[] = Object.freeze([]);
  * @internal
  */
 const NULL_STORE: Pick<EnterstellarStore, 'subscribe' | 'get'> = {
-    subscribe: () => () => { /* no-op */ },
-    get: (_key: string) => undefined,
+  subscribe: () => () => {
+    /* no-op */
+  },
+  get: (_key: string) => undefined,
 };
 
 // ---------------------------------------------------------------------------
@@ -83,42 +85,42 @@ const NULL_STORE: Pick<EnterstellarStore, 'subscribe' | 'get'> = {
  * @internal
  */
 function updateRingBuffer(
-    prevBuffer: readonly ZoneTrace[],
-    incomingTraces: readonly ZoneTrace[],
-    seenIds: Set<string>,
-    maxSize: number,
+  prevBuffer: readonly ZoneTrace[],
+  incomingTraces: readonly ZoneTrace[],
+  seenIds: Set<string>,
+  maxSize: number,
 ): readonly ZoneTrace[] {
-    // Identify new traces not yet in the buffer
-    const newTraces: ZoneTrace[] = [];
-    for (const trace of incomingTraces) {
-        if (!seenIds.has(trace.id)) {
-            newTraces.push(trace);
-            seenIds.add(trace.id);
-        }
+  // Identify new traces not yet in the buffer
+  const newTraces: ZoneTrace[] = [];
+  for (const trace of incomingTraces) {
+    if (!seenIds.has(trace.id)) {
+      newTraces.push(trace);
+      seenIds.add(trace.id);
     }
+  }
 
-    // Nothing new — return same reference
-    if (newTraces.length === 0) {
-        return prevBuffer;
+  // Nothing new — return same reference
+  if (newTraces.length === 0) {
+    return prevBuffer;
+  }
+
+  // Append new traces and enforce max size
+  const combined = [...prevBuffer, ...newTraces];
+
+  if (combined.length <= maxSize) {
+    return combined;
+  }
+
+  // Evict oldest entries and remove their IDs from the seen set
+  const evictCount = combined.length - maxSize;
+  for (let i = 0; i < evictCount; i++) {
+    const evicted = combined[i];
+    if (evicted !== undefined) {
+      seenIds.delete(evicted.id);
     }
+  }
 
-    // Append new traces and enforce max size
-    const combined = [...prevBuffer, ...newTraces];
-
-    if (combined.length <= maxSize) {
-        return combined;
-    }
-
-    // Evict oldest entries and remove their IDs from the seen set
-    const evictCount = combined.length - maxSize;
-    for (let i = 0; i < evictCount; i++) {
-        const evicted = combined[i];
-        if (evicted !== undefined) {
-            seenIds.delete(evicted.id);
-        }
-    }
-
-    return combined.slice(evictCount);
+  return combined.slice(evictCount);
 }
 
 // ---------------------------------------------------------------------------
@@ -134,15 +136,15 @@ function updateRingBuffer(
  * @param traceId - The full trace ID string.
  * @returns The zone name prefix, or the full ID if no separator found.
  *
- * @see `@enterstellar-ai/react/src/hooks/use-enterstellar-trace.ts` — zone-prefixed ID convention
+ * @see `@enterstellar/react/src/hooks/use-enterstellar-trace.ts` — zone-prefixed ID convention
  * @internal
  */
 export function extractZoneName(traceId: string): string {
-    const separatorIndex = traceId.indexOf('-');
-    if (separatorIndex === -1) {
-        return traceId;
-    }
-    return traceId.substring(0, separatorIndex);
+  const separatorIndex = traceId.indexOf('-');
+  if (separatorIndex === -1) {
+    return traceId;
+  }
+  return traceId.substring(0, separatorIndex);
 }
 
 /**
@@ -163,45 +165,50 @@ export function extractZoneName(traceId: string): string {
  * @internal
  */
 export function applyTraceFilter(
-    traces: readonly ZoneTrace[],
-    filter: TraceFilter,
+  traces: readonly ZoneTrace[],
+  filter: TraceFilter,
 ): readonly ZoneTrace[] {
-    const { zone, component, status, search } = filter;
+  const { zone, component, status, search } = filter;
 
-    // Fast path: no filters active
-    if (zone === undefined && component === undefined && status === undefined && search === undefined) {
-        return traces;
+  // Fast path: no filters active
+  if (
+    zone === undefined &&
+    component === undefined &&
+    status === undefined &&
+    search === undefined
+  ) {
+    return traces;
+  }
+
+  const searchLower = search?.toLowerCase();
+
+  return traces.filter((trace) => {
+    // Zone filter: extract zone name from trace ID
+    if (zone !== undefined && extractZoneName(trace.id) !== zone) {
+      return false;
     }
 
-    const searchLower = search?.toLowerCase();
+    // Component filter: match against intent.component
+    if (component !== undefined && trace.intent.component !== component) {
+      return false;
+    }
 
-    return traces.filter((trace) => {
-        // Zone filter: extract zone name from trace ID
-        if (zone !== undefined && extractZoneName(trace.id) !== zone) {
-            return false;
-        }
+    // Status filter: match compilation status
+    if (status !== undefined && trace.compilation.status !== status) {
+      return false;
+    }
 
-        // Component filter: match against intent.component
-        if (component !== undefined && trace.intent.component !== component) {
-            return false;
-        }
+    // Text search: case-insensitive across multiple fields
+    if (searchLower !== undefined && searchLower.length > 0) {
+      const componentMatch = trace.intent.component.toLowerCase().includes(searchLower);
 
-        // Status filter: match compilation status
-        if (status !== undefined && trace.compilation.status !== status) {
-            return false;
-        }
+      if (!componentMatch) {
+        return false;
+      }
+    }
 
-        // Text search: case-insensitive across multiple fields
-        if (searchLower !== undefined && searchLower.length > 0) {
-            const componentMatch = trace.intent.component.toLowerCase().includes(searchLower);
-
-            if (!componentMatch) {
-                return false;
-            }
-        }
-
-        return true;
-    });
+    return true;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -214,17 +221,17 @@ export function applyTraceFilter(
  * @internal
  */
 export type DevtoolsTracesResult = {
-    /** All traces in the ring buffer (unfiltered). */
-    readonly allTraces: readonly ZoneTrace[];
+  /** All traces in the ring buffer (unfiltered). */
+  readonly allTraces: readonly ZoneTrace[];
 
-    /** Traces filtered by the current filter criteria. */
-    readonly filteredTraces: readonly ZoneTrace[];
+  /** Traces filtered by the current filter criteria. */
+  readonly filteredTraces: readonly ZoneTrace[];
 
-    /** Unique zone names extracted from all buffered traces. */
-    readonly availableZones: readonly string[];
+  /** Unique zone names extracted from all buffered traces. */
+  readonly availableZones: readonly string[];
 
-    /** Unique component names across all buffered traces. */
-    readonly availableComponents: readonly string[];
+  /** Unique component names across all buffered traces. */
+  readonly availableComponents: readonly string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -249,142 +256,140 @@ export type DevtoolsTracesResult = {
  * @internal
  */
 export function useDevtoolsTraces(
-    filter: TraceFilter,
-    maxTraces: number = DEVTOOLS_MAX_TRACES,
+  filter: TraceFilter,
+  maxTraces: number = DEVTOOLS_MAX_TRACES,
 ): DevtoolsTracesResult {
-    // ---------------------------------------------------------------------------
-    // Store Subscription
-    // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Store Subscription
+  // ---------------------------------------------------------------------------
 
-    /**
-     * Access the EnterstellarStore directly via EnterstellarContext.
-     *
-     * DevTools reads trace data from the store's `'traces'` extension key
-     * using `store.get('traces')`, NOT from `getSnapshot().traces` (which
-     * would read from `SerializedState.extensions['traces']` — a different
-     * and potentially stale code path).
-     *
-     * @see Design Choice DT7 — data via EnterstellarStore directly.
-     */
-    const enterstellarContext = useContext(EnterstellarContext);
+  /**
+   * Access the EnterstellarStore directly via EnterstellarContext.
+   *
+   * DevTools reads trace data from the store's `'traces'` extension key
+   * using `store.get('traces')`, NOT from `getSnapshot().traces` (which
+   * would read from `SerializedState.extensions['traces']` — a different
+   * and potentially stale code path).
+   *
+   * @see Design Choice DT7 — data via EnterstellarStore directly.
+   */
+  const enterstellarContext = useContext(EnterstellarContext);
 
-    /**
-     * When `EnterstellarContext` is null (DevTools rendered outside `<Provider>`,
-     * or during provider init), use a no-op store stub. This preserves the
-     * Rules of Hooks (all hooks below run unconditionally) while returning
-     * empty results. DevTools gracefully shows "No traces yet" instead of
-     * crashing the render tree.
-     *
-     * This aligns with the Batch 4 init race resolution strategy — DevTools
-     * should never prevent the application from rendering.
-     */
-    const store = (enterstellarContext !== null && typeof enterstellarContext === 'object')
-        ? enterstellarContext.store
-        : NULL_STORE;
+  /**
+   * When `EnterstellarContext` is null (DevTools rendered outside `<Provider>`,
+   * or during provider init), use a no-op store stub. This preserves the
+   * Rules of Hooks (all hooks below run unconditionally) while returning
+   * empty results. DevTools gracefully shows "No traces yet" instead of
+   * crashing the render tree.
+   *
+   * This aligns with the Batch 4 init race resolution strategy — DevTools
+   * should never prevent the application from rendering.
+   */
+  const store =
+    enterstellarContext !== null && typeof enterstellarContext === 'object'
+      ? enterstellarContext.store
+      : NULL_STORE;
 
-    /**
-     * Subscribe to store changes via `useSyncExternalStore` (RE11).
-     *
-     * The `subscribe` callback registers a listener that fires on any store
-     * mutation (S4: shallow equality check handled internally by the store).
-     * The `getSnapshot` callback reads full `ZoneTrace[]` from the `'traces'`
-     * extension key, returning `EMPTY_TRACES` for referential stability
-     * when no traces exist.
-     *
-     * This replaces the previous broken pattern that used `useEnterstellarStore`
-     * with an unsafe `state as Record<string, unknown>` cast to access
-     * extension data via bracket notation on `SerializedState`.
-     *
-     * @see Design Choice RE11 — `useSyncExternalStore`.
-     * @see Design Choice S4 — fire only on actual change.
-     */
-    const subscribe = useCallback(
-        (onStoreChange: () => void): (() => void) => store.subscribe(onStoreChange),
-        [store],
-    );
+  /**
+   * Subscribe to store changes via `useSyncExternalStore` (RE11).
+   *
+   * The `subscribe` callback registers a listener that fires on any store
+   * mutation (S4: shallow equality check handled internally by the store).
+   * The `getSnapshot` callback reads full `ZoneTrace[]` from the `'traces'`
+   * extension key, returning `EMPTY_TRACES` for referential stability
+   * when no traces exist.
+   *
+   * This replaces the previous broken pattern that used `useEnterstellarStore`
+   * with an unsafe `state as Record<string, unknown>` cast to access
+   * extension data via bracket notation on `SerializedState`.
+   *
+   * @see Design Choice RE11 — `useSyncExternalStore`.
+   * @see Design Choice S4 — fire only on actual change.
+   */
+  const subscribe = useCallback(
+    (onStoreChange: () => void): (() => void) => store.subscribe(onStoreChange),
+    [store],
+  );
 
-    const getSnapshot = useCallback(
-        (): readonly ZoneTrace[] => store.get<readonly ZoneTrace[]>('traces') ?? EMPTY_TRACES,
-        [store],
-    );
+  const getSnapshot = useCallback(
+    (): readonly ZoneTrace[] => store.get<readonly ZoneTrace[]>('traces') ?? EMPTY_TRACES,
+    [store],
+  );
 
-    const storeTraces = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const storeTraces = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
-    // ---------------------------------------------------------------------------
-    // Ring Buffer State (ref-based to avoid re-render loops)
-    // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Ring Buffer State (ref-based to avoid re-render loops)
+  // ---------------------------------------------------------------------------
 
-    const bufferRef = useRef<readonly ZoneTrace[]>([]);
-    const seenIdsRef = useRef<Set<string>>(new Set());
+  const bufferRef = useRef<readonly ZoneTrace[]>([]);
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
-    /**
-     * Update the ring buffer with any new traces from the store.
-     * `updateRingBuffer` is referentially stable — it returns the same
-     * array reference if nothing changed, preventing needless memoization
-     * invalidation downstream.
-     */
-    const updatedBuffer = updateRingBuffer(
-        bufferRef.current,
-        storeTraces,
-        seenIdsRef.current,
-        maxTraces,
-    );
-    bufferRef.current = updatedBuffer;
+  /**
+   * Update the ring buffer with any new traces from the store.
+   * `updateRingBuffer` is referentially stable — it returns the same
+   * array reference if nothing changed, preventing needless memoization
+   * invalidation downstream.
+   */
+  const updatedBuffer = updateRingBuffer(
+    bufferRef.current,
+    storeTraces,
+    seenIdsRef.current,
+    maxTraces,
+  );
+  bufferRef.current = updatedBuffer;
 
-    // ---------------------------------------------------------------------------
-    // Derived Data
-    // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Derived Data
+  // ---------------------------------------------------------------------------
 
-    /**
-     * Extract unique zone names from all buffered traces.
-     * Stable memoization keyed on the buffer reference.
-     */
-    const availableZones = useMemo((): readonly string[] => {
-        const zones = new Set<string>();
-        for (const trace of updatedBuffer) {
-            zones.add(extractZoneName(trace.id));
-        }
-        return [...zones].sort();
-    }, [updatedBuffer]);
+  /**
+   * Extract unique zone names from all buffered traces.
+   * Stable memoization keyed on the buffer reference.
+   */
+  const availableZones = useMemo((): readonly string[] => {
+    const zones = new Set<string>();
+    for (const trace of updatedBuffer) {
+      zones.add(extractZoneName(trace.id));
+    }
+    return [...zones].sort();
+  }, [updatedBuffer]);
 
-    /**
-     * Extract unique component names from all buffered traces.
-     * Stable memoization keyed on the buffer reference.
-     */
-    const availableComponents = useMemo((): readonly string[] => {
-        const components = new Set<string>();
-        for (const trace of updatedBuffer) {
-            components.add(trace.intent.component);
-        }
-        return [...components].sort();
-    }, [updatedBuffer]);
+  /**
+   * Extract unique component names from all buffered traces.
+   * Stable memoization keyed on the buffer reference.
+   */
+  const availableComponents = useMemo((): readonly string[] => {
+    const components = new Set<string>();
+    for (const trace of updatedBuffer) {
+      components.add(trace.intent.component);
+    }
+    return [...components].sort();
+  }, [updatedBuffer]);
 
-    // ---------------------------------------------------------------------------
-    // Filtering
-    // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Filtering
+  // ---------------------------------------------------------------------------
 
-    /**
-     * Stable reference to the filter function to avoid re-creating
-     * the filtered array on every render when filters haven't changed.
-     */
-    const applyFilter = useCallback(
-        (traces: readonly ZoneTrace[]) => applyTraceFilter(traces, filter),
-        [filter],
-    );
+  /**
+   * Stable reference to the filter function to avoid re-creating
+   * the filtered array on every render when filters haven't changed.
+   */
+  const applyFilter = useCallback(
+    (traces: readonly ZoneTrace[]) => applyTraceFilter(traces, filter),
+    [filter],
+  );
 
-    const filteredTraces = useMemo(
-        () => applyFilter(updatedBuffer),
-        [applyFilter, updatedBuffer],
-    );
+  const filteredTraces = useMemo(() => applyFilter(updatedBuffer), [applyFilter, updatedBuffer]);
 
-    // ---------------------------------------------------------------------------
-    // Result
-    // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Result
+  // ---------------------------------------------------------------------------
 
-    return {
-        allTraces: updatedBuffer,
-        filteredTraces,
-        availableZones,
-        availableComponents,
-    };
+  return {
+    allTraces: updatedBuffer,
+    filteredTraces,
+    availableZones,
+    availableComponents,
+  };
 }

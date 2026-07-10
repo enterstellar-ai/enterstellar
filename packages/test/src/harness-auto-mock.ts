@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/test/harness-auto-mock
+ * @module @enterstellar/test/harness-auto-mock
  * @description Implements the `autoMock()` method for the test harness.
  *
  * Auto-generates mock `ComponentIntent` responses for every component
@@ -14,8 +14,8 @@
  * @see Design Choice TE2 — auto-generated mock definition mode.
  */
 
-import type { EnterstellarRegistry } from '@enterstellar-ai/registry';
-import type { ComponentIntent } from '@enterstellar-ai/types';
+import type { EnterstellarRegistry } from '@enterstellar/registry';
+import type { ComponentIntent } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // autoMock Implementation
@@ -39,54 +39,54 @@ import type { ComponentIntent } from '@enterstellar-ai/types';
  * @internal This function is called by `createTestHarness().autoMock()`.
  */
 export function autoMock(
-    registry: EnterstellarRegistry,
-    mockResponses: Map<string, ComponentIntent>,
+  registry: EnterstellarRegistry,
+  mockResponses: Map<string, ComponentIntent>,
 ): void {
-    const componentNames = registry.list();
+  const componentNames = registry.list();
 
-    for (const name of componentNames) {
-        const contract = registry.get(name);
+  for (const name of componentNames) {
+    const contract = registry.get(name);
 
-        // Guard: registry.get() returns ComponentContract | undefined.
-        // Skip if the contract was removed between list() and get() calls.
-        if (contract === undefined) {
-            continue;
-        }
-
-        // Check if the contract has example data (ComponentExample[]).
-        // If examples exist, use the first example's intent string as the
-        // mock key and its props as the mock response.
-        if (contract.examples.length > 0) {
-            const firstExample = contract.examples[0];
-
-            // Guard: noUncheckedIndexedAccess means firstExample could be undefined
-            if (firstExample === undefined) {
-                continue;
-            }
-
-            const intentKey = firstExample.intent;
-
-            // Do NOT overwrite existing mocks — user-defined mocks take precedence.
-            if (!mockResponses.has(intentKey)) {
-                const intent: ComponentIntent = {
-                    component: name,
-                    props: { ...firstExample.props },
-                    confidence: 1.0, // Mock intents have full confidence
-                };
-                mockResponses.set(intentKey, intent);
-            }
-        }
-
-        // Always create a fallback mock keyed by the component name itself.
-        // This allows `harness.resolve('PatientVitals')` to work even if
-        // no example intents are defined.
-        if (!mockResponses.has(name)) {
-            const fallbackIntent: ComponentIntent = {
-                component: name,
-                props: {},
-                confidence: 1.0, // Mock intents have full confidence
-            };
-            mockResponses.set(name, fallbackIntent);
-        }
+    // Guard: registry.get() returns ComponentContract | undefined.
+    // Skip if the contract was removed between list() and get() calls.
+    if (contract === undefined) {
+      continue;
     }
+
+    // Check if the contract has example data (ComponentExample[]).
+    // If examples exist, use the first example's intent string as the
+    // mock key and its props as the mock response.
+    if (contract.examples.length > 0) {
+      const firstExample = contract.examples[0];
+
+      // Guard: noUncheckedIndexedAccess means firstExample could be undefined
+      if (firstExample === undefined) {
+        continue;
+      }
+
+      const intentKey = firstExample.intent;
+
+      // Do NOT overwrite existing mocks — user-defined mocks take precedence.
+      if (!mockResponses.has(intentKey)) {
+        const intent: ComponentIntent = {
+          component: name,
+          props: { ...firstExample.props },
+          confidence: 1.0, // Mock intents have full confidence
+        };
+        mockResponses.set(intentKey, intent);
+      }
+    }
+
+    // Always create a fallback mock keyed by the component name itself.
+    // This allows `harness.resolve('PatientVitals')` to work even if
+    // no example intents are defined.
+    if (!mockResponses.has(name)) {
+      const fallbackIntent: ComponentIntent = {
+        component: name,
+        props: {},
+        confidence: 1.0, // Mock intents have full confidence
+      };
+      mockResponses.set(name, fallbackIntent);
+    }
+  }
 }

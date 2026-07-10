@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/agent-sdk",
+  "name": "@enterstellar/agent-sdk",
   "description": "AI agent SDK — MCP server with tools for component search, forge, validate, and analyze.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -55,21 +55,21 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/compiler": "workspace:*",
-    "@enterstellar-ai/semantic-index": "workspace:*",
-    "@enterstellar-ai/forge": "workspace:*",
-    "@enterstellar-ai/state": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/compiler": "workspace:*",
+    "@enterstellar/semantic-index": "workspace:*",
+    "@enterstellar/forge": "workspace:*",
+    "@enterstellar/state": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/compiler": "workspace:*",
-    "@enterstellar-ai/semantic-index": "workspace:*",
-    "@enterstellar-ai/forge": "workspace:*",
-    "@enterstellar-ai/state": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/compiler": "workspace:*",
+    "@enterstellar/semantic-index": "workspace:*",
+    "@enterstellar/forge": "workspace:*",
+    "@enterstellar/state": "workspace:*",
     "zod": "^4.3.6"
   }
 }

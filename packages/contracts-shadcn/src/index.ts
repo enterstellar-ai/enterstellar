@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/contracts-shadcn
+ * @module @enterstellar/contracts-shadcn
  * @description Pre-converted Enterstellar ComponentContracts for shadcn/ui.
  *
  * shadcn/ui uses a **code-copy distribution model** — components are
@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { registerShadcnContracts } from '@enterstellar-ai/contracts-shadcn';
+ * import { registerShadcnContracts } from '@enterstellar/contracts-shadcn';
  * import { Button } from '@/components/ui/button';
  * import { Card } from '@/components/ui/card';
  *

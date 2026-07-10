@@ -1,12 +1,12 @@
 ---
 title: Cross-Language Renderers
-description: "@enterstellar-ai/contract-protocol publishes 8 JSON Schema Draft-07 files. Any language that can parse JSON Schema can validate Enterstellar contracts — Swift, Kotlin, Python, Go, Rust."
+description: "@enterstellar/contract-protocol publishes 8 JSON Schema Draft-07 files. Any language that can parse JSON Schema can validate Enterstellar contracts — Swift, Kotlin, Python, Go, Rust."
 icon: Globe
 ---
 
 ## The Protocol
 
-Enterstellar's TypeScript implementation is the reference. `@enterstellar-ai/contract-protocol` is the language-agnostic spec that makes Enterstellar renderers possible in any language.
+Enterstellar's TypeScript implementation is the reference. `@enterstellar/contract-protocol` is the language-agnostic spec that makes Enterstellar renderers possible in any language.
 
 It publishes 8 JSON Schema files (CP5 locked) that describe every data structure in the Enterstellar pipeline:
 
@@ -34,7 +34,7 @@ Three locked constraints govern the schemas (CP2, CP7, CP8):
 Validate any JSON file against a schema using the CLI:
 
 ```bash
-npx @enterstellar-ai/contract-protocol validate \
+npx @enterstellar/contract-protocol validate \
   component-contract \
   schemas/component-contract.json \
   my-contract.json
@@ -149,7 +149,7 @@ class EnterstellarConformanceTests: XCTestCase {
 
 ```ts
 import Ajv from 'ajv';
-import { loadFixtures } from '@enterstellar-ai/contract-protocol/conformance';
+import { loadFixtures } from '@enterstellar/contract-protocol/conformance';
 
 const ajv = new Ajv({ strict: true });
 const schema = require('./schemas/component-contract.json');

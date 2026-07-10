@@ -20,11 +20,11 @@
  *
  * **Renderer registration:** Called at module scope (outside the component)
  * for two reasons:
- * 1. `registerRenderer()` writes to the module-level singleton in `@enterstellar-ai/react`
+ * 1. `registerRenderer()` writes to the module-level singleton in `@enterstellar/react`
  * 2. `registerPlaygroundRenderers()` is idempotent — safe to call multiple times
  * 3. Renderers must be registered BEFORE any `<Zone>` mounts
  *
- * @see Provider from @enterstellar-ai/react — the engine context provider
+ * @see Provider from @enterstellar/react — the engine context provider
  * @see Design Choice RE4 — client-side only
  * @see Design Choice RE3 — consumer manages connection
  */
@@ -32,9 +32,9 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 
-import { Provider } from '@enterstellar-ai/react';
-import { EnterstellarDevTools } from '@enterstellar-ai/devtools';
-import { createRenderCache } from '@enterstellar-ai/cache';
+import { Provider } from '@enterstellar/react';
+import { EnterstellarDevTools } from '@enterstellar/devtools';
+import { createRenderCache } from '@enterstellar/cache';
 
 import { playgroundRegistry } from '@/enterstellar/registry';
 import { registerPlaygroundRenderers } from '@/enterstellar/renderers';
@@ -49,7 +49,7 @@ import { PlaygroundConnectionContext } from './playground-context';
  * Register all 8 playground renderers BEFORE any component mounts.
  *
  * This runs once at module load time. The renderer registry is a
- * module-level singleton in `@enterstellar-ai/react` — it persists across
+ * module-level singleton in `@enterstellar/react` — it persists across
  * React re-renders and is available to all `<Zone>` instances.
  */
 registerPlaygroundRenderers();
@@ -106,11 +106,7 @@ export function PlaygroundProviders({
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <Provider
-      registry={playgroundRegistry}
-      connection={connectionRef.current}
-      cache={cache}
-    >
+    <Provider registry={playgroundRegistry} connection={connectionRef.current} cache={cache}>
       <PlaygroundConnectionContext.Provider value={connectionRef.current}>
         {children}
       </PlaygroundConnectionContext.Provider>

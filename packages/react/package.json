@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/react",
+  "name": "@enterstellar/react",
   "description": "React integration — Provider, Zone, lifecycle management, render cache, and hooks.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -54,15 +54,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/compiler": "workspace:*",
-    "@enterstellar-ai/state": "workspace:*",
-    "@enterstellar-ai/telemetry": "workspace:*",
-    "@enterstellar-ai/connection": "workspace:*",
-    "@enterstellar-ai/cache": "workspace:*",
-    "@enterstellar-ai/lifecycle": "workspace:*",
-    "@enterstellar-ai/adapters": "workspace:*"
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/compiler": "workspace:*",
+    "@enterstellar/state": "workspace:*",
+    "@enterstellar/telemetry": "workspace:*",
+    "@enterstellar/connection": "workspace:*",
+    "@enterstellar/cache": "workspace:*",
+    "@enterstellar/lifecycle": "workspace:*",
+    "@enterstellar/adapters": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.2.4",

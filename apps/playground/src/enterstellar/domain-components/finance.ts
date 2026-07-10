@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 
 // ---------------------------------------------------------------------------
 // 1. TransactionLedger
@@ -33,21 +33,26 @@ import { defineComponent } from '@enterstellar-ai/registry';
  */
 export const TransactionLedger = defineComponent({
   name: 'TransactionLedger',
-  description: 'Sortable financial transaction history with status icons, amounts, and counterparty details.',
+  description:
+    'Sortable financial transaction history with status icons, amounts, and counterparty details.',
   category: 'data-display',
   tags: ['finance', 'transactions', 'ledger', 'payments', 'history'],
   props: z.object({
     title: z.string().min(1, 'Ledger title is required.'),
-    transactions: z.array(z.object({
-      id: z.string().min(1),
-      date: z.string().min(1),
-      description: z.string().min(1),
-      amount: z.number(),
-      currency: z.string().default('USD'),
-      status: z.enum(['completed', 'pending', 'failed', 'reversed']),
-      counterparty: z.string().min(1),
-      type: z.enum(['credit', 'debit']),
-    })).min(1, 'At least one transaction is required.'),
+    transactions: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          date: z.string().min(1),
+          description: z.string().min(1),
+          amount: z.number(),
+          currency: z.string().default('USD'),
+          status: z.enum(['completed', 'pending', 'failed', 'reversed']),
+          counterparty: z.string().min(1),
+          type: z.enum(['credit', 'debit']),
+        }),
+      )
+      .min(1, 'At least one transaction is required.'),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -76,9 +81,36 @@ export const TransactionLedger = defineComponent({
       props: {
         title: 'Recent Transactions',
         transactions: [
-          { id: 'TXN-001', date: '2024-03-15', description: 'Wire transfer to Acme Corp', amount: 25000, currency: 'USD', status: 'completed', counterparty: 'Acme Corp', type: 'debit' },
-          { id: 'TXN-002', date: '2024-03-14', description: 'Payment from GlobalTech', amount: 12500, currency: 'USD', status: 'completed', counterparty: 'GlobalTech Inc', type: 'credit' },
-          { id: 'TXN-003', date: '2024-03-14', description: 'Refund processing', amount: 3200, currency: 'USD', status: 'pending', counterparty: 'RetailMax', type: 'debit' },
+          {
+            id: 'TXN-001',
+            date: '2024-03-15',
+            description: 'Wire transfer to Acme Corp',
+            amount: 25000,
+            currency: 'USD',
+            status: 'completed',
+            counterparty: 'Acme Corp',
+            type: 'debit',
+          },
+          {
+            id: 'TXN-002',
+            date: '2024-03-14',
+            description: 'Payment from GlobalTech',
+            amount: 12500,
+            currency: 'USD',
+            status: 'completed',
+            counterparty: 'GlobalTech Inc',
+            type: 'credit',
+          },
+          {
+            id: 'TXN-003',
+            date: '2024-03-14',
+            description: 'Refund processing',
+            amount: 3200,
+            currency: 'USD',
+            status: 'pending',
+            counterparty: 'RetailMax',
+            type: 'debit',
+          },
         ],
       },
     },
@@ -100,7 +132,8 @@ export const TransactionLedger = defineComponent({
  */
 export const RevenueChart = defineComponent({
   name: 'RevenueChart',
-  description: 'Revenue KPI card with trend indicator, period comparison, and optional category breakdown.',
+  description:
+    'Revenue KPI card with trend indicator, period comparison, and optional category breakdown.',
   category: 'data-display',
   tags: ['finance', 'revenue', 'kpi', 'chart', 'metrics'],
   props: z.object({
@@ -110,11 +143,15 @@ export const RevenueChart = defineComponent({
     currency: z.string().default('USD'),
     period: z.string().min(1, 'Period label is required (e.g., "Q1 2024").'),
     trend: z.enum(['up', 'down', 'flat']),
-    breakdown: z.array(z.object({
-      category: z.string().min(1),
-      value: z.number(),
-      percentage: z.number().min(0).max(100),
-    })).optional(),
+    breakdown: z
+      .array(
+        z.object({
+          category: z.string().min(1),
+          value: z.number(),
+          percentage: z.number().min(0).max(100),
+        }),
+      )
+      .optional(),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -171,7 +208,8 @@ export const RevenueChart = defineComponent({
  */
 export const ComplianceAlert = defineComponent({
   name: 'ComplianceAlert',
-  description: 'Regulatory compliance notification with severity, deadline, and regulation reference.',
+  description:
+    'Regulatory compliance notification with severity, deadline, and regulation reference.',
   category: 'feedback',
   tags: ['finance', 'compliance', 'alert', 'regulatory', 'notification'],
   props: z.object({
@@ -206,7 +244,8 @@ export const ComplianceAlert = defineComponent({
       intent: 'Show a SOX compliance warning about upcoming audit deadline',
       props: {
         title: 'SOX Compliance Review Due',
-        message: 'Quarterly SOX §302 certification requires CFO sign-off on all material transactions above $50,000. 23 transactions pending review.',
+        message:
+          'Quarterly SOX §302 certification requires CFO sign-off on all material transactions above $50,000. 23 transactions pending review.',
         severity: 'warning',
         regulation: 'SOX §302',
         deadline: '2024-03-31',
@@ -234,20 +273,25 @@ export const ComplianceAlert = defineComponent({
  */
 export const RiskScorecard = defineComponent({
   name: 'RiskScorecard',
-  description: 'Multi-factor fraud risk assessment panel with composite score and per-signal breakdown.',
+  description:
+    'Multi-factor fraud risk assessment panel with composite score and per-signal breakdown.',
   category: 'data-display',
   tags: ['finance', 'risk', 'fraud', 'scoring', 'compliance'],
   props: z.object({
     transactionId: z.string().min(1),
     overallScore: z.number().min(0).max(100),
     riskLevel: z.enum(['low', 'medium', 'high', 'critical']),
-    factors: z.array(z.object({
-      name: z.string().min(1),
-      score: z.number().min(0).max(100),
-      weight: z.number().min(0).max(1),
-      status: z.enum(['pass', 'warn', 'fail']),
-      detail: z.string().min(1),
-    })).min(1, 'At least one risk factor is required.'),
+    factors: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          score: z.number().min(0).max(100),
+          weight: z.number().min(0).max(1),
+          status: z.enum(['pass', 'warn', 'fail']),
+          detail: z.string().min(1),
+        }),
+      )
+      .min(1, 'At least one risk factor is required.'),
     recommendation: z.enum(['approve', 'review', 'decline', 'block']),
     evaluatedAt: z.string().min(1),
   }),
@@ -279,10 +323,34 @@ export const RiskScorecard = defineComponent({
         overallScore: 72,
         riskLevel: 'high',
         factors: [
-          { name: 'Transaction Velocity', score: 85, weight: 0.3, status: 'fail', detail: '14 transactions in 2 minutes from same card — exceeds 5/min threshold' },
-          { name: 'Geographic Anomaly', score: 62, weight: 0.25, status: 'warn', detail: 'Card used in São Paulo 3h after London transaction — possible travel' },
-          { name: 'Device Fingerprint', score: 45, weight: 0.25, status: 'pass', detail: 'Known device, matching browser signature and screen resolution' },
-          { name: 'Behavioral Pattern', score: 78, weight: 0.2, status: 'warn', detail: 'Transaction amount 4.2x above cardholder average of $340' },
+          {
+            name: 'Transaction Velocity',
+            score: 85,
+            weight: 0.3,
+            status: 'fail',
+            detail: '14 transactions in 2 minutes from same card — exceeds 5/min threshold',
+          },
+          {
+            name: 'Geographic Anomaly',
+            score: 62,
+            weight: 0.25,
+            status: 'warn',
+            detail: 'Card used in São Paulo 3h after London transaction — possible travel',
+          },
+          {
+            name: 'Device Fingerprint',
+            score: 45,
+            weight: 0.25,
+            status: 'pass',
+            detail: 'Known device, matching browser signature and screen resolution',
+          },
+          {
+            name: 'Behavioral Pattern',
+            score: 78,
+            weight: 0.2,
+            status: 'warn',
+            detail: 'Transaction amount 4.2x above cardholder average of $340',
+          },
         ],
         recommendation: 'review',
         evaluatedAt: '2024-03-15T14:32:18Z',
@@ -315,12 +383,16 @@ export const CashFlowForecast = defineComponent({
     title: z.string().min(1),
     currency: z.string().default('USD'),
     currentBalance: z.number(),
-    periods: z.array(z.object({
-      label: z.string().min(1),
-      inflow: z.number().min(0),
-      outflow: z.number().min(0),
-      netPosition: z.number(),
-    })).min(2, 'At least two forecast periods are required.'),
+    periods: z
+      .array(
+        z.object({
+          label: z.string().min(1),
+          inflow: z.number().min(0),
+          outflow: z.number().min(0),
+          netPosition: z.number(),
+        }),
+      )
+      .min(2, 'At least two forecast periods are required.'),
     runwayMonths: z.number().min(0).optional(),
     burnRate: z.number().min(0).optional(),
   }),
@@ -384,19 +456,24 @@ export const CashFlowForecast = defineComponent({
  */
 export const FeeSchedule = defineComponent({
   name: 'FeeSchedule',
-  description: 'Tiered pricing table with volume thresholds, per-transaction rates, and current tier highlight.',
+  description:
+    'Tiered pricing table with volume thresholds, per-transaction rates, and current tier highlight.',
   category: 'data-display',
   tags: ['finance', 'pricing', 'fees', 'tiers', 'billing'],
   props: z.object({
     title: z.string().min(1),
-    tiers: z.array(z.object({
-      name: z.string().min(1),
-      volumeMin: z.number().int().min(0),
-      volumeMax: z.number().int().nullable(),
-      ratePercentage: z.number().min(0).max(100),
-      flatFee: z.number().min(0),
-      currency: z.string().default('USD'),
-    })).min(1, 'At least one pricing tier is required.'),
+    tiers: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          volumeMin: z.number().int().min(0),
+          volumeMax: z.number().int().nullable(),
+          ratePercentage: z.number().min(0).max(100),
+          flatFee: z.number().min(0),
+          currency: z.string().default('USD'),
+        }),
+      )
+      .min(1, 'At least one pricing tier is required.'),
     currentTierIndex: z.number().int().min(0),
     currentMonthlyVolume: z.number().int().min(0),
     estimatedMonthlyCost: z.number().min(0).optional(),
@@ -426,14 +503,42 @@ export const FeeSchedule = defineComponent({
       props: {
         title: 'Processing Fee Schedule',
         tiers: [
-          { name: 'Starter', volumeMin: 0, volumeMax: 10000, ratePercentage: 2.9, flatFee: 0.30, currency: 'USD' },
-          { name: 'Growth', volumeMin: 10001, volumeMax: 100000, ratePercentage: 2.5, flatFee: 0.25, currency: 'USD' },
-          { name: 'Scale', volumeMin: 100001, volumeMax: 1000000, ratePercentage: 2.2, flatFee: 0.20, currency: 'USD' },
-          { name: 'Enterprise', volumeMin: 1000001, volumeMax: null, ratePercentage: 1.8, flatFee: 0.15, currency: 'USD' },
+          {
+            name: 'Starter',
+            volumeMin: 0,
+            volumeMax: 10000,
+            ratePercentage: 2.9,
+            flatFee: 0.3,
+            currency: 'USD',
+          },
+          {
+            name: 'Growth',
+            volumeMin: 10001,
+            volumeMax: 100000,
+            ratePercentage: 2.5,
+            flatFee: 0.25,
+            currency: 'USD',
+          },
+          {
+            name: 'Scale',
+            volumeMin: 100001,
+            volumeMax: 1000000,
+            ratePercentage: 2.2,
+            flatFee: 0.2,
+            currency: 'USD',
+          },
+          {
+            name: 'Enterprise',
+            volumeMin: 1000001,
+            volumeMax: null,
+            ratePercentage: 1.8,
+            flatFee: 0.15,
+            currency: 'USD',
+          },
         ],
         currentTierIndex: 1,
         currentMonthlyVolume: 47200,
-        estimatedMonthlyCost: 1205.00,
+        estimatedMonthlyCost: 1205.0,
       },
     },
   ],

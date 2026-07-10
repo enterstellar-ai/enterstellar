@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/agent-sdk/tools/build-ui
+ * @module @enterstellar/agent-sdk/tools/build-ui
  * @description Implements the composite `enterstellar_build_ui` MCP tool (AS2).
  *
  * Chains three atomic tools in sequence:
@@ -23,14 +23,14 @@
  * @see Bible §4.16 — composite tool specification.
  */
 
-import type { SemanticSearchResult } from '@enterstellar-ai/types';
+import type { SemanticSearchResult } from '@enterstellar/types';
 
 import type {
-    ZoneSpec,
-    BuildUIResult,
-    AgentSDKRegistry,
-    AgentSDKCompiler,
-    AgentSDKSemanticIndex,
+  ZoneSpec,
+  BuildUIResult,
+  AgentSDKRegistry,
+  AgentSDKCompiler,
+  AgentSDKSemanticIndex,
 } from '../types.js';
 import { executeSearchComponents } from './search-components.js';
 import { executeComposeUI } from './compose-ui.js';
@@ -72,49 +72,49 @@ import { executeValidateSpec } from './validate-spec.js';
  * ```
  */
 export async function executeBuildUI(
-    semanticIndex: AgentSDKSemanticIndex,
-    registry: AgentSDKRegistry,
-    compiler: AgentSDKCompiler,
-    query: string,
-    zones: readonly ZoneSpec[],
+  semanticIndex: AgentSDKSemanticIndex,
+  registry: AgentSDKRegistry,
+  compiler: AgentSDKCompiler,
+  query: string,
+  zones: readonly ZoneSpec[],
 ): Promise<BuildUIResult> {
-    // -----------------------------------------------------------------------
-    // Step 1: Search for matching components
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 1: Search for matching components
+  // -----------------------------------------------------------------------
 
-    const searchResults = await executeSearchComponents(
-        semanticIndex,
-        query,
-        zones.length > 0 ? zones.length : undefined,
-    );
+  const searchResults = await executeSearchComponents(
+    semanticIndex,
+    query,
+    zones.length > 0 ? zones.length : undefined,
+  );
 
-    // -----------------------------------------------------------------------
-    // Step 2: Auto-fill empty component fields from search results
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 2: Auto-fill empty component fields from search results
+  // -----------------------------------------------------------------------
 
-    const filledZones = autoFillZones(zones, searchResults);
+  const filledZones = autoFillZones(zones, searchResults);
 
-    // -----------------------------------------------------------------------
-    // Step 3: Compose the UI specification
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 3: Compose the UI specification
+  // -----------------------------------------------------------------------
 
-    const spec = executeComposeUI(registry, filledZones);
+  const spec = executeComposeUI(registry, filledZones);
 
-    // -----------------------------------------------------------------------
-    // Step 4: Validate through the compiler (L3)
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Step 4: Validate through the compiler (L3)
+  // -----------------------------------------------------------------------
 
-    const validation = await executeValidateSpec(compiler, spec);
+  const validation = await executeValidateSpec(compiler, spec);
 
-    // -----------------------------------------------------------------------
-    // Return combined result
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Return combined result
+  // -----------------------------------------------------------------------
 
-    return {
-        searchResults,
-        spec,
-        validation,
-    };
+  return {
+    searchResults,
+    spec,
+    validation,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -136,31 +136,31 @@ export async function executeBuildUI(
  * @returns New array of zones with auto-filled component names.
  */
 function autoFillZones(
-    zones: readonly ZoneSpec[],
-    searchResults: readonly SemanticSearchResult[],
+  zones: readonly ZoneSpec[],
+  searchResults: readonly SemanticSearchResult[],
 ): readonly ZoneSpec[] {
-    let searchIndex = 0;
+  let searchIndex = 0;
 
-    return zones.map((zone): ZoneSpec => {
-        // Zone already has an explicit component — keep it
-        if (zone.component.length > 0) {
-            return zone;
-        }
+  return zones.map((zone): ZoneSpec => {
+    // Zone already has an explicit component — keep it
+    if (zone.component.length > 0) {
+      return zone;
+    }
 
-        // Auto-fill from search results by position
-        const searchResult = searchResults[searchIndex];
-        searchIndex += 1;
+    // Auto-fill from search results by position
+    const searchResult = searchResults[searchIndex];
+    searchIndex += 1;
 
-        if (searchResult === undefined) {
-            // No more search results — keep empty (compose will error)
-            return zone;
-        }
+    if (searchResult === undefined) {
+      // No more search results — keep empty (compose will error)
+      return zone;
+    }
 
-        return {
-            name: zone.name,
-            component: searchResult.componentName,
-            props: zone.props,
-            determinism: zone.determinism,
-        };
-    });
+    return {
+      name: zone.name,
+      component: searchResult.componentName,
+      props: zone.props,
+      determinism: zone.determinism,
+    };
+  });
 }

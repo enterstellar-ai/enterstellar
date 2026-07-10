@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/operations/certify-proxy
+ * @module @enterstellar/cloud/operations/certify-proxy
  * @description Proxies contract certification initiation to Enterstellar Cloud.
  *
  * Sends a certification request to `POST /v1/contracts/:id/certify`.
@@ -47,8 +47,8 @@ import { createQuotaExceededError } from '../errors.js';
  * @internal — used only for typing the transport response.
  */
 type CertifyResponse = {
-    readonly status: 'pending';
-    readonly pollUrl: string;
+  readonly status: 'pending';
+  readonly pollUrl: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -61,16 +61,16 @@ type CertifyResponse = {
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface CertifyProxy {
-    /**
-     * Initiate certification for a published contract.
-     *
-     * @param contractId - The contract ID to certify (e.g., `'comp_01HYX...'`).
-     * @returns Pending status with polling URL, wrapped in `CloudResult<T>`.
-     *
-     * @throws {CloudError} `ENS-C4290` if quota exceeded (SD3).
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    certify(contractId: string): Promise<CloudResult<CertifyResult>>;
+  /**
+   * Initiate certification for a published contract.
+   *
+   * @param contractId - The contract ID to certify (e.g., `'comp_01HYX...'`).
+   * @returns Pending status with polling URL, wrapped in `CloudResult<T>`.
+   *
+   * @throws {CloudError} `ENS-C4290` if quota exceeded (SD3).
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  certify(contractId: string): Promise<CloudResult<CertifyResult>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,20 +87,20 @@ export interface CertifyProxy {
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ function buildIPU(
  * const { data } = await proxy.certify('comp_01HYX...');
  *
  * // data.status === 'pending'
- * // Poll data.pollUrl for completion via @enterstellar-ai/global-index.
+ * // Poll data.pollUrl for completion via @enterstellar/global-index.
  * ```
  *
  * @see Design Choice GI5 — certification lifecycle.
@@ -130,70 +130,65 @@ function buildIPU(
  * @internal
  */
 export function createCertifyProxy(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
 ): CertifyProxy {
-    return {
-        async certify(contractId: string): Promise<CloudResult<CertifyResult>> {
-            // ---------------------------------------------------------------
-            // Pre-flight quota check (SD3).
-            // Critical at 20 IPU — avoid initiating a costly operation
-            // that will be rejected by the server.
-            // ---------------------------------------------------------------
-            if (tracker.isOverQuota()) {
-                throw createQuotaExceededError({
-                    code: 'ENS-C4290',
-                    message: 'IPU quota exceeded (pre-flight check)',
-                });
-            }
+  return {
+    async certify(contractId: string): Promise<CloudResult<CertifyResult>> {
+      // ---------------------------------------------------------------
+      // Pre-flight quota check (SD3).
+      // Critical at 20 IPU — avoid initiating a costly operation
+      // that will be rejected by the server.
+      // ---------------------------------------------------------------
+      if (tracker.isOverQuota()) {
+        throw createQuotaExceededError({
+          code: 'ENS-C4290',
+          message: 'IPU quota exceeded (pre-flight check)',
+        });
+      }
 
-            // ---------------------------------------------------------------
-            // Build dynamic path with contractId.
-            // Defensive encodeURIComponent — IDs are ULID-prefixed
-            // (alphanumeric + underscore), but we encode just in case.
-            // ---------------------------------------------------------------
-            const path = `/v1/contracts/${encodeURIComponent(contractId)}/certify`;
+      // ---------------------------------------------------------------
+      // Build dynamic path with contractId.
+      // Defensive encodeURIComponent — IDs are ULID-prefixed
+      // (alphanumeric + underscore), but we encode just in case.
+      // ---------------------------------------------------------------
+      const path = `/v1/contracts/${encodeURIComponent(contractId)}/certify`;
 
-            // ---------------------------------------------------------------
-            // Execute the cloud API call.
-            // 90s timeout (CR5: max 60s microVM + overhead).
-            // X-Idempotency-Key sent (AM10, ipuCost = 20 > 0).
-            // ---------------------------------------------------------------
-            const response = await transport.request<CertifyResponse>({
-                method: 'POST',
-                path,
-                ipuCost: IPU_COSTS.CERTIFY,
-                operationTimeout: OPERATION_TIMEOUTS.certify,
-            });
+      // ---------------------------------------------------------------
+      // Execute the cloud API call.
+      // 90s timeout (CR5: max 60s microVM + overhead).
+      // X-Idempotency-Key sent (AM10, ipuCost = 20 > 0).
+      // ---------------------------------------------------------------
+      const response = await transport.request<CertifyResponse>({
+        method: 'POST',
+        path,
+        ipuCost: IPU_COSTS.CERTIFY,
+        operationTimeout: OPERATION_TIMEOUTS.certify,
+      });
 
-            // ---------------------------------------------------------------
-            // Reconcile IPU tracker with server headers (CL1).
-            // ---------------------------------------------------------------
-            if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-                tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-            }
+      // ---------------------------------------------------------------
+      // Reconcile IPU tracker with server headers (CL1).
+      // ---------------------------------------------------------------
+      if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+        tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+      }
 
-            // Record local cost estimate.
-            tracker.record(IPU_COSTS.CERTIFY);
+      // Record local cost estimate.
+      tracker.record(IPU_COSTS.CERTIFY);
 
-            // ---------------------------------------------------------------
-            // Build CloudResult<CertifyResult> (SD7).
-            // ---------------------------------------------------------------
-            const ipu = buildIPU(
-                response.ipuUsed,
-                response.ipuRemaining,
-                response.ipuCost,
-                isAnonymous,
-            );
+      // ---------------------------------------------------------------
+      // Build CloudResult<CertifyResult> (SD7).
+      // ---------------------------------------------------------------
+      const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
 
-            // Defensive fallback — should always be present on 2xx.
-            const data: CertifyResult = response.data ?? {
-                status: 'pending',
-                pollUrl: `/v1/contracts/${encodeURIComponent(contractId)}`,
-            };
+      // Defensive fallback — should always be present on 2xx.
+      const data: CertifyResult = response.data ?? {
+        status: 'pending',
+        pollUrl: `/v1/contracts/${encodeURIComponent(contractId)}`,
+      };
 
-            return { data, ipu };
-        },
-    };
+      return { data, ipu };
+    },
+  };
 }

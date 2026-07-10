@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/lifecycle/streaming-assembler
+ * @module @enterstellar/lifecycle/streaming-assembler
  * @description Accumulates streaming prop fragments into a complete props object.
  *
  * During streaming, the agent sends partial prop updates as path-based
@@ -28,8 +28,8 @@ import { createStreamingAssemblyError } from './errors.js';
  * Either a string key (object property) or a numeric index (array element).
  */
 type PathSegment = {
-    /** The key or index value. */
-    readonly key: string | number;
+  /** The key or index value. */
+  readonly key: string | number;
 };
 
 /** Regex to match array bracket notation: `[0]`, `[12]`, etc. */
@@ -51,36 +51,36 @@ const BRACKET_REGEX = /\[(\d+)\]/g;
  * @internal
  */
 export function parsePath(path: string): readonly PathSegment[] {
-    if (path.length === 0) {
-        throw createStreamingAssemblyError(path, 'Path must not be empty.');
+  if (path.length === 0) {
+    throw createStreamingAssemblyError(path, 'Path must not be empty.');
+  }
+
+  // Replace bracket notation with dot-separated numeric keys
+  // e.g., 'items[0].name' → 'items.0.name'
+  const normalized = path.replace(BRACKET_REGEX, '.$1');
+
+  // Split on dots and filter out empty segments (from leading/trailing dots)
+  const rawSegments = normalized.split('.');
+  const segments: PathSegment[] = [];
+
+  for (const raw of rawSegments) {
+    if (raw.length === 0) {
+      throw createStreamingAssemblyError(
+        path,
+        'Path contains empty segment (consecutive dots or leading/trailing dot).',
+      );
     }
 
-    // Replace bracket notation with dot-separated numeric keys
-    // e.g., 'items[0].name' → 'items.0.name'
-    const normalized = path.replace(BRACKET_REGEX, '.$1');
-
-    // Split on dots and filter out empty segments (from leading/trailing dots)
-    const rawSegments = normalized.split('.');
-    const segments: PathSegment[] = [];
-
-    for (const raw of rawSegments) {
-        if (raw.length === 0) {
-            throw createStreamingAssemblyError(
-                path,
-                'Path contains empty segment (consecutive dots or leading/trailing dot).',
-            );
-        }
-
-        // Determine if the segment is a numeric array index
-        const numericValue = Number(raw);
-        if (Number.isInteger(numericValue) && numericValue >= 0) {
-            segments.push({ key: numericValue });
-        } else {
-            segments.push({ key: raw });
-        }
+    // Determine if the segment is a numeric array index
+    const numericValue = Number(raw);
+    if (Number.isInteger(numericValue) && numericValue >= 0) {
+      segments.push({ key: numericValue });
+    } else {
+      segments.push({ key: raw });
     }
+  }
 
-    return segments;
+  return segments;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,42 +100,42 @@ export function parsePath(path: string): readonly PathSegment[] {
  * @internal
  */
 export function deepSet(
-    target: Record<string, unknown>,
-    segments: readonly PathSegment[],
-    value: unknown,
+  target: Record<string, unknown>,
+  segments: readonly PathSegment[],
+  value: unknown,
 ): void {
-    let current: Record<string, unknown> = target;
+  let current: Record<string, unknown> = target;
 
-    for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
-        if (segment === undefined) {
-            // Unreachable under normal operation, but satisfies noUncheckedIndexedAccess
-            break;
-        }
-
-        const key = segment.key;
-        const isLast = i === segments.length - 1;
-
-        if (isLast) {
-            // Leaf — assign the value
-            if (typeof key === 'number') {
-                current[String(key)] = value;
-            } else {
-                current[key] = value;
-            }
-        } else {
-            // Intermediate — ensure the container exists
-            const nextSegment = segments[i + 1];
-            const nextIsArray = nextSegment !== undefined && typeof nextSegment.key === 'number';
-
-            const accessKey = typeof key === 'number' ? String(key) : key;
-            const existing = current[accessKey];
-            if (existing === undefined || existing === null || typeof existing !== 'object') {
-                current[accessKey] = nextIsArray ? [] : {};
-            }
-            current = current[accessKey] as Record<string, unknown>;
-        }
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    if (segment === undefined) {
+      // Unreachable under normal operation, but satisfies noUncheckedIndexedAccess
+      break;
     }
+
+    const key = segment.key;
+    const isLast = i === segments.length - 1;
+
+    if (isLast) {
+      // Leaf — assign the value
+      if (typeof key === 'number') {
+        current[String(key)] = value;
+      } else {
+        current[key] = value;
+      }
+    } else {
+      // Intermediate — ensure the container exists
+      const nextSegment = segments[i + 1];
+      const nextIsArray = nextSegment !== undefined && typeof nextSegment.key === 'number';
+
+      const accessKey = typeof key === 'number' ? String(key) : key;
+      const existing = current[accessKey];
+      if (existing === undefined || existing === null || typeof existing !== 'object') {
+        current[accessKey] = nextIsArray ? [] : {};
+      }
+      current = current[accessKey] as Record<string, unknown>;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -154,8 +154,8 @@ export function deepSet(
  * @internal
  */
 function deepClone(obj: Record<string, unknown>): Record<string, unknown> {
-    // structuredClone is available in all Enterstellar target environments (ES2022+)
-    return structuredClone(obj);
+  // structuredClone is available in all Enterstellar target environments (ES2022+)
+  return structuredClone(obj);
 }
 
 // ---------------------------------------------------------------------------
@@ -192,33 +192,33 @@ function deepClone(obj: Record<string, unknown>): Record<string, unknown> {
  * @see Design Choices LC4, LC5, LC6
  */
 export function createStreamingAssembler(): StreamingAssembler {
-    let accumulated: Record<string, unknown> = {};
+  let accumulated: Record<string, unknown> = {};
 
-    const assembler: StreamingAssembler = {
-        apply(fragment: PropFragment): void {
-            const segments = parsePath(fragment.path);
-            deepSet(accumulated, segments, fragment.value);
-        },
+  const assembler: StreamingAssembler = {
+    apply(fragment: PropFragment): void {
+      const segments = parsePath(fragment.path);
+      deepSet(accumulated, segments, fragment.value);
+    },
 
-        applyBatch(fragments: readonly PropFragment[]): void {
-            for (const fragment of fragments) {
-                assembler.apply(fragment);
-            }
-        },
+    applyBatch(fragments: readonly PropFragment[]): void {
+      for (const fragment of fragments) {
+        assembler.apply(fragment);
+      }
+    },
 
-        getAccumulated(): Record<string, unknown> {
-            return deepClone(accumulated);
-        },
+    getAccumulated(): Record<string, unknown> {
+      return deepClone(accumulated);
+    },
 
-        isComplete(schema: z.ZodType): boolean {
-            const result = schema.safeParse(accumulated);
-            return result.success;
-        },
+    isComplete(schema: z.ZodType): boolean {
+      const result = schema.safeParse(accumulated);
+      return result.success;
+    },
 
-        reset(): void {
-            accumulated = {};
-        },
-    };
+    reset(): void {
+      accumulated = {};
+    },
+  };
 
-    return assembler;
+  return assembler;
 }

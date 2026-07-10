@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/semantic-index/cosine-similarity
+ * @module @enterstellar/semantic-index/cosine-similarity
  * @description Pure math function computing cosine similarity between two
  * dense embedding vectors.
  *
@@ -53,47 +53,47 @@ import { dimensionMismatchError } from './errors.js';
  * ```
  */
 export function cosineSimilarity(a: Float64Array, b: Float64Array): number {
-    // ------------------------------------------------------------------
-    // Dimension guard — vectors must be the same length
-    // ------------------------------------------------------------------
-    if (a.length !== b.length) {
-        throw dimensionMismatchError(a.length, b.length);
-    }
+  // ------------------------------------------------------------------
+  // Dimension guard — vectors must be the same length
+  // ------------------------------------------------------------------
+  if (a.length !== b.length) {
+    throw dimensionMismatchError(a.length, b.length);
+  }
 
-    // ------------------------------------------------------------------
-    // Single-pass computation: dot product + squared magnitudes
-    // ------------------------------------------------------------------
-    // Computing all three values in one loop maximizes cache locality.
-    // For 384-dim vectors this completes in < 1µs on modern hardware.
-    // ------------------------------------------------------------------
-    let dotProduct = 0;
-    let magnitudeA = 0;
-    let magnitudeB = 0;
+  // ------------------------------------------------------------------
+  // Single-pass computation: dot product + squared magnitudes
+  // ------------------------------------------------------------------
+  // Computing all three values in one loop maximizes cache locality.
+  // For 384-dim vectors this completes in < 1µs on modern hardware.
+  // ------------------------------------------------------------------
+  let dotProduct = 0;
+  let magnitudeA = 0;
+  let magnitudeB = 0;
 
-    for (let i = 0; i < a.length; i++) {
-        // Float64Array is a fixed-length typed array — indices within
-        // `0 <= i < a.length` are always defined. We use `as number`
-        // to satisfy noUncheckedIndexedAccess without the `!` operator.
-        const ai = a[i] as number;
-        const bi = b[i] as number;
+  for (let i = 0; i < a.length; i++) {
+    // Float64Array is a fixed-length typed array — indices within
+    // `0 <= i < a.length` are always defined. We use `as number`
+    // to satisfy noUncheckedIndexedAccess without the `!` operator.
+    const ai = a[i] as number;
+    const bi = b[i] as number;
 
-        dotProduct += ai * bi;
-        magnitudeA += ai * ai;
-        magnitudeB += bi * bi;
-    }
+    dotProduct += ai * bi;
+    magnitudeA += ai * ai;
+    magnitudeB += bi * bi;
+  }
 
-    // ------------------------------------------------------------------
-    // Zero-magnitude guard — a zero vector has no direction
-    // ------------------------------------------------------------------
-    // If either vector has zero magnitude (all zeros), cosine similarity
-    // is undefined (division by zero). We return 0.0 — a zero vector
-    // has no meaningful similarity to anything.
-    // ------------------------------------------------------------------
-    const magnitudeProduct = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
+  // ------------------------------------------------------------------
+  // Zero-magnitude guard — a zero vector has no direction
+  // ------------------------------------------------------------------
+  // If either vector has zero magnitude (all zeros), cosine similarity
+  // is undefined (division by zero). We return 0.0 — a zero vector
+  // has no meaningful similarity to anything.
+  // ------------------------------------------------------------------
+  const magnitudeProduct = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
 
-    if (magnitudeProduct === 0) {
-        return 0;
-    }
+  if (magnitudeProduct === 0) {
+    return 0;
+  }
 
-    return dotProduct / magnitudeProduct;
+  return dotProduct / magnitudeProduct;
 }

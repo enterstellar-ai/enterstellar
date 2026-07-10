@@ -354,7 +354,7 @@ export async function POST(req: Request): Promise<Response> {
   if (!checkRateLimit(ip)) {
     return errorResponse(429, {
       code: 'ENS-5002',
-      module: '@enterstellar-ai/docs-chat',
+      module: '@enterstellar/docs-chat',
       recoverable: true,
       message: 'Rate limit exceeded. Please wait a moment before sending another message.',
     });
@@ -368,7 +368,7 @@ export async function POST(req: Request): Promise<Response> {
     const message = err instanceof Error ? err.message : 'Invalid request body';
     return errorResponse(400, {
       code: 'ENS-5003',
-      module: '@enterstellar-ai/docs-chat',
+      module: '@enterstellar/docs-chat',
       recoverable: false,
       message: `Invalid request body: ${message}`,
     });
@@ -427,7 +427,7 @@ export async function POST(req: Request): Promise<Response> {
 
       return errorResponse(503, {
         code: 'ENS-5001',
-        module: '@enterstellar-ai/docs-chat',
+        module: '@enterstellar/docs-chat',
         recoverable: true,
         message: 'AI service is temporarily unavailable. Please try again in a few moments.',
       });

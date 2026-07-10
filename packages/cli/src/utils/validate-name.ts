@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/utils/validate-name
+ * @module @enterstellar/cli/utils/validate-name
  * @description Name validation utilities for Enterstellar CLI scaffolding.
  *
  * Enforces Enterstellar naming conventions:
@@ -70,15 +70,15 @@ const PASCAL_CASE_PATTERN = /^[A-Z][a-zA-Z0-9]+$/;
  * ```
  */
 export function validateProjectName(name: string): boolean {
-    if (name.length === 0) {
-        return false;
-    }
+  if (name.length === 0) {
+    return false;
+  }
 
-    if (name.endsWith('-')) {
-        return false;
-    }
+  if (name.endsWith('-')) {
+    return false;
+  }
 
-    return KEBAB_CASE_PATTERN.test(name);
+  return KEBAB_CASE_PATTERN.test(name);
 }
 
 // ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ export function validateProjectName(name: string): boolean {
  * - Is at least 2 characters long
  *
  * This matches Enterstellar's naming convention for `ComponentContract` names
- * as enforced by `defineComponent()` in `@enterstellar-ai/registry`.
+ * as enforced by `defineComponent()` in `@enterstellar/registry`.
  *
  * @param name - The component name to validate.
  * @returns `true` if the name is valid PascalCase, `false` otherwise.
@@ -110,9 +110,9 @@ export function validateProjectName(name: string): boolean {
  * ```
  */
 export function validateComponentName(name: string): boolean {
-    if (name.length < 2) {
-        return false;
-    }
+  if (name.length < 2) {
+    return false;
+  }
 
-    return PASCAL_CASE_PATTERN.test(name);
+  return PASCAL_CASE_PATTERN.test(name);
 }

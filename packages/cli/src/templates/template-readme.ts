@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cli/templates/template-readme
+ * @module @enterstellar/cli/templates/template-readme
  * @description Generates a `README.md` getting-started guide for the scaffolded project.
  *
  * Produces a comprehensive README covering the 5-step onboarding path
@@ -36,20 +36,20 @@ import type { PackageManager } from '../utils/detect-package-manager.js';
  * @returns Command prefix for `run` scripts.
  */
 function getRunPrefix(pm: PackageManager): string {
-    switch (pm) {
-        case 'npm': {
-            return 'npm run';
-        }
-        case 'pnpm': {
-            return 'pnpm';
-        }
-        case 'yarn': {
-            return 'yarn';
-        }
-        case 'bun': {
-            return 'bun run';
-        }
+  switch (pm) {
+    case 'npm': {
+      return 'npm run';
     }
+    case 'pnpm': {
+      return 'pnpm';
+    }
+    case 'yarn': {
+      return 'yarn';
+    }
+    case 'bun': {
+      return 'bun run';
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -72,13 +72,10 @@ function getRunPrefix(pm: PackageManager): string {
  * await writeFile('my-enterstellar-app/README.md', content);
  * ```
  */
-export function generateReadme(
-    projectName: string,
-    packageManager: PackageManager,
-): string {
-    const run = getRunPrefix(packageManager);
+export function generateReadme(projectName: string, packageManager: PackageManager): string {
+  const run = getRunPrefix(packageManager);
 
-    return `# ${projectName}
+  return `# ${projectName}
 
 An Enterstellar-powered application with AI-driven generative UI.
 
@@ -129,7 +126,7 @@ Components are defined with \`defineComponent()\` and registered in \`src/enters
 Each component has a **contract** — a Zod schema that the AI must satisfy:
 
 \`\`\`typescript
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 import { z } from 'zod';
 
 const MyComponentContract = defineComponent({
@@ -149,7 +146,7 @@ const MyComponentContract = defineComponent({
 An \`Zone\` is a rendering surface where AI-generated components appear:
 
 \`\`\`tsx
-import { Provider, Zone } from '@enterstellar-ai/react';
+import { Provider, Zone } from '@enterstellar/react';
 
 <Provider registry={registry}>
   <Zone
@@ -173,7 +170,7 @@ ${run} test
 Use the Enterstellar CLI to scaffold a new component with all boilerplate:
 
 \`\`\`bash
-npx @enterstellar-ai/cli add component MyNewComponent
+npx @enterstellar/cli add component MyNewComponent
 \`\`\`
 
 This creates:

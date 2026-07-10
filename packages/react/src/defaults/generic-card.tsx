@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/defaults/generic-card
+ * @module @enterstellar/react/defaults/generic-card
  * @description Concrete fallback component for Enterstellar compilation failures.
  *
  * `GenericCard` is the default `fallbackComponent` registered by
@@ -33,7 +33,7 @@
  * <Zone name="sidebar" fallbackComponent="GenericCard" />
  *
  * // Or used directly for testing:
- * import { GenericCard } from '@enterstellar-ai/react';
+ * import { GenericCard } from '@enterstellar/react';
  * <GenericCard
  *     originalComponent="PatientRiskPanel"
  *     errors={[{ code: 'ENS-2001', path: 'props.riskLevel', message: '...' }]}
@@ -45,7 +45,7 @@
 import { useState } from 'react';
 
 import type { CSSProperties } from 'react';
-import type { CompilationError } from '@enterstellar-ai/types';
+import type { CompilationError } from '@enterstellar/types';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -60,28 +60,28 @@ import type { CompilationError } from '@enterstellar-ai/types';
  * @see Design Choice C6 — fallback receives error details as props.
  */
 export type GenericCardProps = {
-    /**
-     * PascalCase name of the component that failed compilation.
-     * Displayed as the card header for developer identification.
-     */
-    readonly originalComponent: string;
+  /**
+   * PascalCase name of the component that failed compilation.
+   * Displayed as the card header for developer identification.
+   */
+  readonly originalComponent: string;
 
-    /**
-     * Compilation errors encountered during validation.
-     * Each error includes a machine-readable code, field path, and message.
-     * Empty array if the failure reason is unknown (e.g., renderer not found).
-     *
-     * @see CompilationError — `{ code, path, message, received?, expected?, fix? }`
-     */
-    readonly errors: readonly CompilationError[];
+  /**
+   * Compilation errors encountered during validation.
+   * Each error includes a machine-readable code, field path, and message.
+   * Empty array if the failure reason is unknown (e.g., renderer not found).
+   *
+   * @see CompilationError — `{ code, path, message, received?, expected?, fix? }`
+   */
+  readonly errors: readonly CompilationError[];
 
-    /**
-     * The original props that were intended for the component.
-     * Displayed in a collapsible section for debugging. May contain
-     * complex nested objects — serialized with `JSON.stringify` and
-     * guarded against circular references.
-     */
-    readonly originalProps: Readonly<Record<string, unknown>>;
+  /**
+   * The original props that were intended for the component.
+   * Displayed in a collapsible section for debugging. May contain
+   * complex nested objects — serialized with `JSON.stringify` and
+   * guarded against circular references.
+   */
+  readonly originalProps: Readonly<Record<string, unknown>>;
 };
 
 // ---------------------------------------------------------------------------
@@ -95,17 +95,18 @@ export type GenericCardProps = {
  * @internal
  */
 const CARD_CONTAINER_STYLES: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'var(--enterstellar-card-gap, 12px)',
-    padding: 'var(--enterstellar-card-padding, 16px)',
-    backgroundColor: 'var(--enterstellar-card-bg, #fafafa)',
-    borderRadius: 'var(--enterstellar-card-radius, 8px)',
-    border: 'var(--enterstellar-card-border, 1px solid #e5e5e5)',
-    width: '100%',
-    boxSizing: 'border-box',
-    fontFamily: 'var(--enterstellar-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)',
-    color: 'var(--enterstellar-card-color, #1a1a1a)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'var(--enterstellar-card-gap, 12px)',
+  padding: 'var(--enterstellar-card-padding, 16px)',
+  backgroundColor: 'var(--enterstellar-card-bg, #fafafa)',
+  borderRadius: 'var(--enterstellar-card-radius, 8px)',
+  border: 'var(--enterstellar-card-border, 1px solid #e5e5e5)',
+  width: '100%',
+  boxSizing: 'border-box',
+  fontFamily:
+    'var(--enterstellar-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)',
+  color: 'var(--enterstellar-card-color, #1a1a1a)',
 } as const;
 
 /**
@@ -114,10 +115,10 @@ const CARD_CONTAINER_STYLES: CSSProperties = {
  * @internal
  */
 const CARD_HEADER_STYLES: CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexWrap: 'wrap',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  flexWrap: 'wrap',
 } as const;
 
 /**
@@ -126,12 +127,12 @@ const CARD_HEADER_STYLES: CSSProperties = {
  * @internal
  */
 const COMPONENT_NAME_STYLES: CSSProperties = {
-    fontSize: 'var(--enterstellar-card-name-font-size, 14px)',
-    fontWeight: 600,
-    fontFamily: 'var(--enterstellar-font-mono, ui-monospace, "SF Mono", monospace)',
-    color: 'var(--enterstellar-card-name-color, #1a1a1a)',
-    margin: 0,
-    wordBreak: 'break-word',
+  fontSize: 'var(--enterstellar-card-name-font-size, 14px)',
+  fontWeight: 600,
+  fontFamily: 'var(--enterstellar-font-mono, ui-monospace, "SF Mono", monospace)',
+  color: 'var(--enterstellar-card-name-color, #1a1a1a)',
+  margin: 0,
+  wordBreak: 'break-word',
 } as const;
 
 /**
@@ -140,16 +141,16 @@ const COMPONENT_NAME_STYLES: CSSProperties = {
  * @internal
  */
 const FALLBACK_BADGE_STYLES: CSSProperties = {
-    display: 'inline-block',
-    fontSize: 'var(--enterstellar-card-badge-font-size, 10px)',
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: 'var(--enterstellar-card-badge-color, #92400e)',
-    backgroundColor: 'var(--enterstellar-card-badge-bg, #fef3c7)',
-    padding: '2px 6px',
-    borderRadius: '4px',
-    lineHeight: '1.4',
+  display: 'inline-block',
+  fontSize: 'var(--enterstellar-card-badge-font-size, 10px)',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  color: 'var(--enterstellar-card-badge-color, #92400e)',
+  backgroundColor: 'var(--enterstellar-card-badge-bg, #fef3c7)',
+  padding: '2px 6px',
+  borderRadius: '4px',
+  lineHeight: '1.4',
 } as const;
 
 /**
@@ -158,12 +159,12 @@ const FALLBACK_BADGE_STYLES: CSSProperties = {
  * @internal
  */
 const ERROR_LIST_STYLES: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    margin: 0,
-    padding: 0,
-    listStyle: 'none',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  margin: 0,
+  padding: 0,
+  listStyle: 'none',
 } as const;
 
 /**
@@ -172,13 +173,13 @@ const ERROR_LIST_STYLES: CSSProperties = {
  * @internal
  */
 const ERROR_ITEM_STYLES: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    padding: 'var(--enterstellar-card-error-padding, 8px 10px)',
-    backgroundColor: 'var(--enterstellar-card-error-bg, #fef2f2)',
-    borderRadius: 'var(--enterstellar-card-error-radius, 6px)',
-    border: 'var(--enterstellar-card-error-border, 1px solid #fecaca)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+  padding: 'var(--enterstellar-card-error-padding, 8px 10px)',
+  backgroundColor: 'var(--enterstellar-card-error-bg, #fef2f2)',
+  borderRadius: 'var(--enterstellar-card-error-radius, 6px)',
+  border: 'var(--enterstellar-card-error-border, 1px solid #fecaca)',
 } as const;
 
 /**
@@ -187,16 +188,16 @@ const ERROR_ITEM_STYLES: CSSProperties = {
  * @internal
  */
 const ERROR_CODE_STYLES: CSSProperties = {
-    display: 'inline-block',
-    fontSize: 'var(--enterstellar-card-error-code-size, 10px)',
-    fontWeight: 600,
-    fontFamily: 'var(--enterstellar-font-mono, ui-monospace, "SF Mono", monospace)',
-    color: 'var(--enterstellar-card-error-code-color, #991b1b)',
-    backgroundColor: 'var(--enterstellar-card-error-code-bg, #fee2e2)',
-    padding: '1px 5px',
-    borderRadius: '3px',
-    letterSpacing: '0.025em',
-    alignSelf: 'flex-start',
+  display: 'inline-block',
+  fontSize: 'var(--enterstellar-card-error-code-size, 10px)',
+  fontWeight: 600,
+  fontFamily: 'var(--enterstellar-font-mono, ui-monospace, "SF Mono", monospace)',
+  color: 'var(--enterstellar-card-error-code-color, #991b1b)',
+  backgroundColor: 'var(--enterstellar-card-error-code-bg, #fee2e2)',
+  padding: '1px 5px',
+  borderRadius: '3px',
+  letterSpacing: '0.025em',
+  alignSelf: 'flex-start',
 } as const;
 
 /**
@@ -205,11 +206,11 @@ const ERROR_CODE_STYLES: CSSProperties = {
  * @internal
  */
 const ERROR_MESSAGE_STYLES: CSSProperties = {
-    fontSize: 'var(--enterstellar-card-error-font-size, 12px)',
-    lineHeight: 'var(--enterstellar-card-error-line-height, 1.5)',
-    color: 'var(--enterstellar-card-error-message-color, #7f1d1d)',
-    margin: 0,
-    wordBreak: 'break-word',
+  fontSize: 'var(--enterstellar-card-error-font-size, 12px)',
+  lineHeight: 'var(--enterstellar-card-error-line-height, 1.5)',
+  color: 'var(--enterstellar-card-error-message-color, #7f1d1d)',
+  margin: 0,
+  wordBreak: 'break-word',
 } as const;
 
 /**
@@ -218,21 +219,21 @@ const ERROR_MESSAGE_STYLES: CSSProperties = {
  * @internal
  */
 const PROPS_TOGGLE_STYLES: CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    alignSelf: 'flex-start',
-    padding: '4px 0',
-    fontSize: 'var(--enterstellar-card-toggle-font-size, 11px)',
-    fontWeight: 500,
-    fontFamily: 'inherit',
-    color: 'var(--enterstellar-card-toggle-color, #6b7280)',
-    backgroundColor: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    lineHeight: '1',
-    textDecoration: 'underline',
-    textUnderlineOffset: '2px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  alignSelf: 'flex-start',
+  padding: '4px 0',
+  fontSize: 'var(--enterstellar-card-toggle-font-size, 11px)',
+  fontWeight: 500,
+  fontFamily: 'inherit',
+  color: 'var(--enterstellar-card-toggle-color, #6b7280)',
+  backgroundColor: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  lineHeight: '1',
+  textDecoration: 'underline',
+  textUnderlineOffset: '2px',
 } as const;
 
 /**
@@ -241,19 +242,19 @@ const PROPS_TOGGLE_STYLES: CSSProperties = {
  * @internal
  */
 const PROPS_CODE_STYLES: CSSProperties = {
-    fontSize: 'var(--enterstellar-card-props-font-size, 11px)',
-    fontFamily: 'var(--enterstellar-font-mono, ui-monospace, "SF Mono", monospace)',
-    color: 'var(--enterstellar-card-props-color, #374151)',
-    backgroundColor: 'var(--enterstellar-card-props-bg, #f3f4f6)',
-    padding: 'var(--enterstellar-card-props-padding, 10px 12px)',
-    borderRadius: 'var(--enterstellar-card-props-radius, 6px)',
-    border: 'var(--enterstellar-card-props-border, 1px solid #e5e7eb)',
-    overflow: 'auto',
-    maxHeight: '200px',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word',
-    margin: 0,
-    lineHeight: '1.5',
+  fontSize: 'var(--enterstellar-card-props-font-size, 11px)',
+  fontFamily: 'var(--enterstellar-font-mono, ui-monospace, "SF Mono", monospace)',
+  color: 'var(--enterstellar-card-props-color, #374151)',
+  backgroundColor: 'var(--enterstellar-card-props-bg, #f3f4f6)',
+  padding: 'var(--enterstellar-card-props-padding, 10px 12px)',
+  borderRadius: 'var(--enterstellar-card-props-radius, 6px)',
+  border: 'var(--enterstellar-card-props-border, 1px solid #e5e7eb)',
+  overflow: 'auto',
+  maxHeight: '200px',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+  margin: 0,
+  lineHeight: '1.5',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -270,17 +271,21 @@ const PROPS_CODE_STYLES: CSSProperties = {
  * @internal
  */
 function safeStringifyProps(props: Readonly<Record<string, unknown>>): string {
-    try {
-        return JSON.stringify(props, (_key, value: unknown) => {
-            // Handle BigInt — not natively serializable
-            if (typeof value === 'bigint') {
-                return `${String(value)}n`;
-            }
-            return value;
-        }, 2);
-    } catch {
-        return '{ /* circular reference — unable to serialize */ }';
-    }
+  try {
+    return JSON.stringify(
+      props,
+      (_key, value: unknown) => {
+        // Handle BigInt — not natively serializable
+        if (typeof value === 'bigint') {
+          return `${String(value)}n`;
+        }
+        return value;
+      },
+      2,
+    );
+  } catch {
+    return '{ /* circular reference — unable to serialize */ }';
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -308,90 +313,81 @@ function safeStringifyProps(props: Readonly<Record<string, unknown>>): string {
  * @see Principle L2 — CSS custom properties for all visual values.
  */
 export function GenericCard(props: GenericCardProps): React.JSX.Element {
-    const { originalComponent, errors, originalProps } = props;
+  const { originalComponent, errors, originalProps } = props;
 
-    /**
-     * Controls the visibility of the "Original Props" collapsible section.
-     * Collapsed by default to reduce visual noise — expanded on demand
-     * for debugging.
-     */
-    const [showProps, setShowProps] = useState(false);
+  /**
+   * Controls the visibility of the "Original Props" collapsible section.
+   * Collapsed by default to reduce visual noise — expanded on demand
+   * for debugging.
+   */
+  const [showProps, setShowProps] = useState(false);
 
-    /**
-     * Determines whether the original props have any content worth showing.
-     * An empty object is not worth expanding.
-     */
-    const hasProps = Object.keys(originalProps).length > 0;
+  /**
+   * Determines whether the original props have any content worth showing.
+   * An empty object is not worth expanding.
+   */
+  const hasProps = Object.keys(originalProps).length > 0;
 
-    return (
-        <div
-            role="alert"
-            aria-live="polite"
-            data-enterstellar-generic-card
-            data-enterstellar-fallback-for={originalComponent}
-            style={CARD_CONTAINER_STYLES}
-        >
-            {/* Header: component name + fallback badge */}
-            <div style={CARD_HEADER_STYLES}>
-                <h3 style={COMPONENT_NAME_STYLES}>
-                    {originalComponent}
-                </h3>
-                <span style={FALLBACK_BADGE_STYLES}>
-                    Fallback
-                </span>
-            </div>
+  return (
+    <div
+      role="alert"
+      aria-live="polite"
+      data-enterstellar-generic-card
+      data-enterstellar-fallback-for={originalComponent}
+      style={CARD_CONTAINER_STYLES}
+    >
+      {/* Header: component name + fallback badge */}
+      <div style={CARD_HEADER_STYLES}>
+        <h3 style={COMPONENT_NAME_STYLES}>{originalComponent}</h3>
+        <span style={FALLBACK_BADGE_STYLES}>Fallback</span>
+      </div>
 
-            {/* Error list */}
-            {errors.length > 0 ? (
-                <ul style={ERROR_LIST_STYLES} aria-label="Compilation errors">
-                    {errors.map((error, index) => (
-                        <li
-                            key={`${error.code}-${error.path}-${String(index)}`}
-                            style={ERROR_ITEM_STYLES}
-                        >
-                            <span style={ERROR_CODE_STYLES} aria-label={`Error code: ${error.code}`}>
-                                {error.code}
-                            </span>
-                            <p style={ERROR_MESSAGE_STYLES}>
-                                {error.path !== '' && (
-                                    <strong>{error.path}: </strong>
-                                )}
-                                {error.message}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p style={ERROR_MESSAGE_STYLES}>
-                    Compilation failed — no error details available.
-                </p>
-            )}
+      {/* Error list */}
+      {errors.length > 0 ? (
+        <ul style={ERROR_LIST_STYLES} aria-label="Compilation errors">
+          {errors.map((error, index) => (
+            <li key={`${error.code}-${error.path}-${String(index)}`} style={ERROR_ITEM_STYLES}>
+              <span style={ERROR_CODE_STYLES} aria-label={`Error code: ${error.code}`}>
+                {error.code}
+              </span>
+              <p style={ERROR_MESSAGE_STYLES}>
+                {error.path !== '' && <strong>{error.path}: </strong>}
+                {error.message}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p style={ERROR_MESSAGE_STYLES}>Compilation failed — no error details available.</p>
+      )}
 
-            {/* Collapsible original props section */}
-            {hasProps && (
-                <>
-                    <button
-                        type="button"
-                        style={PROPS_TOGGLE_STYLES}
-                        onClick={() => { setShowProps((prev) => !prev); }}
-                        aria-expanded={showProps}
-                        aria-controls="enterstellar-generic-card-props"
-                        data-enterstellar-props-toggle
-                    >
-                        {showProps ? '▾ Hide' : '▸ Show'} original props
-                    </button>
+      {/* Collapsible original props section */}
+      {hasProps && (
+        <>
+          <button
+            type="button"
+            style={PROPS_TOGGLE_STYLES}
+            onClick={() => {
+              setShowProps((prev) => !prev);
+            }}
+            aria-expanded={showProps}
+            aria-controls="enterstellar-generic-card-props"
+            data-enterstellar-props-toggle
+          >
+            {showProps ? '▾ Hide' : '▸ Show'} original props
+          </button>
 
-                    {showProps && (
-                        <pre
-                            id="enterstellar-generic-card-props"
-                            style={PROPS_CODE_STYLES}
-                            data-enterstellar-props-detail
-                        >
-                            {safeStringifyProps(originalProps)}
-                        </pre>
-                    )}
-                </>
-            )}
-        </div>
-    );
+          {showProps && (
+            <pre
+              id="enterstellar-generic-card-props"
+              style={PROPS_CODE_STYLES}
+              data-enterstellar-props-detail
+            >
+              {safeStringifyProps(originalProps)}
+            </pre>
+          )}
+        </>
+      )}
+    </div>
+  );
 }

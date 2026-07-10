@@ -1,5 +1,5 @@
 {
-  "name": "@enterstellar-ai/playground",
+  "name": "@enterstellar/playground",
   "description": "Interactive playground — live Enterstellar component explorer and API sandbox.",
   "version": "0.0.0",
   "author": "Enterstellar",
@@ -29,11 +29,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@enterstellar-ai/cache": "workspace:*",
-    "@enterstellar-ai/devtools": "workspace:*",
-    "@enterstellar-ai/react": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
-    "@enterstellar-ai/types": "workspace:*",
+    "@enterstellar/cache": "workspace:*",
+    "@enterstellar/devtools": "workspace:*",
+    "@enterstellar/react": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
     "@ai-sdk/groq": "^3.0.32",
     "@ai-sdk/google": "^3.0.55",
     "ai": "^6.0.143",

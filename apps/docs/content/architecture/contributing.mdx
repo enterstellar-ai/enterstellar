@@ -32,7 +32,7 @@ Run `pnpm turbo run test` and confirm coverage ≥90% before marking anything do
 
 | Entity | Convention | Example |
 |:---|:---|:---|
-| Package names | `@enterstellar-ai/kebab-case` | `@enterstellar-ai/semantic-index` |
+| Package names | `@enterstellar/kebab-case` | `@enterstellar/semantic-index` |
 | Component names | `PascalCase` | `PatientVitals` |
 | Zone names | `kebab-case` | `main-dashboard` |
 | Design tokens | `token:kebab-case` | `token:colors.semantic.danger` |
@@ -63,7 +63,7 @@ All Enterstellar packages throw `EnterstellarError extends Error` with three man
 ```typescript
 class EnterstellarError extends Error {
   code: string;       // e.g. 'ENS-2001'
-  module: string;     // e.g. '@enterstellar-ai/compiler'
+  module: string;     // e.g. '@enterstellar/compiler'
   recoverable: boolean;
 }
 ```
@@ -95,12 +95,12 @@ class EnterstellarError extends Error {
 
 | Rule | Detail |
 |:---|:---|
-| **`@enterstellar-ai/types` is always a peer dep** | Every package lists it in `peerDependencies`, not `dependencies` |
+| **`@enterstellar/types` is always a peer dep** | Every package lists it in `peerDependencies`, not `dependencies` |
 | **Engine packages have zero framework deps** | No `react`, `react-dom`, `react-native`, or any framework import in engine packages (L15) |
 | **L15 is CI-enforced** | Custom ESLint rule fails CI if any engine package imports a framework dep |
 | **Syncpack enforces version consistency** | No two packages may depend on different versions of the same library |
 
-`@enterstellar-ai/react` is the single exception: it lists all engine packages (`compiler`, `registry`, `state`, `telemetry`, `cache`, `lifecycle`, `connection`, `adapters`, `types`) as regular `dependencies` — not peer deps. Consumers install `@enterstellar-ai/react` and get the full engine transitively.
+`@enterstellar/react` is the single exception: it lists all engine packages (`compiler`, `registry`, `state`, `telemetry`, `cache`, `lifecycle`, `connection`, `adapters`, `types`) as regular `dependencies` — not peer deps. Consumers install `@enterstellar/react` and get the full engine transitively.
 
 ---
 
@@ -123,7 +123,7 @@ Every module ships with tests before it ships features.
 pnpm turbo run test
 
 # Single package
-pnpm --filter @enterstellar-ai/compiler test
+pnpm --filter @enterstellar/compiler test
 
 # With coverage report
 pnpm turbo run test -- --coverage
@@ -143,7 +143,7 @@ pnpm changeset
 ```
 
 - Never manually bump `package.json` versions — always use Changesets.
-- `@enterstellar-ai/types` may be `v1.x` while `@enterstellar-ai/forge` is `v0.x`.
+- `@enterstellar/types` may be `v1.x` while `@enterstellar/forge` is `v0.x`.
 
 **ComponentContract versioning:** Contracts include a `version: string` field (semver). Registry serves latest only — no multi-version serving. If Zod parse succeeds → accept. If Zod parse fails (breaking change) → self-correction loop → fallback. Zod is the migration layer.
 
@@ -152,9 +152,9 @@ pnpm changeset
 ## Commit Convention
 
 ```
-feat: add createGlobalIndex() to @enterstellar-ai/global-index
+feat: add createGlobalIndex() to @enterstellar/global-index
 fix: correct 8-char hash truncation in forge naming
-chore: bump @enterstellar-ai/types to 1.2.0
+chore: bump @enterstellar/types to 1.2.0
 breaking: rename AgentTrace.compilation.result → compilation.compilationResult
 docs: update testing guides with new EnterstellarTestHarness.expect API
 ```

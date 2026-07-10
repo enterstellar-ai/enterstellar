@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/enrichment/byo-key-provider
+ * @module @enterstellar/migration/enrichment/byo-key-provider
  * @description BYO-key enrichment provider implementation.
  *
  * Calls any OpenAI-compatible chat completions API (OpenAI, Groq,
@@ -50,10 +50,10 @@ import { ENRICHABLE_FIELD_KEYS } from './enrich-manifest.js';
  * chat completions request.
  */
 type ChatMessage = {
-    /** The role of the message sender. */
-    readonly role: 'system' | 'user' | 'assistant';
-    /** The message content. */
-    readonly content: string;
+  /** The role of the message sender. */
+  readonly role: 'system' | 'user' | 'assistant';
+  /** The message content. */
+  readonly content: string;
 };
 
 /**
@@ -63,20 +63,20 @@ type ChatMessage = {
  * actually use. Provider-specific extensions are ignored.
  */
 type ChatCompletionRequest = {
-    /** The model identifier (e.g., `'gpt-4o-mini'`). */
-    readonly model: string;
-    /** The messages to send to the model. */
-    readonly messages: readonly ChatMessage[];
-    /**
-     * Sampling temperature (0-2). Lower = more deterministic.
-     * We use 0.2 for metadata extraction — low creativity needed.
-     */
-    readonly temperature: number;
-    /**
-     * Response format hint. When supported, `{ type: 'json_object' }`
-     * instructs the model to return valid JSON.
-     */
-    readonly response_format?: { readonly type: string };
+  /** The model identifier (e.g., `'gpt-4o-mini'`). */
+  readonly model: string;
+  /** The messages to send to the model. */
+  readonly messages: readonly ChatMessage[];
+  /**
+   * Sampling temperature (0-2). Lower = more deterministic.
+   * We use 0.2 for metadata extraction — low creativity needed.
+   */
+  readonly temperature: number;
+  /**
+   * Response format hint. When supported, `{ type: 'json_object' }`
+   * instructs the model to return valid JSON.
+   */
+  readonly response_format?: { readonly type: string };
 };
 
 /**
@@ -86,14 +86,14 @@ type ChatCompletionRequest = {
  * that we don't need. We only extract `choices[0].message.content`.
  */
 type ChatCompletionResponse = {
-    /** Array of completion choices. Usually contains exactly one. */
-    readonly choices: readonly {
-        /** The assistant's response message. */
-        readonly message: {
-            /** The text content of the response. */
-            readonly content: string;
-        };
-    }[];
+  /** Array of completion choices. Usually contains exactly one. */
+  readonly choices: readonly {
+    /** The assistant's response message. */
+    readonly message: {
+      /** The text content of the response. */
+      readonly content: string;
+    };
+  }[];
 };
 
 // ---------------------------------------------------------------------------
@@ -133,226 +133,204 @@ const TEMPERATURE = 0.2;
  * @see Audit M4 — prompt built inside enrich(), not by orchestrator
  */
 export class BYOKeyEnrichmentProvider implements EnrichmentProvider {
-    /** The user's API key for authentication. */
-    private readonly apiKey: string;
+  /** The user's API key for authentication. */
+  private readonly apiKey: string;
 
-    /** Model identifier (e.g., `'gpt-4o-mini'`, `'llama-3.1-70b-versatile'`). */
-    private readonly model: string;
+  /** Model identifier (e.g., `'gpt-4o-mini'`, `'llama-3.1-70b-versatile'`). */
+  private readonly model: string;
 
-    /** Base URL for the API endpoint. */
-    private readonly baseUrl: string;
+  /** Base URL for the API endpoint. */
+  private readonly baseUrl: string;
 
-    /** Maximum source characters for prompt truncation. */
-    private readonly maxSourceChars: number;
+  /** Maximum source characters for prompt truncation. */
+  private readonly maxSourceChars: number;
 
-    /**
-     * Creates a new `BYOKeyEnrichmentProvider`.
-     *
-     * @param apiKey - The user's API key (from `--api-key` flag or `ENTERSTELLAR_API_KEY` env).
-     * @param model - Model identifier. Defaults to `'gpt-4o-mini'`.
-     * @param baseUrl - Base URL for the API. Defaults to `'https://api.openai.com'`.
-     * @param maxSourceChars - Maximum source chars in prompt. Defaults to 12,000.
-     */
-    constructor(
-        apiKey: string,
-        model: string = 'gpt-4o-mini',
-        baseUrl: string = 'https://api.openai.com',
-        maxSourceChars: number = DEFAULT_MAX_SOURCE_CHARS,
-    ) {
-        this.apiKey = apiKey;
-        this.model = model;
-        this.baseUrl = baseUrl;
-        this.maxSourceChars = maxSourceChars;
+  /**
+   * Creates a new `BYOKeyEnrichmentProvider`.
+   *
+   * @param apiKey - The user's API key (from `--api-key` flag or `ENTERSTELLAR_API_KEY` env).
+   * @param model - Model identifier. Defaults to `'gpt-4o-mini'`.
+   * @param baseUrl - Base URL for the API. Defaults to `'https://api.openai.com'`.
+   * @param maxSourceChars - Maximum source chars in prompt. Defaults to 12,000.
+   */
+  constructor(
+    apiKey: string,
+    model: string = 'gpt-4o-mini',
+    baseUrl: string = 'https://api.openai.com',
+    maxSourceChars: number = DEFAULT_MAX_SOURCE_CHARS,
+  ) {
+    this.apiKey = apiKey;
+    this.model = model;
+    this.baseUrl = baseUrl;
+    this.maxSourceChars = maxSourceChars;
+  }
+
+  /**
+   * Enrich heuristic-fallback fields via an OpenAI-compatible API.
+   *
+   * **Internal workflow:**
+   * 1. Scan manifest for `heuristic-fallback` fields (Audit M4).
+   * 2. Build prompt via `buildEnrichmentPrompt()`.
+   * 3. Send to `/v1/chat/completions` with Bearer auth.
+   * 4. Extract JSON from response (handle markdown fences).
+   * 5. Validate via `SemanticOverlaySchema.safeParse()`.
+   * 6. Return validated `SemanticOverlay`.
+   *
+   * @param manifest - The full `StructuralManifest` from Phase 1.
+   * @param source - The original component source code.
+   * @returns A `SemanticOverlay` with enriched field values.
+   * @throws {EnrichmentError} On auth/rate/parse/provider failures.
+   */
+  async enrich(manifest: StructuralManifest, source: string): Promise<SemanticOverlay> {
+    // --- Step 1: Identify heuristic-fallback fields (Audit M4) ---
+    const fieldsToEnrich: EnrichableFieldKey[] = [];
+    for (const key of ENRICHABLE_FIELD_KEYS) {
+      if (manifest[key].source === 'heuristic-fallback') {
+        fieldsToEnrich.push(key);
+      }
     }
 
-    /**
-     * Enrich heuristic-fallback fields via an OpenAI-compatible API.
-     *
-     * **Internal workflow:**
-     * 1. Scan manifest for `heuristic-fallback` fields (Audit M4).
-     * 2. Build prompt via `buildEnrichmentPrompt()`.
-     * 3. Send to `/v1/chat/completions` with Bearer auth.
-     * 4. Extract JSON from response (handle markdown fences).
-     * 5. Validate via `SemanticOverlaySchema.safeParse()`.
-     * 6. Return validated `SemanticOverlay`.
-     *
-     * @param manifest - The full `StructuralManifest` from Phase 1.
-     * @param source - The original component source code.
-     * @returns A `SemanticOverlay` with enriched field values.
-     * @throws {EnrichmentError} On auth/rate/parse/provider failures.
-     */
-    async enrich(
-        manifest: StructuralManifest,
-        source: string,
-    ): Promise<SemanticOverlay> {
-        // --- Step 1: Identify heuristic-fallback fields (Audit M4) ---
-        const fieldsToEnrich: EnrichableFieldKey[] = [];
-        for (const key of ENRICHABLE_FIELD_KEYS) {
-            if (manifest[key].source === 'heuristic-fallback') {
-                fieldsToEnrich.push(key);
-            }
-        }
+    // --- Step 2: Build prompt ---
+    const prompt = buildEnrichmentPrompt(manifest, source, fieldsToEnrich, this.maxSourceChars);
 
-        // --- Step 2: Build prompt ---
-        const prompt = buildEnrichmentPrompt(
-            manifest,
-            source,
-            fieldsToEnrich,
-            this.maxSourceChars,
-        );
+    // --- Step 3: Build request ---
+    const requestBody: ChatCompletionRequest = {
+      model: this.model,
+      messages: [
+        { role: 'system', content: prompt.system },
+        { role: 'user', content: prompt.user },
+      ],
+      temperature: TEMPERATURE,
+      response_format: { type: 'json_object' },
+    };
 
-        // --- Step 3: Build request ---
-        const requestBody: ChatCompletionRequest = {
-            model: this.model,
-            messages: [
-                { role: 'system', content: prompt.system },
-                { role: 'user', content: prompt.user },
-            ],
-            temperature: TEMPERATURE,
-            response_format: { type: 'json_object' },
-        };
+    // --- Step 4: Send request with retry ---
+    const responseBody = await this.fetchWithRetry(requestBody);
 
-        // --- Step 4: Send request with retry ---
-        const responseBody = await this.fetchWithRetry(requestBody);
+    // --- Step 5: Extract content (Audit M5 — guard choices[0]) ---
+    const firstChoice = responseBody.choices[0];
+    if (firstChoice === undefined) {
+      throw new EnrichmentError('PARSE_ERROR', 'LLM response contained no choices.');
+    }
+    const rawContent = firstChoice.message.content;
 
-        // --- Step 5: Extract content (Audit M5 — guard choices[0]) ---
-        const firstChoice = responseBody.choices[0];
-        if (firstChoice === undefined) {
-            throw new EnrichmentError(
-                'PARSE_ERROR',
-                'LLM response contained no choices.',
-            );
-        }
-        const rawContent = firstChoice.message.content;
+    // --- Step 6: Extract JSON (handle markdown fences) ---
+    const jsonString = extractJSON(rawContent);
 
-        // --- Step 6: Extract JSON (handle markdown fences) ---
-        const jsonString = extractJSON(rawContent);
-
-        // --- Step 7: Parse and validate ---
-        let parsed: unknown;
-        try {
-            parsed = JSON.parse(jsonString);
-        } catch {
-            throw new EnrichmentError(
-                'PARSE_ERROR',
-                `Failed to parse LLM response as JSON: ${jsonString.slice(0, 200)}`,
-            );
-        }
-
-        const result = SemanticOverlaySchema.safeParse(parsed);
-        if (!result.success) {
-            throw new EnrichmentError(
-                'PARSE_ERROR',
-                `LLM response failed schema validation: ${result.error.message}`,
-            );
-        }
-
-        return result.data;
+    // --- Step 7: Parse and validate ---
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonString);
+    } catch {
+      throw new EnrichmentError(
+        'PARSE_ERROR',
+        `Failed to parse LLM response as JSON: ${jsonString.slice(0, 200)}`,
+      );
     }
 
-    // -----------------------------------------------------------------------
-    // HTTP Transport (Private)
-    // -----------------------------------------------------------------------
+    const result = SemanticOverlaySchema.safeParse(parsed);
+    if (!result.success) {
+      throw new EnrichmentError(
+        'PARSE_ERROR',
+        `LLM response failed schema validation: ${result.error.message}`,
+      );
+    }
 
-    /**
-     * Sends a chat completion request with exponential backoff on 429.
-     *
-     * Retries up to `MAX_RETRIES` times on rate-limited (429) responses.
-     * Non-429 error responses throw immediately.
-     *
-     * @param body - The request body to send.
-     * @returns The parsed response body.
-     * @throws {EnrichmentError} On auth, rate limit (after retries), or provider errors.
-     */
-    private async fetchWithRetry(body: ChatCompletionRequest): Promise<ChatCompletionResponse> {
-        const url = `${this.baseUrl}/v1/chat/completions`;
-        let lastError: EnrichmentError | undefined;
+    return result.data;
+  }
 
-        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-            // Wait before retry (not on first attempt)
-            if (attempt > 0) {
-                const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
-                await sleep(delay);
-            }
+  // -----------------------------------------------------------------------
+  // HTTP Transport (Private)
+  // -----------------------------------------------------------------------
 
-            let response: Response;
-            try {
-                response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.apiKey}`,
-                    },
-                    body: JSON.stringify(body),
-                });
-            } catch (err: unknown) {
-                // Network error — no response received
-                const message = err instanceof Error
-                    ? err.message
-                    : 'Network request failed';
-                throw new EnrichmentError('PROVIDER_ERROR', `Network error: ${message}`);
-            }
+  /**
+   * Sends a chat completion request with exponential backoff on 429.
+   *
+   * Retries up to `MAX_RETRIES` times on rate-limited (429) responses.
+   * Non-429 error responses throw immediately.
+   *
+   * @param body - The request body to send.
+   * @returns The parsed response body.
+   * @throws {EnrichmentError} On auth, rate limit (after retries), or provider errors.
+   */
+  private async fetchWithRetry(body: ChatCompletionRequest): Promise<ChatCompletionResponse> {
+    const url = `${this.baseUrl}/v1/chat/completions`;
+    let lastError: EnrichmentError | undefined;
 
-            // --- Handle error responses ---
-            if (!response.ok) {
-                const status = response.status;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      // Wait before retry (not on first attempt)
+      if (attempt > 0) {
+        const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+        await sleep(delay);
+      }
 
-                // Auth failure — no retry
-                if (status === 401 || status === 403) {
-                    throw new EnrichmentError(
-                        'AUTH_FAILED',
-                        `Authentication failed (HTTP ${String(status)}). Check your API key.`,
-                    );
-                }
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify(body),
+        });
+      } catch (err: unknown) {
+        // Network error — no response received
+        const message = err instanceof Error ? err.message : 'Network request failed';
+        throw new EnrichmentError('PROVIDER_ERROR', `Network error: ${message}`);
+      }
 
-                // Rate limited — retry with backoff
-                if (status === 429) {
-                    const retryAfterMs = parseRetryAfter(response);
-                    lastError = new EnrichmentError(
-                        'RATE_LIMITED',
-                        `Rate limited (HTTP 429). Attempt ${String(attempt + 1)}/${String(MAX_RETRIES + 1)}.`,
-                        retryAfterMs,
-                    );
-                    continue;
-                }
+      // --- Handle error responses ---
+      if (!response.ok) {
+        const status = response.status;
 
-                // Server error (5xx) — no retry
-                if (status >= 500) {
-                    throw new EnrichmentError(
-                        'PROVIDER_ERROR',
-                        `Server error (HTTP ${String(status)}).`,
-                    );
-                }
-
-                // Other client errors — no retry
-                throw new EnrichmentError(
-                    'PROVIDER_ERROR',
-                    `Unexpected HTTP ${String(status)} response.`,
-                );
-            }
-
-            // --- Success: parse response body ---
-            let responseBody: unknown;
-            try {
-                responseBody = await response.json();
-            } catch {
-                throw new EnrichmentError(
-                    'PARSE_ERROR',
-                    'Failed to parse API response body as JSON.',
-                );
-            }
-
-            // We trust the shape loosely — the important validation happens
-            // on the LLM content (SemanticOverlaySchema), not on the envelope.
-            return responseBody as ChatCompletionResponse;
+        // Auth failure — no retry
+        if (status === 401 || status === 403) {
+          throw new EnrichmentError(
+            'AUTH_FAILED',
+            `Authentication failed (HTTP ${String(status)}). Check your API key.`,
+          );
         }
 
-        // All retries exhausted — throw the last rate-limit error
-        throw lastError ?? new EnrichmentError(
+        // Rate limited — retry with backoff
+        if (status === 429) {
+          const retryAfterMs = parseRetryAfter(response);
+          lastError = new EnrichmentError(
             'RATE_LIMITED',
-            `Rate limited after ${String(MAX_RETRIES)} retries.`,
-        );
+            `Rate limited (HTTP 429). Attempt ${String(attempt + 1)}/${String(MAX_RETRIES + 1)}.`,
+            retryAfterMs,
+          );
+          continue;
+        }
+
+        // Server error (5xx) — no retry
+        if (status >= 500) {
+          throw new EnrichmentError('PROVIDER_ERROR', `Server error (HTTP ${String(status)}).`);
+        }
+
+        // Other client errors — no retry
+        throw new EnrichmentError('PROVIDER_ERROR', `Unexpected HTTP ${String(status)} response.`);
+      }
+
+      // --- Success: parse response body ---
+      let responseBody: unknown;
+      try {
+        responseBody = await response.json();
+      } catch {
+        throw new EnrichmentError('PARSE_ERROR', 'Failed to parse API response body as JSON.');
+      }
+
+      // We trust the shape loosely — the important validation happens
+      // on the LLM content (SemanticOverlaySchema), not on the envelope.
+      return responseBody as ChatCompletionResponse;
     }
+
+    // All retries exhausted — throw the last rate-limit error
+    throw (
+      lastError ??
+      new EnrichmentError('RATE_LIMITED', `Rate limited after ${String(MAX_RETRIES)} retries.`)
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -376,15 +354,15 @@ export class BYOKeyEnrichmentProvider implements EnrichmentProvider {
  * @returns The extracted JSON string.
  */
 function extractJSON(content: string): string {
-    const trimmed = content.trim();
+  const trimmed = content.trim();
 
-    // Match ```json ... ``` or ``` ... ```
-    const fenceMatch = /^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/i.exec(trimmed);
-    if (fenceMatch?.[1] !== undefined) {
-        return fenceMatch[1].trim();
-    }
+  // Match ```json ... ``` or ``` ... ```
+  const fenceMatch = /^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/i.exec(trimmed);
+  if (fenceMatch?.[1] !== undefined) {
+    return fenceMatch[1].trim();
+  }
 
-    return trimmed;
+  return trimmed;
 }
 
 /**
@@ -398,17 +376,17 @@ function extractJSON(content: string): string {
  * @returns Retry delay in milliseconds, or `undefined` if not parseable.
  */
 function parseRetryAfter(response: Response): number | undefined {
-    const header = response.headers.get('Retry-After');
-    if (header === null) {
-        return undefined;
-    }
-
-    const seconds = Number(header);
-    if (Number.isFinite(seconds) && seconds > 0) {
-        return seconds * 1000;
-    }
-
+  const header = response.headers.get('Retry-After');
+  if (header === null) {
     return undefined;
+  }
+
+  const seconds = Number(header);
+  if (Number.isFinite(seconds) && seconds > 0) {
+    return seconds * 1000;
+  }
+
+  return undefined;
 }
 
 /**
@@ -418,7 +396,7 @@ function parseRetryAfter(response: Response): number | undefined {
  * @returns A promise that resolves after the specified delay.
  */
 function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }

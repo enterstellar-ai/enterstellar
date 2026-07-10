@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/telemetry/transport/noop-transport
+ * @module @enterstellar/telemetry/transport/noop-transport
  * @description No-op transport for enterprise opt-out.
  *
  * When `disabled: true` is set in `TelemetryConfig`, all transport
@@ -21,7 +21,7 @@ import type { SignalTransport, TransportResult } from './signal-transport.js';
  * allocating a new object on every no-op send.
  */
 const NOOP_RESULT: TransportResult = Object.freeze({
-    success: true,
+  success: true,
 });
 
 // ---------------------------------------------------------------------------
@@ -46,9 +46,9 @@ const NOOP_RESULT: TransportResult = Object.freeze({
  * @see Design Choice TL9
  */
 export function createNoopTransport(): SignalTransport {
-    return Object.freeze({
-        send(): Promise<TransportResult> {
-            return Promise.resolve(NOOP_RESULT);
-        },
-    });
+  return Object.freeze({
+    send(): Promise<TransportResult> {
+      return Promise.resolve(NOOP_RESULT);
+    },
+  });
 }

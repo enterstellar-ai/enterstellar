@@ -1,6 +1,6 @@
 /**
- * @module @enterstellar-ai/adapter-firebase/version
- * @description Package version constant for `@enterstellar-ai/adapter-firebase`.
+ * @module @enterstellar/adapter-firebase/version
+ * @description Package version constant for `@enterstellar/adapter-firebase`.
  *
  * Used by DevTools for version display and runtime compatibility checks.
  * Must be kept in sync with the `version` field in `package.json`.
@@ -9,7 +9,7 @@
  */
 
 /**
- * Current version of the `@enterstellar-ai/adapter-firebase` package.
+ * Current version of the `@enterstellar/adapter-firebase` package.
  *
  * @remarks
  * This value MUST match the `version` field in `package.json`.

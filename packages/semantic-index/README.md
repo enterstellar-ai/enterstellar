@@ -1,4 +1,4 @@
-# @enterstellar-ai/semantic-index
+# @enterstellar/semantic-index
 
 > Embedding-based component retrieval — reduces the LLM context window from ~50K tokens to ~200 by selecting only the most relevant `ComponentContract`s for any natural-language intent.
 
@@ -7,8 +7,8 @@ The Semantic Index is the core of Enterstellar's Intent Router (Moat M4). It emb
 ## Quick Start
 
 ```ts
-import { createSemanticIndex } from '@enterstellar-ai/semantic-index';
-import { createRegistry, defineComponent } from '@enterstellar-ai/registry';
+import { createSemanticIndex } from '@enterstellar/semantic-index';
+import { createRegistry, defineComponent } from '@enterstellar/registry';
 
 // 1. Create a registry with components
 const registry = createRegistry({ components: [PatientVitals, MedicationList] });
@@ -88,7 +88,7 @@ const manifest = index.getCompactManifest(results);
 | `VectorStore`          | Abstract vector storage interface.                                                                                      |
 | `VectorSearchHit`      | `{ id: string, score: number }`.                                                                                        |
 | `QueryCache`           | LRU cache interface for search results.                                                                                 |
-| `SemanticSearchResult` | `{ componentName, similarity, contract }` — from `@enterstellar-ai/types`.                                              |
+| `SemanticSearchResult` | `{ componentName, similarity, contract }` — from `@enterstellar/types`.                                                 |
 
 ## Design Choices Applied
 
@@ -128,7 +128,7 @@ const manifest = index.getCompactManifest(results);
 | `tsup.config.ts`   | Builds ESM + CJS + DTS.                         |
 | `vitest.config.ts` | Test runner with 90% coverage thresholds.       |
 
-**Peer dependencies:** `@enterstellar-ai/types`
+**Peer dependencies:** `@enterstellar/types`
 
 ## See Also
 

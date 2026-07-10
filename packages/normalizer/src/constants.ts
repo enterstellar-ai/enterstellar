@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/normalizer/constants
+ * @module @enterstellar/normalizer/constants
  * @description Normalizer constants — AG-UI event types, default configuration values.
  *
  * These constants are the single source of truth for protocol-specific
@@ -24,10 +24,7 @@
  *
  * @see Design Choice N4
  */
-export const AGUI_UI_EVENT_TYPES = [
-    'tool_call_start',
-    'text_message_start',
-] as const;
+export const AGUI_UI_EVENT_TYPES = ['tool_call_start', 'text_message_start'] as const;
 
 /**
  * AG-UI event types that map to lifecycle signals (loading, ready, error).
@@ -41,19 +38,15 @@ export const AGUI_UI_EVENT_TYPES = [
  *
  * @see Design Choice N4
  */
-export const AGUI_LIFECYCLE_EVENT_TYPES = [
-    'run_started',
-    'run_finished',
-    'run_error',
-] as const;
+export const AGUI_LIFECYCLE_EVENT_TYPES = ['run_started', 'run_finished', 'run_error'] as const;
 
 /**
  * Union type of all known AG-UI event types handled by the normalizer.
  * Used for structural detection in `canHandle()`.
  */
 export type AGUIEventType =
-    | (typeof AGUI_UI_EVENT_TYPES)[number]
-    | (typeof AGUI_LIFECYCLE_EVENT_TYPES)[number];
+  | (typeof AGUI_UI_EVENT_TYPES)[number]
+  | (typeof AGUI_LIFECYCLE_EVENT_TYPES)[number];
 
 // ---------------------------------------------------------------------------
 // AG-UI Streaming Event Types (N5)
@@ -67,10 +60,7 @@ export type AGUIEventType =
  *
  * @see Design Choice N5
  */
-export const AGUI_COMPLETION_EVENT_TYPES = [
-    'tool_call_end',
-    'text_message_end',
-] as const;
+export const AGUI_COMPLETION_EVENT_TYPES = ['tool_call_end', 'text_message_end'] as const;
 
 // ---------------------------------------------------------------------------
 // Default Configuration

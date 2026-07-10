@@ -31,7 +31,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 import type { StepAnalysis, PipelineStepEducation } from './step-education-data';
 import { cn } from '@/lib/utils';
 
@@ -62,10 +62,13 @@ interface StepDetailPaneProps {
  *
  * @internal
  */
-const STATUS_BADGE: Record<StepAnalysis['status'], {
-  readonly label: string;
-  readonly className: string;
-}> = {
+const STATUS_BADGE: Record<
+  StepAnalysis['status'],
+  {
+    readonly label: string;
+    readonly className: string;
+  }
+> = {
   idle: {
     label: 'IDLE',
     className: 'bg-neutral-500/15 text-neutral-400 border border-neutral-500/30',
@@ -148,9 +151,7 @@ export function StepDetailPane({
       <div className="flex flex-col h-full">
         {/* Header with back button */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-playground-border/30">
-          <span className="text-xs font-semibold text-neutral-200">
-            Raw Zone Trace
-          </span>
+          <span className="text-xs font-semibold text-neutral-200">Raw Zone Trace</span>
           <button
             type="button"
             onClick={toggleRawTrace}
@@ -211,9 +212,7 @@ export function StepDetailPane({
             <div className="text-[10px] uppercase tracking-wider text-playground-muted font-semibold mb-1.5">
               {stepEducation.icon} What is {stepEducation.title}?
             </div>
-            <p className="text-xs text-neutral-300 leading-relaxed">
-              {stepEducation.concept}
-            </p>
+            <p className="text-xs text-neutral-300 leading-relaxed">{stepEducation.concept}</p>
           </div>
 
           {/* ── Dynamic Analysis ── */}

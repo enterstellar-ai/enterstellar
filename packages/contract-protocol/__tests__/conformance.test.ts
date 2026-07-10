@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/contract-protocol/__tests__/conformance
+ * @module @enterstellar/contract-protocol/__tests__/conformance
  * @description Conformance suite self-consistency tests.
  *
  * Validates that the conformance suite is correct:
@@ -38,11 +38,11 @@ const CONFORMANCE_DIR = resolve(__dirname, '..', 'conformance');
  * Excludes non-directory entries (e.g., `README.md`).
  */
 const SCHEMA_NAMES: readonly string[] = readdirSync(CONFORMANCE_DIR, {
-    withFileTypes: true,
+  withFileTypes: true,
 })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -59,11 +59,11 @@ const SCHEMA_NAMES: readonly string[] = readdirSync(CONFORMANCE_DIR, {
  * @returns A configured Ajv instance.
  */
 function createValidator(): InstanceType<typeof Ajv.default> {
-    return new Ajv.default({
-        allErrors: true,
-        strict: false,
-        verbose: true,
-    });
+  return new Ajv.default({
+    allErrors: true,
+    strict: false,
+    verbose: true,
+  });
 }
 
 /**
@@ -73,8 +73,8 @@ function createValidator(): InstanceType<typeof Ajv.default> {
  * @returns The parsed JSON value.
  */
 function loadJson(filepath: string): unknown {
-    const raw = readFileSync(filepath, 'utf-8');
-    return JSON.parse(raw) as unknown;
+  const raw = readFileSync(filepath, 'utf-8');
+  return JSON.parse(raw) as unknown;
 }
 
 /**
@@ -85,10 +85,10 @@ function loadJson(filepath: string): unknown {
  *          Returns empty array if the directory does not exist.
  */
 function listJsonFiles(dirPath: string): readonly string[] {
-    if (!existsSync(dirPath)) {
-        return [];
-    }
-    return readdirSync(dirPath).filter((f) => f.endsWith('.json'));
+  if (!existsSync(dirPath)) {
+    return [];
+  }
+  return readdirSync(dirPath).filter((f) => f.endsWith('.json'));
 }
 
 // ---------------------------------------------------------------------------
@@ -96,98 +96,98 @@ function listJsonFiles(dirPath: string): readonly string[] {
 // ---------------------------------------------------------------------------
 
 describe('Conformance Suite', () => {
+  /**
+   * Verify we discovered schema directories.
+   * If this fails, the conformance suite structure is broken.
+   */
+  it('should discover at least 1 schema directory', () => {
+    expect(SCHEMA_NAMES.length).toBeGreaterThan(0);
+  });
 
-    /**
-     * Verify we discovered schema directories.
-     * If this fails, the conformance suite structure is broken.
-     */
-    it('should discover at least 1 schema directory', () => {
-        expect(SCHEMA_NAMES.length).toBeGreaterThan(0);
+  /**
+   * Verify every known schema has both valid and invalid fixtures.
+   * This prevents incomplete conformance coverage.
+   */
+  describe.each(SCHEMA_NAMES)('%s', (schemaName) => {
+    const schemaFilePath = resolve(SCHEMAS_DIR, `${schemaName}.json`);
+    const validDir = resolve(CONFORMANCE_DIR, schemaName, 'valid');
+    const invalidDir = resolve(CONFORMANCE_DIR, schemaName, 'invalid');
+
+    // -----------------------------------------------------------------------
+    // Schema existence
+    // -----------------------------------------------------------------------
+
+    it('should have a corresponding schema file', () => {
+      expect(existsSync(schemaFilePath)).toBe(true);
     });
 
-    /**
-     * Verify every known schema has both valid and invalid fixtures.
-     * This prevents incomplete conformance coverage.
-     */
-    describe.each(SCHEMA_NAMES)('%s', (schemaName) => {
-        const schemaFilePath = resolve(SCHEMAS_DIR, `${schemaName}.json`);
-        const validDir = resolve(CONFORMANCE_DIR, schemaName, 'valid');
-        const invalidDir = resolve(CONFORMANCE_DIR, schemaName, 'invalid');
+    // -----------------------------------------------------------------------
+    // Fixture coverage
+    // -----------------------------------------------------------------------
 
-        // -----------------------------------------------------------------------
-        // Schema existence
-        // -----------------------------------------------------------------------
-
-        it('should have a corresponding schema file', () => {
-            expect(existsSync(schemaFilePath)).toBe(true);
-        });
-
-        // -----------------------------------------------------------------------
-        // Fixture coverage
-        // -----------------------------------------------------------------------
-
-        it('should have at least one valid fixture', () => {
-            const validFiles = listJsonFiles(validDir);
-            expect(validFiles.length).toBeGreaterThan(0);
-        });
-
-        it('should have at least one invalid fixture', () => {
-            const invalidFiles = listJsonFiles(invalidDir);
-            expect(invalidFiles.length).toBeGreaterThan(0);
-        });
-
-        // -----------------------------------------------------------------------
-        // Valid fixtures
-        // -----------------------------------------------------------------------
-
-        const validFiles = listJsonFiles(validDir);
-
-        if (validFiles.length > 0) {
-            describe('valid/', () => {
-                it.each(validFiles)('%s should pass schema validation', (filename) => {
-                    // Create a fresh Ajv instance per test to avoid $id caching conflicts.
-                    // Schemas have `$id` fields that ajv registers internally — a shared
-                    // instance throws 'schema already exists' on the second compile().
-                    const validator = createValidator();
-                    const schema = loadJson(schemaFilePath);
-                    const fixture = loadJson(resolve(validDir, filename));
-                    const validate = validator.compile(schema as Record<string, unknown>);
-                    const result = validate(fixture);
-
-                    if (!result && validate.errors !== null && validate.errors !== undefined) {
-                        // Print errors for debugging if a valid fixture unexpectedly fails.
-                        const errorDetails = validate.errors
-                            .map((e: { readonly instancePath: string; readonly message?: string }) => `  ${e.instancePath}: ${e.message ?? 'unknown'}`)
-                            .join('\n');
-                        throw new Error(
-                            `Valid fixture '${filename}' failed validation:\n${errorDetails}`,
-                        );
-                    }
-
-                    expect(result).toBe(true);
-                });
-            });
-        }
-
-        // -----------------------------------------------------------------------
-        // Invalid fixtures
-        // -----------------------------------------------------------------------
-
-        const invalidFiles = listJsonFiles(invalidDir);
-
-        if (invalidFiles.length > 0) {
-            describe('invalid/', () => {
-                it.each(invalidFiles)('%s should fail schema validation', (filename) => {
-                    // Fresh Ajv instance per test — see valid/ block for rationale.
-                    const validator = createValidator();
-                    const schema = loadJson(schemaFilePath);
-                    const fixture = loadJson(resolve(invalidDir, filename));
-                    const validate = validator.compile(schema as Record<string, unknown>);
-                    const result = validate(fixture);
-
-                    expect(result).toBe(false);
-                });
-            });
-        }
+    it('should have at least one valid fixture', () => {
+      const validFiles = listJsonFiles(validDir);
+      expect(validFiles.length).toBeGreaterThan(0);
     });
+
+    it('should have at least one invalid fixture', () => {
+      const invalidFiles = listJsonFiles(invalidDir);
+      expect(invalidFiles.length).toBeGreaterThan(0);
+    });
+
+    // -----------------------------------------------------------------------
+    // Valid fixtures
+    // -----------------------------------------------------------------------
+
+    const validFiles = listJsonFiles(validDir);
+
+    if (validFiles.length > 0) {
+      describe('valid/', () => {
+        it.each(validFiles)('%s should pass schema validation', (filename) => {
+          // Create a fresh Ajv instance per test to avoid $id caching conflicts.
+          // Schemas have `$id` fields that ajv registers internally — a shared
+          // instance throws 'schema already exists' on the second compile().
+          const validator = createValidator();
+          const schema = loadJson(schemaFilePath);
+          const fixture = loadJson(resolve(validDir, filename));
+          const validate = validator.compile(schema as Record<string, unknown>);
+          const result = validate(fixture);
+
+          if (!result && validate.errors !== null && validate.errors !== undefined) {
+            // Print errors for debugging if a valid fixture unexpectedly fails.
+            const errorDetails = validate.errors
+              .map(
+                (e: { readonly instancePath: string; readonly message?: string }) =>
+                  `  ${e.instancePath}: ${e.message ?? 'unknown'}`,
+              )
+              .join('\n');
+            throw new Error(`Valid fixture '${filename}' failed validation:\n${errorDetails}`);
+          }
+
+          expect(result).toBe(true);
+        });
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // Invalid fixtures
+    // -----------------------------------------------------------------------
+
+    const invalidFiles = listJsonFiles(invalidDir);
+
+    if (invalidFiles.length > 0) {
+      describe('invalid/', () => {
+        it.each(invalidFiles)('%s should fail schema validation', (filename) => {
+          // Fresh Ajv instance per test — see valid/ block for rationale.
+          const validator = createValidator();
+          const schema = loadJson(schemaFilePath);
+          const fixture = loadJson(resolve(invalidDir, filename));
+          const validate = validator.compile(schema as Record<string, unknown>);
+          const result = validate(fixture);
+
+          expect(result).toBe(false);
+        });
+      });
+    }
+  });
 });

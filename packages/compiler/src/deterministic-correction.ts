@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/deterministic-correction
+ * @module @enterstellar/compiler/deterministic-correction
  * @description Deterministic self-correction for LLM prop errors (Tier 1 + Tier 2).
  *
  * Attempts to fix compilation errors without calling an external LLM.
@@ -27,16 +27,9 @@
 
 import type { z } from 'zod';
 
-import type {
-    CompilationError,
-    ComponentContract,
-    DesignTokenSet,
-} from '@enterstellar-ai/types';
+import type { CompilationError, ComponentContract, DesignTokenSet } from '@enterstellar/types';
 
-import type {
-    CorrectionTraceEntry,
-    DeterministicCorrectionResult,
-} from './types.js';
+import type { CorrectionTraceEntry, DeterministicCorrectionResult } from './types.js';
 import { findNearestToken } from './utils/token-utils.js';
 
 // ---------------------------------------------------------------------------
@@ -95,40 +88,40 @@ const FALSY_STRINGS: ReadonlySet<string> = new Set(['false', 'no', '0', 'off', '
  * @see Design Choice SC-13 — only lossless/preservable transforms.
  */
 function attemptTypeCoercion(
-    was: unknown,
-    shouldBe: string,
+  was: unknown,
+  shouldBe: string,
 ): { readonly success: boolean; readonly value: unknown } {
-    // String → Number
-    if (shouldBe === 'number' && typeof was === 'string') {
-        // Guard: empty string → 0 is valid JS but semantically wrong (§3.5)
-        if (was.trim() === '') {
-            return { success: false, value: was };
-        }
-        const parsed = Number(was);
-        // Guard: NaN and Infinity are not valid numeric prop values (§3.5)
-        if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
-            return { success: true, value: parsed };
-        }
+  // String → Number
+  if (shouldBe === 'number' && typeof was === 'string') {
+    // Guard: empty string → 0 is valid JS but semantically wrong (§3.5)
+    if (was.trim() === '') {
+      return { success: false, value: was };
     }
-
-    // String → Boolean (simple — expanded set handled by attemptBooleanCoercion)
-    if (shouldBe === 'boolean' && typeof was === 'string') {
-        const lower = was.toLowerCase();
-        if (lower === 'true') return { success: true, value: true };
-        if (lower === 'false') return { success: true, value: false };
+    const parsed = Number(was);
+    // Guard: NaN and Infinity are not valid numeric prop values (§3.5)
+    if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
+      return { success: true, value: parsed };
     }
+  }
 
-    // Number → String (always lossless, §3.5)
-    if (shouldBe === 'string' && typeof was === 'number') {
-        return { success: true, value: String(was) };
-    }
+  // String → Boolean (simple — expanded set handled by attemptBooleanCoercion)
+  if (shouldBe === 'boolean' && typeof was === 'string') {
+    const lower = was.toLowerCase();
+    if (lower === 'true') return { success: true, value: true };
+    if (lower === 'false') return { success: true, value: false };
+  }
 
-    // Boolean → String (always lossless, §3.5)
-    if (shouldBe === 'string' && typeof was === 'boolean') {
-        return { success: true, value: String(was) };
-    }
+  // Number → String (always lossless, §3.5)
+  if (shouldBe === 'string' && typeof was === 'number') {
+    return { success: true, value: String(was) };
+  }
 
-    return { success: false, value: was };
+  // Boolean → String (always lossless, §3.5)
+  if (shouldBe === 'string' && typeof was === 'boolean') {
+    return { success: true, value: String(was) };
+  }
+
+  return { success: false, value: was };
 }
 
 // ---------------------------------------------------------------------------
@@ -148,20 +141,21 @@ function attemptTypeCoercion(
  * @see Bible §3.4 Strategy 2 — Boolean Coercion.
  * @see Bible §3.5 — `number → boolean`: exact `1`/`0` only.
  */
-function attemptBooleanCoercion(
-    was: unknown,
-): { readonly success: boolean; readonly value: boolean } {
-    if (typeof was === 'string') {
-        const lower = was.toLowerCase().trim();
-        if (TRUTHY_STRINGS.has(lower)) return { success: true, value: true };
-        if (FALSY_STRINGS.has(lower)) return { success: true, value: false };
-    }
-    // Number → Boolean: exact 1/0 only (§3.5). Any other number → skip.
-    if (typeof was === 'number') {
-        if (was === 1) return { success: true, value: true };
-        if (was === 0) return { success: true, value: false };
-    }
-    return { success: false, value: false };
+function attemptBooleanCoercion(was: unknown): {
+  readonly success: boolean;
+  readonly value: boolean;
+} {
+  if (typeof was === 'string') {
+    const lower = was.toLowerCase().trim();
+    if (TRUTHY_STRINGS.has(lower)) return { success: true, value: true };
+    if (FALSY_STRINGS.has(lower)) return { success: true, value: false };
+  }
+  // Number → Boolean: exact 1/0 only (§3.5). Any other number → skip.
+  if (typeof was === 'number') {
+    if (was === 1) return { success: true, value: true };
+    if (was === 0) return { success: true, value: false };
+  }
+  return { success: false, value: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -189,18 +183,19 @@ function attemptBooleanCoercion(
  * @see Bible §3.4 Strategy 3 — Default Extraction.
  * @see Design Choice SC-15 — Zod public API only.
  */
-function extractZodDefault(
-    fieldSchema: z.ZodType,
-): { readonly hasDefault: boolean; readonly value: unknown } {
-    const result = fieldSchema.safeParse(undefined);
-    if (result.success) {
-        // Schema accepted undefined — it has a .default() or is .optional().
-        // Only count as "has default" if the parsed value is NOT undefined.
-        if (result.data !== undefined) {
-            return { hasDefault: true, value: result.data };
-        }
+function extractZodDefault(fieldSchema: z.ZodType): {
+  readonly hasDefault: boolean;
+  readonly value: unknown;
+} {
+  const result = fieldSchema.safeParse(undefined);
+  if (result.success) {
+    // Schema accepted undefined — it has a .default() or is .optional().
+    // Only count as "has default" if the parsed value is NOT undefined.
+    if (result.data !== undefined) {
+      return { hasDefault: true, value: result.data };
     }
-    return { hasDefault: false, value: undefined };
+  }
+  return { hasDefault: false, value: undefined };
 }
 
 // ---------------------------------------------------------------------------
@@ -222,36 +217,36 @@ function extractZodDefault(
  * @see Bible §3.4 Strategy 4 — inline Levenshtein.
  */
 function levenshtein(a: string, b: string): number {
-    const matrix: number[][] = [];
-    for (let i = 0; i <= a.length; i++) {
-        matrix[i] = [i];
+  const matrix: number[][] = [];
+  for (let i = 0; i <= a.length; i++) {
+    matrix[i] = [i];
+  }
+  const firstRow = matrix[0];
+  if (firstRow !== undefined) {
+    for (let j = 0; j <= b.length; j++) {
+      firstRow[j] = j;
     }
-    const firstRow = matrix[0];
-    if (firstRow !== undefined) {
-        for (let j = 0; j <= b.length; j++) {
-            firstRow[j] = j;
+  }
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      const row = matrix[i];
+      const prevRow = matrix[i - 1];
+      if (row !== undefined && prevRow !== undefined) {
+        const del = prevRow[j];
+        const ins = row[j - 1];
+        const sub = prevRow[j - 1];
+        if (del !== undefined && ins !== undefined && sub !== undefined) {
+          row[j] = Math.min(del + 1, ins + 1, sub + cost);
         }
+      }
     }
-    for (let i = 1; i <= a.length; i++) {
-        for (let j = 1; j <= b.length; j++) {
-            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            const row = matrix[i];
-            const prevRow = matrix[i - 1];
-            if (row !== undefined && prevRow !== undefined) {
-                const del = prevRow[j];
-                const ins = row[j - 1];
-                const sub = prevRow[j - 1];
-                if (del !== undefined && ins !== undefined && sub !== undefined) {
-                    row[j] = Math.min(del + 1, ins + 1, sub + cost);
-                }
-            }
-        }
-    }
-    const lastRow = matrix[a.length];
-    if (lastRow !== undefined) {
-        return lastRow[b.length] ?? 0;
-    }
-    return 0;
+  }
+  const lastRow = matrix[a.length];
+  if (lastRow !== undefined) {
+    return lastRow[b.length] ?? 0;
+  }
+  return 0;
 }
 
 /**
@@ -269,22 +264,22 @@ function levenshtein(a: string, b: string): number {
  * @see Design Choice SC-12 — `maxDistance` default 2, configurable 1–5.
  */
 function findNearestEnum(
-    received: string,
-    options: readonly string[],
-    maxDistance: number = DEFAULT_ENUM_MATCH_THRESHOLD,
+  received: string,
+  options: readonly string[],
+  maxDistance: number = DEFAULT_ENUM_MATCH_THRESHOLD,
 ): string | undefined {
-    let bestMatch: string | undefined;
-    let bestDistance = Infinity;
+  let bestMatch: string | undefined;
+  let bestDistance = Infinity;
 
-    for (const option of options) {
-        const distance = levenshtein(received.toLowerCase(), option.toLowerCase());
-        if (distance < bestDistance && distance <= maxDistance) {
-            bestDistance = distance;
-            bestMatch = option;
-        }
+  for (const option of options) {
+    const distance = levenshtein(received.toLowerCase(), option.toLowerCase());
+    if (distance < bestDistance && distance <= maxDistance) {
+      bestDistance = distance;
+      bestMatch = option;
     }
+  }
 
-    return bestMatch;
+  return bestMatch;
 }
 
 // ---------------------------------------------------------------------------
@@ -301,11 +296,9 @@ function findNearestEnum(
  * @param contract - The component contract containing the Zod schema.
  * @returns The shape record mapping field names to Zod types, or `undefined`.
  */
-function getSchemaShape(
-    contract: ComponentContract,
-): Record<string, z.ZodType> | undefined {
-    const schemaWithShape = contract.props as { shape?: Record<string, z.ZodType> };
-    return schemaWithShape.shape;
+function getSchemaShape(contract: ComponentContract): Record<string, z.ZodType> | undefined {
+  const schemaWithShape = contract.props as { shape?: Record<string, z.ZodType> };
+  return schemaWithShape.shape;
 }
 
 /**
@@ -334,111 +327,152 @@ function getSchemaShape(
  * @see Design Choice SC-04 — 4 Tier 1 strategies.
  */
 function executeTier1(
-    errors: readonly CompilationError[],
-    props: Readonly<Record<string, unknown>>,
-    contract: ComponentContract,
-    designTokens: DesignTokenSet,
-    enumMatchThreshold: number,
-): { readonly props: Record<string, unknown>; readonly remaining: CompilationError[]; readonly trace: CorrectionTraceEntry[] } {
-    const correctedProps: Record<string, unknown> = { ...props };
-    const remaining: CompilationError[] = [];
-    const trace: CorrectionTraceEntry[] = [];
+  errors: readonly CompilationError[],
+  props: Readonly<Record<string, unknown>>,
+  contract: ComponentContract,
+  designTokens: DesignTokenSet,
+  enumMatchThreshold: number,
+): {
+  readonly props: Record<string, unknown>;
+  readonly remaining: CompilationError[];
+  readonly trace: CorrectionTraceEntry[];
+} {
+  const correctedProps: Record<string, unknown> = { ...props };
+  const remaining: CompilationError[] = [];
+  const trace: CorrectionTraceEntry[] = [];
 
-    // Pre-compute schema shape once for all field-level lookups (SC-15)
-    const shape = getSchemaShape(contract);
+  // Pre-compute schema shape once for all field-level lookups (SC-15)
+  const shape = getSchemaShape(contract);
 
-    for (const error of errors) {
-        // Skip errors without fix suggestions — can't correct what we can't diagnose
-        if (error.fix === undefined) {
-            remaining.push(error);
-            continue;
-        }
-
-        const { field, was, shouldBe } = error.fix;
-        // Extract the prop field name from the dot-path (e.g., 'props.age' → 'age')
-        const fieldName = field.startsWith('props.') ? field.slice(6) : field;
-        let fixed = false;
-
-        // Strategy dispatch based on error code + fix metadata
-        switch (error.code) {
-            case 'ENS-2001': { // Schema parse failure
-                // --- Strategy 1: Type coercion (§3.4 Strategy 1) ---
-                const coercion = attemptTypeCoercion(was, String(shouldBe));
-                if (coercion.success) {
-                    correctedProps[fieldName] = coercion.value;
-                    trace.push({ tier: 1, errorCode: error.code, field: fieldName, was, correctedTo: coercion.value, strategy: 'type-coercion' });
-                    fixed = true;
-                    break;
-                }
-
-                // --- Strategy 2: Boolean coercion (§3.4 Strategy 2) ---
-                // Expanded set check — handles "yes", "on", "enabled", 1, 0, etc.
-                if (String(shouldBe) === 'boolean') {
-                    const boolCoercion = attemptBooleanCoercion(was);
-                    if (boolCoercion.success) {
-                        correctedProps[fieldName] = boolCoercion.value;
-                        trace.push({ tier: 1, errorCode: error.code, field: fieldName, was, correctedTo: boolCoercion.value, strategy: 'boolean-coercion' });
-                        fixed = true;
-                        break;
-                    }
-                }
-
-                // --- Strategy 4: Enum nearest match (§3.4 Strategy 4, SC-15) ---
-                if (shape !== undefined && typeof was === 'string') {
-                    const fieldSchema = shape[fieldName];
-                    if (fieldSchema !== undefined) {
-                        // Duck-type check for z.enum — .options is the public API (SC-15)
-                        const enumSchema = fieldSchema as { options?: readonly string[] };
-                        if (Array.isArray(enumSchema.options)) {
-                            const nearest = findNearestEnum(was, enumSchema.options, enumMatchThreshold);
-                            if (nearest !== undefined) {
-                                correctedProps[fieldName] = nearest;
-                                trace.push({ tier: 1, errorCode: error.code, field: fieldName, was, correctedTo: nearest, strategy: 'enum-nearest' });
-                                fixed = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // --- Strategy 3: Default extraction (§3.4 Strategy 3, SC-15) ---
-                // Handles both missing fields (was === undefined) and null values (§3.5)
-                if ((was === undefined || was === null) && shape !== undefined) {
-                    const fieldSchema = shape[fieldName];
-                    if (fieldSchema !== undefined) {
-                        const defaultResult = extractZodDefault(fieldSchema);
-                        if (defaultResult.hasDefault) {
-                            correctedProps[fieldName] = defaultResult.value;
-                            trace.push({ tier: 1, errorCode: error.code, field: fieldName, was, correctedTo: defaultResult.value, strategy: 'default-extraction' });
-                            fixed = true;
-                        }
-                    }
-                }
-                break;
-            }
-
-            case 'ENS-2002': { // Invalid design token
-                // --- Strategy 5: Token nearest-match (§3.4 Strategy 5) ---
-                const nearest = findNearestToken(String(was), designTokens);
-                if (nearest !== undefined) {
-                    correctedProps[fieldName] = nearest;
-                    trace.push({ tier: 1, errorCode: error.code, field: fieldName, was, correctedTo: nearest, strategy: 'token-nearest' });
-                    fixed = true;
-                }
-                break;
-            }
-
-            // ENS-2003, ENS-2004, ENS-2010, etc. — not correctable by Tier 1 (§3.2)
-            default:
-                break;
-        }
-
-        if (!fixed) {
-            remaining.push(error);
-        }
+  for (const error of errors) {
+    // Skip errors without fix suggestions — can't correct what we can't diagnose
+    if (error.fix === undefined) {
+      remaining.push(error);
+      continue;
     }
 
-    return { props: correctedProps, remaining, trace };
+    const { field, was, shouldBe } = error.fix;
+    // Extract the prop field name from the dot-path (e.g., 'props.age' → 'age')
+    const fieldName = field.startsWith('props.') ? field.slice(6) : field;
+    let fixed = false;
+
+    // Strategy dispatch based on error code + fix metadata
+    switch (error.code) {
+      case 'ENS-2001': {
+        // Schema parse failure
+        // --- Strategy 1: Type coercion (§3.4 Strategy 1) ---
+        const coercion = attemptTypeCoercion(was, String(shouldBe));
+        if (coercion.success) {
+          correctedProps[fieldName] = coercion.value;
+          trace.push({
+            tier: 1,
+            errorCode: error.code,
+            field: fieldName,
+            was,
+            correctedTo: coercion.value,
+            strategy: 'type-coercion',
+          });
+          fixed = true;
+          break;
+        }
+
+        // --- Strategy 2: Boolean coercion (§3.4 Strategy 2) ---
+        // Expanded set check — handles "yes", "on", "enabled", 1, 0, etc.
+        if (String(shouldBe) === 'boolean') {
+          const boolCoercion = attemptBooleanCoercion(was);
+          if (boolCoercion.success) {
+            correctedProps[fieldName] = boolCoercion.value;
+            trace.push({
+              tier: 1,
+              errorCode: error.code,
+              field: fieldName,
+              was,
+              correctedTo: boolCoercion.value,
+              strategy: 'boolean-coercion',
+            });
+            fixed = true;
+            break;
+          }
+        }
+
+        // --- Strategy 4: Enum nearest match (§3.4 Strategy 4, SC-15) ---
+        if (shape !== undefined && typeof was === 'string') {
+          const fieldSchema = shape[fieldName];
+          if (fieldSchema !== undefined) {
+            // Duck-type check for z.enum — .options is the public API (SC-15)
+            const enumSchema = fieldSchema as { options?: readonly string[] };
+            if (Array.isArray(enumSchema.options)) {
+              const nearest = findNearestEnum(was, enumSchema.options, enumMatchThreshold);
+              if (nearest !== undefined) {
+                correctedProps[fieldName] = nearest;
+                trace.push({
+                  tier: 1,
+                  errorCode: error.code,
+                  field: fieldName,
+                  was,
+                  correctedTo: nearest,
+                  strategy: 'enum-nearest',
+                });
+                fixed = true;
+                break;
+              }
+            }
+          }
+        }
+
+        // --- Strategy 3: Default extraction (§3.4 Strategy 3, SC-15) ---
+        // Handles both missing fields (was === undefined) and null values (§3.5)
+        if ((was === undefined || was === null) && shape !== undefined) {
+          const fieldSchema = shape[fieldName];
+          if (fieldSchema !== undefined) {
+            const defaultResult = extractZodDefault(fieldSchema);
+            if (defaultResult.hasDefault) {
+              correctedProps[fieldName] = defaultResult.value;
+              trace.push({
+                tier: 1,
+                errorCode: error.code,
+                field: fieldName,
+                was,
+                correctedTo: defaultResult.value,
+                strategy: 'default-extraction',
+              });
+              fixed = true;
+            }
+          }
+        }
+        break;
+      }
+
+      case 'ENS-2002': {
+        // Invalid design token
+        // --- Strategy 5: Token nearest-match (§3.4 Strategy 5) ---
+        const nearest = findNearestToken(String(was), designTokens);
+        if (nearest !== undefined) {
+          correctedProps[fieldName] = nearest;
+          trace.push({
+            tier: 1,
+            errorCode: error.code,
+            field: fieldName,
+            was,
+            correctedTo: nearest,
+            strategy: 'token-nearest',
+          });
+          fixed = true;
+        }
+        break;
+      }
+
+      // ENS-2003, ENS-2004, ENS-2010, etc. — not correctable by Tier 1 (§3.2)
+      default:
+        break;
+    }
+
+    if (!fixed) {
+      remaining.push(error);
+    }
+  }
+
+  return { props: correctedProps, remaining, trace };
 }
 
 // ---------------------------------------------------------------------------
@@ -462,23 +496,23 @@ function executeTier1(
  * @see Design Choice SC-06 — staleness guard.
  */
 function getValidatedExampleProps(
-    contract: ComponentContract,
+  contract: ComponentContract,
 ): Record<string, unknown> | undefined {
-    if (contract.examples.length === 0) return undefined;
+  if (contract.examples.length === 0) return undefined;
 
-    // Use the first example (deterministic — always index 0)
-    const example = contract.examples[0];
-    if (example === undefined) return undefined;
+  // Use the first example (deterministic — always index 0)
+  const example = contract.examples[0];
+  if (example === undefined) return undefined;
 
-    // Validate example props against the CURRENT schema
-    const result = contract.props.safeParse(example.props);
-    if (!result.success) {
-        // Example props are stale — schema has drifted since registration.
-        // Do NOT use stale data for correction. Return undefined → skip Tier 2.
-        return undefined;
-    }
+  // Validate example props against the CURRENT schema
+  const result = contract.props.safeParse(example.props);
+  if (!result.success) {
+    // Example props are stale — schema has drifted since registration.
+    // Do NOT use stale data for correction. Return undefined → skip Tier 2.
+    return undefined;
+  }
 
-    return result.data as Record<string, unknown>;
+  return result.data as Record<string, unknown>;
 }
 
 /**
@@ -505,71 +539,75 @@ function getValidatedExampleProps(
  * @see Design Choice SC-06 — staleness guard.
  */
 function executeTier2(
-    remaining: readonly CompilationError[],
-    props: Record<string, unknown>,
-    contract: ComponentContract,
-): { readonly props: Record<string, unknown>; readonly remaining: CompilationError[]; readonly trace: CorrectionTraceEntry[] } {
-    const exampleProps = getValidatedExampleProps(contract);
-    if (exampleProps === undefined) {
-        // No valid examples — Tier 2 is a no-op
-        return { props, remaining: [...remaining], trace: [] };
+  remaining: readonly CompilationError[],
+  props: Record<string, unknown>,
+  contract: ComponentContract,
+): {
+  readonly props: Record<string, unknown>;
+  readonly remaining: CompilationError[];
+  readonly trace: CorrectionTraceEntry[];
+} {
+  const exampleProps = getValidatedExampleProps(contract);
+  if (exampleProps === undefined) {
+    // No valid examples — Tier 2 is a no-op
+    return { props, remaining: [...remaining], trace: [] };
+  }
+
+  const correctedProps: Record<string, unknown> = { ...props };
+  const stillRemaining: CompilationError[] = [];
+  const trace: CorrectionTraceEntry[] = [];
+
+  // Pre-compute schema shape for field-level validation (SC-15)
+  const shape = getSchemaShape(contract);
+
+  for (const error of remaining) {
+    // Tier 2 ONLY handles missing-field errors that Tier 1 couldn't fix
+    // Binding precondition (Bible §4.3, gap D-1):
+    // - error.code must be ENS-2001
+    // - error.fix must exist
+    // - error.fix.was MUST be undefined (field is MISSING, not wrong-typed)
+    if (
+      error.code !== 'ENS-2001' ||
+      error.fix === undefined ||
+      error.fix.was !== undefined // was !== undefined → field exists but wrong type → Tier 1's job
+    ) {
+      stillRemaining.push(error);
+      continue;
     }
 
-    const correctedProps: Record<string, unknown> = { ...props };
-    const stillRemaining: CompilationError[] = [];
-    const trace: CorrectionTraceEntry[] = [];
+    const fieldName = error.fix.field.startsWith('props.')
+      ? error.fix.field.slice(6)
+      : error.fix.field;
 
-    // Pre-compute schema shape for field-level validation (SC-15)
-    const shape = getSchemaShape(contract);
+    // Check if the example has a value for this field
+    if (fieldName in exampleProps) {
+      const exampleValue = exampleProps[fieldName];
 
-    for (const error of remaining) {
-        // Tier 2 ONLY handles missing-field errors that Tier 1 couldn't fix
-        // Binding precondition (Bible §4.3, gap D-1):
-        // - error.code must be ENS-2001
-        // - error.fix must exist
-        // - error.fix.was MUST be undefined (field is MISSING, not wrong-typed)
-        if (
-            error.code !== 'ENS-2001' ||
-            error.fix === undefined ||
-            error.fix.was !== undefined  // was !== undefined → field exists but wrong type → Tier 1's job
-        ) {
-            stillRemaining.push(error);
-            continue;
+      // Validate the specific field value against its schema (SC-15: duck-type .shape)
+      if (shape !== undefined) {
+        const fieldSchema = shape[fieldName];
+        if (fieldSchema !== undefined) {
+          const fieldResult = fieldSchema.safeParse(exampleValue);
+          if (fieldResult.success) {
+            correctedProps[fieldName] = fieldResult.data;
+            trace.push({
+              tier: 2,
+              errorCode: error.code,
+              field: fieldName,
+              was: undefined,
+              correctedTo: fieldResult.data,
+              strategy: 'example-fallback',
+            });
+            continue; // Fixed — don't add to remaining
+          }
         }
-
-        const fieldName = error.fix.field.startsWith('props.')
-            ? error.fix.field.slice(6)
-            : error.fix.field;
-
-        // Check if the example has a value for this field
-        if (fieldName in exampleProps) {
-            const exampleValue = exampleProps[fieldName];
-
-            // Validate the specific field value against its schema (SC-15: duck-type .shape)
-            if (shape !== undefined) {
-                const fieldSchema = shape[fieldName];
-                if (fieldSchema !== undefined) {
-                    const fieldResult = fieldSchema.safeParse(exampleValue);
-                    if (fieldResult.success) {
-                        correctedProps[fieldName] = fieldResult.data;
-                        trace.push({
-                            tier: 2,
-                            errorCode: error.code,
-                            field: fieldName,
-                            was: undefined,
-                            correctedTo: fieldResult.data,
-                            strategy: 'example-fallback',
-                        });
-                        continue; // Fixed — don't add to remaining
-                    }
-                }
-            }
-        }
-
-        stillRemaining.push(error);
+      }
     }
 
-    return { props: correctedProps, remaining: stillRemaining, trace };
+    stillRemaining.push(error);
+  }
+
+  return { props: correctedProps, remaining: stillRemaining, trace };
 }
 
 // ---------------------------------------------------------------------------
@@ -622,37 +660,37 @@ function executeTier2(
  * ```
  */
 export function attemptDeterministicCorrection(
-    errors: readonly CompilationError[],
-    props: Readonly<Record<string, unknown>>,
-    contract: ComponentContract,
-    designTokens: DesignTokenSet,
-    enumMatchThreshold?: number,
+  errors: readonly CompilationError[],
+  props: Readonly<Record<string, unknown>>,
+  contract: ComponentContract,
+  designTokens: DesignTokenSet,
+  enumMatchThreshold?: number,
 ): DeterministicCorrectionResult {
-    const threshold = enumMatchThreshold ?? DEFAULT_ENUM_MATCH_THRESHOLD;
+  const threshold = enumMatchThreshold ?? DEFAULT_ENUM_MATCH_THRESHOLD;
 
-    // --- Tier 1: Deterministic Correction ---
-    const tier1 = executeTier1(errors, props, contract, designTokens, threshold);
+  // --- Tier 1: Deterministic Correction ---
+  const tier1 = executeTier1(errors, props, contract, designTokens, threshold);
 
-    // SC-16 short-circuit: if Tier 1 resolved ALL errors, skip Tier 2
-    if (tier1.remaining.length === 0) {
-        return {
-            corrected: true,
-            props: tier1.props,
-            remaining: [],
-            trace: tier1.trace,
-        };
-    }
-
-    // --- Tier 2: Template Correction (examples-only, §4) ---
-    const tier2 = executeTier2(tier1.remaining, tier1.props, contract);
-
-    // Merge traces from both tiers
-    const combinedTrace: CorrectionTraceEntry[] = [...tier1.trace, ...tier2.trace];
-
+  // SC-16 short-circuit: if Tier 1 resolved ALL errors, skip Tier 2
+  if (tier1.remaining.length === 0) {
     return {
-        corrected: tier2.remaining.length === 0,
-        props: tier2.props,
-        remaining: tier2.remaining,
-        trace: combinedTrace,
+      corrected: true,
+      props: tier1.props,
+      remaining: [],
+      trace: tier1.trace,
     };
+  }
+
+  // --- Tier 2: Template Correction (examples-only, §4) ---
+  const tier2 = executeTier2(tier1.remaining, tier1.props, contract);
+
+  // Merge traces from both tiers
+  const combinedTrace: CorrectionTraceEntry[] = [...tier1.trace, ...tier2.trace];
+
+  return {
+    corrected: tier2.remaining.length === 0,
+    props: tier2.props,
+    remaining: tier2.remaining,
+    trace: combinedTrace,
+  };
 }

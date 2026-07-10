@@ -1,19 +1,19 @@
 ---
-title: "@enterstellar-ai/agent-sdk"
+title: "@enterstellar/agent-sdk"
 description: AI agent SDK with MCP server — 6 atomic tools + 1 composite enterstellar_build_ui. Exposes Enterstellar as a Model Context Protocol server for Claude, GPT, Gemini, or any custom agent.
 icon: Bot
 ---
 
 ## Purpose
 
-`@enterstellar-ai/agent-sdk` exposes Enterstellar as a **Model Context Protocol (MCP) server** so any AI agent (Claude, GPT-4o, Gemini, custom) can interact with the component registry, compiler, semantic index, and forge as composable tools — programmatically, without a browser.
+`@enterstellar/agent-sdk` exposes Enterstellar as a **Model Context Protocol (MCP) server** so any AI agent (Claude, GPT-4o, Gemini, custom) can interact with the component registry, compiler, semantic index, and forge as composable tools — programmatically, without a browser.
 
 Two consumers: the `EnterstellarAgentSDK` for direct TypeScript access, and `EnterstellarMCPServer` for MCP-compliant tool dispatch.
 
 No framework imports (L15).
 
 ```bash
-npm install @enterstellar-ai/agent-sdk @enterstellar-ai/registry @enterstellar-ai/compiler @enterstellar-ai/semantic-index
+npm install @enterstellar/agent-sdk @enterstellar/registry @enterstellar/compiler @enterstellar/semantic-index
 ```
 
 ---
@@ -21,7 +21,7 @@ npm install @enterstellar-ai/agent-sdk @enterstellar-ai/registry @enterstellar-a
 ## Quick Start
 
 ```ts
-import { createAgentSDK, createMCPServer } from '@enterstellar-ai/agent-sdk';
+import { createAgentSDK, createMCPServer } from '@enterstellar/agent-sdk';
 
 const sdk = createAgentSDK({
   registry,
@@ -65,7 +65,7 @@ Creates an `EnterstellarAgentSDK` instance.
 | `forge` | `AgentSDKForge` | — | Forge (must implement `forge()`). Required for `enterstellar_forge_component`. |
 | `store` | `AgentSDKStore` | — | State store (must implement `get()`). Required for `enterstellar_analyze_traces`. |
 
-The SDK uses structural typing (duck typing) for all dependencies (L15). The real packages (`@enterstellar-ai/registry`, `@enterstellar-ai/compiler`, etc.) satisfy these interfaces — as do lightweight mocks.
+The SDK uses structural typing (duck typing) for all dependencies (L15). The real packages (`@enterstellar/registry`, `@enterstellar/compiler`, etc.) satisfy these interfaces — as do lightweight mocks.
 
 ---
 

@@ -1,4 +1,4 @@
-# @enterstellar-ai/agent-sdk
+# @enterstellar/agent-sdk
 
 > AI agent SDK with embedded MCP server — exposes Enterstellar as 7 composable tools so any AI agent (Claude, GPT, Gemini, custom) can search components, compose UI, validate specs, analyze traces, forge components, inspect schemas, and build complete UIs in a single call.
 
@@ -7,7 +7,7 @@ The Agent SDK bridges Enterstellar's engine modules (registry, compiler, semanti
 ## Quick Start
 
 ```ts
-import { createAgentSDK, createMCPServer } from '@enterstellar-ai/agent-sdk';
+import { createAgentSDK, createMCPServer } from '@enterstellar/agent-sdk';
 
 // 1. Create the SDK with required + optional dependencies
 const sdk = createAgentSDK({
@@ -148,7 +148,7 @@ const result = await server.handleToolCall('enterstellar_search_components', {
 | `tsup.config.ts`   | Builds ESM + CJS + DTS.                                                               |
 | `vitest.config.ts` | Test runner with 90% coverage thresholds.                                             |
 
-**Peer dependencies:** `@enterstellar-ai/types`, `@enterstellar-ai/registry`, `@enterstellar-ai/compiler`, `@enterstellar-ai/semantic-index`, `@enterstellar-ai/forge`, `@enterstellar-ai/state`, `zod`
+**Peer dependencies:** `@enterstellar/types`, `@enterstellar/registry`, `@enterstellar/compiler`, `@enterstellar/semantic-index`, `@enterstellar/forge`, `@enterstellar/state`, `zod`
 
 ## See Also
 

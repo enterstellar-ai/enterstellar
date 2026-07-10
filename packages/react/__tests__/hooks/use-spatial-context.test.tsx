@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/react/__tests__/hooks/use-spatial-context.test
+ * @module @enterstellar/react/__tests__/hooks/use-spatial-context.test
  * @description Unit tests for `useSpatialContext()`.
  *
  * Covers:
@@ -35,21 +35,29 @@ let observedResizeElements: Element[] = [];
 let observedIntersectionElements: Element[] = [];
 
 class MockResizeObserver {
-    constructor(callback: ResizeCallback) {
-        resizeObserverCallback = callback;
-    }
-    observe = vi.fn((el: Element) => { observedResizeElements.push(el); });
-    unobserve = vi.fn();
-    disconnect = vi.fn(() => { observedResizeElements = []; });
+  constructor(callback: ResizeCallback) {
+    resizeObserverCallback = callback;
+  }
+  observe = vi.fn((el: Element) => {
+    observedResizeElements.push(el);
+  });
+  unobserve = vi.fn();
+  disconnect = vi.fn(() => {
+    observedResizeElements = [];
+  });
 }
 
 class MockIntersectionObserver {
-    constructor(callback: IntersectionCallback) {
-        intersectionObserverCallback = callback;
-    }
-    observe = vi.fn((el: Element) => { observedIntersectionElements.push(el); });
-    unobserve = vi.fn();
-    disconnect = vi.fn(() => { observedIntersectionElements = []; });
+  constructor(callback: IntersectionCallback) {
+    intersectionObserverCallback = callback;
+  }
+  observe = vi.fn((el: Element) => {
+    observedIntersectionElements.push(el);
+  });
+  unobserve = vi.fn();
+  disconnect = vi.fn(() => {
+    observedIntersectionElements = [];
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -57,17 +65,17 @@ class MockIntersectionObserver {
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-    resizeObserverCallback = null;
-    intersectionObserverCallback = null;
-    observedResizeElements = [];
-    observedIntersectionElements = [];
+  resizeObserverCallback = null;
+  intersectionObserverCallback = null;
+  observedResizeElements = [];
+  observedIntersectionElements = [];
 
-    vi.stubGlobal('ResizeObserver', MockResizeObserver);
-    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+  vi.stubGlobal('ResizeObserver', MockResizeObserver);
+  vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
 });
 
 afterEach(() => {
-    vi.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 // ---------------------------------------------------------------------------
@@ -75,196 +83,218 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('useSpatialContext()', () => {
-    // -----------------------------------------------------------------------
-    // Initial State
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Initial State
+  // -----------------------------------------------------------------------
 
-    it('returns initial state with zeros and not visible', () => {
-        const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+  it('returns initial state with zeros and not visible', () => {
+    const mockRef = {
+      current: document.createElement('div'),
+    } as React.RefObject<HTMLDivElement | null>;
 
-        const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+    const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-        expect(result.current.zone).toBe('test-zone');
-        expect(result.current.width).toBe(0);
-        expect(result.current.height).toBe(0);
-        expect(result.current.isVisible).toBe(false);
-        expect(result.current.focusedElement).toBeUndefined();
+    expect(result.current.zone).toBe('test-zone');
+    expect(result.current.width).toBe(0);
+    expect(result.current.height).toBe(0);
+    expect(result.current.isVisible).toBe(false);
+    expect(result.current.focusedElement).toBeUndefined();
+  });
+
+  it('returns zone name in the spatial context', () => {
+    const mockRef = {
+      current: document.createElement('div'),
+    } as React.RefObject<HTMLDivElement | null>;
+
+    const { result } = renderHook(() => useSpatialContext('sidebar', mockRef));
+
+    expect(result.current.zone).toBe('sidebar');
+  });
+
+  // -----------------------------------------------------------------------
+  // captureContext() — Active Mode (P13)
+  // -----------------------------------------------------------------------
+
+  describe('captureContext()', () => {
+    it('returns a frozen SpatialContextSnapshot', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
+
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+
+      const snapshot = result.current.captureContext();
+
+      expect(Object.isFrozen(snapshot)).toBe(true);
     });
 
-    it('returns zone name in the spatial context', () => {
-        const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+    it('includes zone name in snapshot', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-        const { result } = renderHook(() => useSpatialContext('sidebar', mockRef));
+      const { result } = renderHook(() => useSpatialContext('header-zone', mockRef));
 
-        expect(result.current.zone).toBe('sidebar');
+      const snapshot = result.current.captureContext();
+
+      expect(snapshot.zone).toBe('header-zone');
     });
 
-    // -----------------------------------------------------------------------
-    // captureContext() — Active Mode (P13)
-    // -----------------------------------------------------------------------
+    it('includes capturedAt ISO timestamp', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-    describe('captureContext()', () => {
-        it('returns a frozen SpatialContextSnapshot', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+      const before = new Date().toISOString();
+      const snapshot = result.current.captureContext();
+      const after = new Date().toISOString();
 
-            const snapshot = result.current.captureContext();
-
-            expect(Object.isFrozen(snapshot)).toBe(true);
-        });
-
-        it('includes zone name in snapshot', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
-
-            const { result } = renderHook(() => useSpatialContext('header-zone', mockRef));
-
-            const snapshot = result.current.captureContext();
-
-            expect(snapshot.zone).toBe('header-zone');
-        });
-
-        it('includes capturedAt ISO timestamp', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
-
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
-
-            const before = new Date().toISOString();
-            const snapshot = result.current.captureContext();
-            const after = new Date().toISOString();
-
-            expect(snapshot.capturedAt).toBeDefined();
-            expect(snapshot.capturedAt >= before).toBe(true);
-            expect(snapshot.capturedAt <= after).toBe(true);
-        });
-
-        it('captures current dimensions in snapshot', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
-
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
-
-            // Simulate ResizeObserver callback
-            act(() => {
-                resizeObserverCallback?.([
-                    { contentRect: { width: 400, height: 300 } } as unknown as ResizeObserverEntry,
-                ]);
-            });
-
-            const snapshot = result.current.captureContext();
-            expect(snapshot.width).toBe(400);
-            expect(snapshot.height).toBe(300);
-        });
+      expect(snapshot.capturedAt).toBeDefined();
+      expect(snapshot.capturedAt >= before).toBe(true);
+      expect(snapshot.capturedAt <= after).toBe(true);
     });
 
-    // -----------------------------------------------------------------------
-    // ResizeObserver
-    // -----------------------------------------------------------------------
+    it('captures current dimensions in snapshot', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-    describe('ResizeObserver integration', () => {
-        it('updates width and height from ResizeObserver', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+      // Simulate ResizeObserver callback
+      act(() => {
+        resizeObserverCallback?.([
+          { contentRect: { width: 400, height: 300 } } as unknown as ResizeObserverEntry,
+        ]);
+      });
 
-            act(() => {
-                resizeObserverCallback?.([
-                    { contentRect: { width: 800, height: 600 } } as unknown as ResizeObserverEntry,
-                ]);
-            });
+      const snapshot = result.current.captureContext();
+      expect(snapshot.width).toBe(400);
+      expect(snapshot.height).toBe(300);
+    });
+  });
 
-            expect(result.current.width).toBe(800);
-            expect(result.current.height).toBe(600);
-        });
+  // -----------------------------------------------------------------------
+  // ResizeObserver
+  // -----------------------------------------------------------------------
 
-        it('rounds dimensions to integers', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+  describe('ResizeObserver integration', () => {
+    it('updates width and height from ResizeObserver', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-            act(() => {
-                resizeObserverCallback?.([
-                    { contentRect: { width: 399.7, height: 200.3 } } as unknown as ResizeObserverEntry,
-                ]);
-            });
+      act(() => {
+        resizeObserverCallback?.([
+          { contentRect: { width: 800, height: 600 } } as unknown as ResizeObserverEntry,
+        ]);
+      });
 
-            expect(result.current.width).toBe(400);
-            expect(result.current.height).toBe(200);
-        });
+      expect(result.current.width).toBe(800);
+      expect(result.current.height).toBe(600);
     });
 
-    // -----------------------------------------------------------------------
-    // IntersectionObserver
-    // -----------------------------------------------------------------------
+    it('rounds dimensions to integers', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-    describe('IntersectionObserver integration', () => {
-        it('updates isVisible from IntersectionObserver', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+      act(() => {
+        resizeObserverCallback?.([
+          { contentRect: { width: 399.7, height: 200.3 } } as unknown as ResizeObserverEntry,
+        ]);
+      });
 
-            act(() => {
-                intersectionObserverCallback?.([
-                    { isIntersecting: true } as unknown as IntersectionObserverEntry,
-                ]);
-            });
+      expect(result.current.width).toBe(400);
+      expect(result.current.height).toBe(200);
+    });
+  });
 
-            expect(result.current.isVisible).toBe(true);
-        });
+  // -----------------------------------------------------------------------
+  // IntersectionObserver
+  // -----------------------------------------------------------------------
 
-        it('sets isVisible to false when element leaves viewport', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+  describe('IntersectionObserver integration', () => {
+    it('updates isVisible from IntersectionObserver', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-            const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-            // Enter viewport
-            act(() => {
-                intersectionObserverCallback?.([
-                    { isIntersecting: true } as unknown as IntersectionObserverEntry,
-                ]);
-            });
-            expect(result.current.isVisible).toBe(true);
+      act(() => {
+        intersectionObserverCallback?.([
+          { isIntersecting: true } as unknown as IntersectionObserverEntry,
+        ]);
+      });
 
-            // Leave viewport
-            act(() => {
-                intersectionObserverCallback?.([
-                    { isIntersecting: false } as unknown as IntersectionObserverEntry,
-                ]);
-            });
-            expect(result.current.isVisible).toBe(false);
-        });
+      expect(result.current.isVisible).toBe(true);
     });
 
-    // -----------------------------------------------------------------------
-    // Null Ref Handling
-    // -----------------------------------------------------------------------
+    it('sets isVisible to false when element leaves viewport', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
 
-    describe('null ref handling', () => {
-        it('handles null ref gracefully', () => {
-            const nullRef = { current: null } as React.RefObject<HTMLDivElement | null>;
+      const { result } = renderHook(() => useSpatialContext('test-zone', mockRef));
 
-            const { result } = renderHook(() => useSpatialContext('test-zone', nullRef));
+      // Enter viewport
+      act(() => {
+        intersectionObserverCallback?.([
+          { isIntersecting: true } as unknown as IntersectionObserverEntry,
+        ]);
+      });
+      expect(result.current.isVisible).toBe(true);
 
-            expect(result.current.zone).toBe('test-zone');
-            expect(result.current.width).toBe(0);
-            expect(result.current.height).toBe(0);
-        });
+      // Leave viewport
+      act(() => {
+        intersectionObserverCallback?.([
+          { isIntersecting: false } as unknown as IntersectionObserverEntry,
+        ]);
+      });
+      expect(result.current.isVisible).toBe(false);
     });
+  });
 
-    // -----------------------------------------------------------------------
-    // captureContext() function stability
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Null Ref Handling
+  // -----------------------------------------------------------------------
 
-    describe('function stability', () => {
-        it('captureContext is a stable function reference', () => {
-            const mockRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement | null>;
+  describe('null ref handling', () => {
+    it('handles null ref gracefully', () => {
+      const nullRef = { current: null } as React.RefObject<HTMLDivElement | null>;
 
-            const { result, rerender } = renderHook(() => useSpatialContext('test-zone', mockRef));
+      const { result } = renderHook(() => useSpatialContext('test-zone', nullRef));
 
-            const firstCapture = result.current.captureContext;
-            rerender();
-            const secondCapture = result.current.captureContext;
-
-            expect(firstCapture).toBe(secondCapture);
-        });
+      expect(result.current.zone).toBe('test-zone');
+      expect(result.current.width).toBe(0);
+      expect(result.current.height).toBe(0);
     });
+  });
+
+  // -----------------------------------------------------------------------
+  // captureContext() function stability
+  // -----------------------------------------------------------------------
+
+  describe('function stability', () => {
+    it('captureContext is a stable function reference', () => {
+      const mockRef = {
+        current: document.createElement('div'),
+      } as React.RefObject<HTMLDivElement | null>;
+
+      const { result, rerender } = renderHook(() => useSpatialContext('test-zone', mockRef));
+
+      const firstCapture = result.current.captureContext;
+      rerender();
+      const secondCapture = result.current.captureContext;
+
+      expect(firstCapture).toBe(secondCapture);
+    });
+  });
 });

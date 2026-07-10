@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 // ---------------------------------------------------------------------------
 // 1. PipelineBoard
 // ---------------------------------------------------------------------------
@@ -40,19 +40,50 @@ export const PipelineBoard = defineComponent({
   tags: ['saas', 'crm', 'pipeline', 'sales', 'kanban'],
   props: z.object({
     title: z.string().min(1),
-    stages: z.array(z.object({
-      name: z.string().min(1),
-      dealCount: z.number().int().min(0),
-      totalValue: z.number().min(0),
-      color: z.string().optional(),
-    })).min(1),
+    stages: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          dealCount: z.number().int().min(0),
+          totalValue: z.number().min(0),
+          color: z.string().optional(),
+        }),
+      )
+      .min(1),
     totalPipelineValue: z.number().min(0).optional(),
     currency: z.string().default('USD'),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+  },
   accessibility: { role: 'group', ariaLabel: 'Sales pipeline board', announceOnUpdate: false },
-  states: { loading: 'PipelineBoardLoading', error: 'PipelineBoardError', empty: 'PipelineBoardEmpty', ready: 'PipelineBoard' },
-  examples: [{ intent: 'Show Nexus CRM sales pipeline', props: { title: 'Sales Pipeline', stages: [{ name: 'Lead', dealCount: 42, totalValue: 420000 }, { name: 'Qualified', dealCount: 28, totalValue: 680000 }, { name: 'Proposal', dealCount: 15, totalValue: 1200000 }, { name: 'Negotiation', dealCount: 8, totalValue: 960000 }, { name: 'Closed Won', dealCount: 12, totalValue: 2400000 }], totalPipelineValue: 5660000, currency: 'USD' } }],
+  states: {
+    loading: 'PipelineBoardLoading',
+    error: 'PipelineBoardError',
+    empty: 'PipelineBoardEmpty',
+    ready: 'PipelineBoard',
+  },
+  examples: [
+    {
+      intent: 'Show Nexus CRM sales pipeline',
+      props: {
+        title: 'Sales Pipeline',
+        stages: [
+          { name: 'Lead', dealCount: 42, totalValue: 420000 },
+          { name: 'Qualified', dealCount: 28, totalValue: 680000 },
+          { name: 'Proposal', dealCount: 15, totalValue: 1200000 },
+          { name: 'Negotiation', dealCount: 8, totalValue: 960000 },
+          { name: 'Closed Won', dealCount: 12, totalValue: 2400000 },
+        ],
+        totalPipelineValue: 5660000,
+        currency: 'USD',
+      },
+    },
+  ],
 });
 // ---------------------------------------------------------------------------
 // 2. DealCard
@@ -70,7 +101,8 @@ export const PipelineBoard = defineComponent({
  */
 export const DealCard = defineComponent({
   name: 'DealCard',
-  description: 'Individual CRM deal card with company, value, stage, probability, and assigned rep.',
+  description:
+    'Individual CRM deal card with company, value, stage, probability, and assigned rep.',
   category: 'data-display',
   tags: ['saas', 'crm', 'deal', 'sales', 'opportunity'],
   props: z.object({
@@ -84,10 +116,37 @@ export const DealCard = defineComponent({
     closeDate: z.string().min(1),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent', success: 'token:success' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+    success: 'token:success',
+  },
   accessibility: { role: 'article', ariaLabel: 'Deal card', announceOnUpdate: false },
-  states: { loading: 'DealCardLoading', error: 'DealCardError', empty: 'DealCardEmpty', ready: 'DealCard' },
-  examples: [{ intent: 'Show deal card for TechVentures enterprise deal', props: { company: 'TechVentures Inc', dealName: 'Enterprise Platform License', value: 240000, currency: 'USD', stage: 'Negotiation', probability: 75, assignedTo: 'Sarah Kim', closeDate: '2024-04-15', priority: 'high' } }],
+  states: {
+    loading: 'DealCardLoading',
+    error: 'DealCardError',
+    empty: 'DealCardEmpty',
+    ready: 'DealCard',
+  },
+  examples: [
+    {
+      intent: 'Show deal card for TechVentures enterprise deal',
+      props: {
+        company: 'TechVentures Inc',
+        dealName: 'Enterprise Platform License',
+        value: 240000,
+        currency: 'USD',
+        stage: 'Negotiation',
+        probability: 75,
+        assignedTo: 'Sarah Kim',
+        closeDate: '2024-04-15',
+        priority: 'high',
+      },
+    },
+  ],
 });
 // ---------------------------------------------------------------------------
 // 3. ActivityTimeline
@@ -109,19 +168,58 @@ export const ActivityTimeline = defineComponent({
   tags: ['saas', 'crm', 'activity', 'timeline', 'engagement'],
   props: z.object({
     title: z.string().min(1),
-    activities: z.array(z.object({
-      type: z.enum(['call', 'email', 'meeting', 'note', 'task']).default('task'),
-      subject: z.string().min(1),
-      contact: z.string().min(1),
-      timestamp: z.string().min(1),
-      outcome: z.string().optional(),
-      rep: z.string().min(1),
-    })).min(1),
+    activities: z
+      .array(
+        z.object({
+          type: z.enum(['call', 'email', 'meeting', 'note', 'task']).default('task'),
+          subject: z.string().min(1),
+          contact: z.string().min(1),
+          timestamp: z.string().min(1),
+          outcome: z.string().optional(),
+          rep: z.string().min(1),
+        }),
+      )
+      .min(1),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+  },
   accessibility: { role: 'feed', ariaLabel: 'Activity timeline', announceOnUpdate: false },
-  states: { loading: 'ActivityTimelineLoading', error: 'ActivityTimelineError', empty: 'ActivityTimelineEmpty', ready: 'ActivityTimeline' },
-  examples: [{ intent: 'Show recent CRM activities for Nexus team', props: { title: 'Recent Activity', activities: [{ type: 'call', subject: 'Discovery call with TechVentures', contact: 'Mark Johnson', timestamp: '2024-03-15 14:30', outcome: 'Positive — scheduled demo', rep: 'Sarah Kim' }, { type: 'email', subject: 'Proposal follow-up', contact: 'Lisa Wang', timestamp: '2024-03-15 11:20', rep: 'James Cole' }] } }],
+  states: {
+    loading: 'ActivityTimelineLoading',
+    error: 'ActivityTimelineError',
+    empty: 'ActivityTimelineEmpty',
+    ready: 'ActivityTimeline',
+  },
+  examples: [
+    {
+      intent: 'Show recent CRM activities for Nexus team',
+      props: {
+        title: 'Recent Activity',
+        activities: [
+          {
+            type: 'call',
+            subject: 'Discovery call with TechVentures',
+            contact: 'Mark Johnson',
+            timestamp: '2024-03-15 14:30',
+            outcome: 'Positive — scheduled demo',
+            rep: 'Sarah Kim',
+          },
+          {
+            type: 'email',
+            subject: 'Proposal follow-up',
+            contact: 'Lisa Wang',
+            timestamp: '2024-03-15 11:20',
+            rep: 'James Cole',
+          },
+        ],
+      },
+    },
+  ],
 });
 
 // ---------------------------------------------------------------------------
@@ -142,7 +240,8 @@ export const ActivityTimeline = defineComponent({
  */
 export const ForecastGauge = defineComponent({
   name: 'ForecastGauge',
-  description: 'Revenue forecast gauge showing quota attainment, weighted pipeline, and confidence bands.',
+  description:
+    'Revenue forecast gauge showing quota attainment, weighted pipeline, and confidence bands.',
   category: 'data-display',
   tags: ['saas', 'forecast', 'quota', 'revenue', 'sales-ops'],
   props: z.object({
@@ -154,12 +253,16 @@ export const ForecastGauge = defineComponent({
     worstCase: z.number().min(0),
     attainmentPercentage: z.number().min(0).max(200),
     currency: z.string().default('USD'),
-    stageConfidence: z.array(z.object({
-      stage: z.string().min(1),
-      value: z.number().min(0),
-      probability: z.number().min(0).max(100),
-      weighted: z.number().min(0),
-    })).optional(),
+    stageConfidence: z
+      .array(
+        z.object({
+          stage: z.string().min(1),
+          value: z.number().min(0),
+          probability: z.number().min(0).max(100),
+          weighted: z.number().min(0),
+        }),
+      )
+      .optional(),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -231,18 +334,26 @@ export const LeadScoreMatrix = defineComponent({
     company: z.string().min(1),
     overallScore: z.number().min(0).max(100),
     grade: z.enum(['A', 'B', 'C', 'D', 'F']),
-    behavioralSignals: z.array(z.object({
-      signal: z.string().min(1),
-      value: z.string().min(1),
-      score: z.number().min(0).max(100),
-      weight: z.number().min(0).max(1),
-    })).min(1, 'At least one behavioral signal is required.'),
-    demographicSignals: z.array(z.object({
-      signal: z.string().min(1),
-      value: z.string().min(1),
-      score: z.number().min(0).max(100),
-      weight: z.number().min(0).max(1),
-    })).min(1, 'At least one demographic signal is required.'),
+    behavioralSignals: z
+      .array(
+        z.object({
+          signal: z.string().min(1),
+          value: z.string().min(1),
+          score: z.number().min(0).max(100),
+          weight: z.number().min(0).max(1),
+        }),
+      )
+      .min(1, 'At least one behavioral signal is required.'),
+    demographicSignals: z
+      .array(
+        z.object({
+          signal: z.string().min(1),
+          value: z.string().min(1),
+          score: z.number().min(0).max(100),
+          weight: z.number().min(0).max(1),
+        }),
+      )
+      .min(1, 'At least one demographic signal is required.'),
     recommendation: z.enum(['nurture', 'mql', 'sql', 'fast-track']),
     lastActivity: z.string().min(1),
   }),
@@ -310,20 +421,25 @@ export const LeadScoreMatrix = defineComponent({
  */
 export const IntegrationStatus = defineComponent({
   name: 'IntegrationStatus',
-  description: 'Third-party integration health monitor with sync status, error rates, and data freshness.',
+  description:
+    'Third-party integration health monitor with sync status, error rates, and data freshness.',
   category: 'data-display',
   tags: ['saas', 'integration', 'sync', 'health', 'platform'],
   props: z.object({
     title: z.string().min(1),
-    integrations: z.array(z.object({
-      name: z.string().min(1),
-      provider: z.string().min(1),
-      status: z.enum(['synced', 'syncing', 'error', 'paused', 'disconnected']),
-      lastSyncAt: z.string().min(1),
-      recordsSynced: z.number().int().min(0),
-      errorRate24h: z.number().min(0).max(100),
-      errorMessage: z.string().optional(),
-    })).min(1, 'At least one integration is required.'),
+    integrations: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          provider: z.string().min(1),
+          status: z.enum(['synced', 'syncing', 'error', 'paused', 'disconnected']),
+          lastSyncAt: z.string().min(1),
+          recordsSynced: z.number().int().min(0),
+          errorRate24h: z.number().min(0).max(100),
+          errorMessage: z.string().optional(),
+        }),
+      )
+      .min(1, 'At least one integration is required.'),
   }),
   tokens: {
     cardBg: 'token:card-bg',
@@ -351,10 +467,39 @@ export const IntegrationStatus = defineComponent({
       props: {
         title: 'Integration Health',
         integrations: [
-          { name: 'CRM Sync', provider: 'Salesforce', status: 'synced', lastSyncAt: '2024-03-15T14:30:00Z', recordsSynced: 142800, errorRate24h: 0.02 },
-          { name: 'Marketing Hub', provider: 'HubSpot', status: 'syncing', lastSyncAt: '2024-03-15T14:25:00Z', recordsSynced: 89400, errorRate24h: 0.1 },
-          { name: 'Payments', provider: 'Stripe', status: 'error', lastSyncAt: '2024-03-15T12:00:00Z', recordsSynced: 23100, errorRate24h: 4.2, errorMessage: 'Rate limit exceeded — retry in 300s' },
-          { name: 'Team Chat', provider: 'Slack', status: 'synced', lastSyncAt: '2024-03-15T14:28:00Z', recordsSynced: 5200, errorRate24h: 0 },
+          {
+            name: 'CRM Sync',
+            provider: 'Salesforce',
+            status: 'synced',
+            lastSyncAt: '2024-03-15T14:30:00Z',
+            recordsSynced: 142800,
+            errorRate24h: 0.02,
+          },
+          {
+            name: 'Marketing Hub',
+            provider: 'HubSpot',
+            status: 'syncing',
+            lastSyncAt: '2024-03-15T14:25:00Z',
+            recordsSynced: 89400,
+            errorRate24h: 0.1,
+          },
+          {
+            name: 'Payments',
+            provider: 'Stripe',
+            status: 'error',
+            lastSyncAt: '2024-03-15T12:00:00Z',
+            recordsSynced: 23100,
+            errorRate24h: 4.2,
+            errorMessage: 'Rate limit exceeded — retry in 300s',
+          },
+          {
+            name: 'Team Chat',
+            provider: 'Slack',
+            status: 'synced',
+            lastSyncAt: '2024-03-15T14:28:00Z',
+            recordsSynced: 5200,
+            errorRate24h: 0,
+          },
         ],
       },
     },

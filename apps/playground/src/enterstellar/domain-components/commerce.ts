@@ -18,7 +18,7 @@
  */
 
 import { z } from 'zod';
-import { defineComponent } from '@enterstellar-ai/registry';
+import { defineComponent } from '@enterstellar/registry';
 // ---------------------------------------------------------------------------
 // 1. ProductCatalog
 // ---------------------------------------------------------------------------
@@ -39,20 +39,65 @@ export const ProductCatalog = defineComponent({
   tags: ['commerce', 'products', 'catalog', 'pricing', 'inventory'],
   props: z.object({
     title: z.string().min(1),
-    products: z.array(z.object({
-      name: z.string().min(1),
-      sku: z.string().min(1),
-      price: z.number().min(0),
-      currency: z.string().default('USD'),
-      category: z.string().min(1),
-      stockStatus: z.enum(['in-stock', 'low-stock', 'out-of-stock']).default('in-stock'),
-      stockCount: z.number().int().min(0),
-    })).min(1),
+    products: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          sku: z.string().min(1),
+          price: z.number().min(0),
+          currency: z.string().default('USD'),
+          category: z.string().min(1),
+          stockStatus: z.enum(['in-stock', 'low-stock', 'out-of-stock']).default('in-stock'),
+          stockCount: z.number().int().min(0),
+        }),
+      )
+      .min(1),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent', success: 'token:success', danger: 'token:danger', warning: 'token:warning' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+    success: 'token:success',
+    danger: 'token:danger',
+    warning: 'token:warning',
+  },
   accessibility: { role: 'list', ariaLabel: 'Product catalog', announceOnUpdate: false },
-  states: { loading: 'ProductCatalogLoading', error: 'ProductCatalogError', empty: 'ProductCatalogEmpty', ready: 'ProductCatalog' },
-  examples: [{ intent: 'Show ARC Store product catalog', props: { title: 'Featured Products', products: [{ name: 'ARC Runner Pro', sku: 'ARC-RP-001', price: 189.99, currency: 'USD', category: 'Footwear', stockStatus: 'in-stock', stockCount: 342 }, { name: 'ARC Heritage Tee', sku: 'ARC-HT-012', price: 49.99, currency: 'USD', category: 'Apparel', stockStatus: 'low-stock', stockCount: 18 }] } }],
+  states: {
+    loading: 'ProductCatalogLoading',
+    error: 'ProductCatalogError',
+    empty: 'ProductCatalogEmpty',
+    ready: 'ProductCatalog',
+  },
+  examples: [
+    {
+      intent: 'Show ARC Store product catalog',
+      props: {
+        title: 'Featured Products',
+        products: [
+          {
+            name: 'ARC Runner Pro',
+            sku: 'ARC-RP-001',
+            price: 189.99,
+            currency: 'USD',
+            category: 'Footwear',
+            stockStatus: 'in-stock',
+            stockCount: 342,
+          },
+          {
+            name: 'ARC Heritage Tee',
+            sku: 'ARC-HT-012',
+            price: 49.99,
+            currency: 'USD',
+            category: 'Apparel',
+            stockStatus: 'low-stock',
+            stockCount: 18,
+          },
+        ],
+      },
+    },
+  ],
 });
 // ---------------------------------------------------------------------------
 // 2. OrderPipeline
@@ -75,23 +120,56 @@ export const OrderPipeline = defineComponent({
   tags: ['commerce', 'orders', 'pipeline', 'fulfillment', 'shipping'],
   props: z.object({
     title: z.string().min(1),
-    stages: z.array(z.object({
-      name: z.string().min(1),
-      count: z.number().int().min(0),
-      value: z.number().min(0),
-    })).min(1),
-    recentOrders: z.array(z.object({
-      orderId: z.string().min(1),
-      customer: z.string().min(1),
-      total: z.number().min(0),
-      stage: z.string().min(1),
-      date: z.string().min(1),
-    })).optional(),
+    stages: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          count: z.number().int().min(0),
+          value: z.number().min(0),
+        }),
+      )
+      .min(1),
+    recentOrders: z
+      .array(
+        z.object({
+          orderId: z.string().min(1),
+          customer: z.string().min(1),
+          total: z.number().min(0),
+          stage: z.string().min(1),
+          date: z.string().min(1),
+        }),
+      )
+      .optional(),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', accent: 'token:accent', success: 'token:success' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    accent: 'token:accent',
+    success: 'token:success',
+  },
   accessibility: { role: 'group', ariaLabel: 'Order pipeline', announceOnUpdate: false },
-  states: { loading: 'OrderPipelineLoading', error: 'OrderPipelineError', empty: 'OrderPipelineEmpty', ready: 'OrderPipeline' },
-  examples: [{ intent: 'Show order pipeline for ARC Store', props: { title: 'Order Pipeline', stages: [{ name: 'Placed', count: 45, value: 12400 }, { name: 'Processing', count: 28, value: 8200 }, { name: 'Shipped', count: 63, value: 18900 }, { name: 'Delivered', count: 412, value: 98500 }] } }],
+  states: {
+    loading: 'OrderPipelineLoading',
+    error: 'OrderPipelineError',
+    empty: 'OrderPipelineEmpty',
+    ready: 'OrderPipeline',
+  },
+  examples: [
+    {
+      intent: 'Show order pipeline for ARC Store',
+      props: {
+        title: 'Order Pipeline',
+        stages: [
+          { name: 'Placed', count: 45, value: 12400 },
+          { name: 'Processing', count: 28, value: 8200 },
+          { name: 'Shipped', count: 63, value: 18900 },
+          { name: 'Delivered', count: 412, value: 98500 },
+        ],
+      },
+    },
+  ],
 });
 // ---------------------------------------------------------------------------
 // 3. InventoryTracker
@@ -114,20 +192,63 @@ export const InventoryTracker = defineComponent({
   tags: ['commerce', 'inventory', 'stock', 'alerts', 'warehouse'],
   props: z.object({
     title: z.string().min(1),
-    items: z.array(z.object({
-      name: z.string().min(1),
-      sku: z.string().min(1),
-      currentStock: z.number().int().min(0),
-      reorderPoint: z.number().int().min(0),
-      dailyVelocity: z.number().min(0),
-      status: z.enum(['healthy', 'reorder', 'critical', 'out-of-stock']),
-    })).min(1),
+    items: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          sku: z.string().min(1),
+          currentStock: z.number().int().min(0),
+          reorderPoint: z.number().int().min(0),
+          dailyVelocity: z.number().min(0),
+          status: z.enum(['healthy', 'reorder', 'critical', 'out-of-stock']),
+        }),
+      )
+      .min(1),
     totalSku: z.number().int().min(0).optional(),
   }),
-  tokens: { cardBg: 'token:card-bg', cardBorder: 'token:card-border', textPrimary: 'token:text-primary', textSecondary: 'token:text-secondary', success: 'token:success', danger: 'token:danger', warning: 'token:warning' },
+  tokens: {
+    cardBg: 'token:card-bg',
+    cardBorder: 'token:card-border',
+    textPrimary: 'token:text-primary',
+    textSecondary: 'token:text-secondary',
+    success: 'token:success',
+    danger: 'token:danger',
+    warning: 'token:warning',
+  },
   accessibility: { role: 'table', ariaLabel: 'Inventory tracker', announceOnUpdate: true },
-  states: { loading: 'InventoryTrackerLoading', error: 'InventoryTrackerError', empty: 'InventoryTrackerEmpty', ready: 'InventoryTracker' },
-  examples: [{ intent: 'Show inventory status for ARC Store warehouse', props: { title: 'Inventory Status', items: [{ name: 'ARC Runner Pro', sku: 'ARC-RP-001', currentStock: 342, reorderPoint: 100, dailyVelocity: 12.5, status: 'healthy' }, { name: 'ARC Heritage Tee', sku: 'ARC-HT-012', currentStock: 18, reorderPoint: 50, dailyVelocity: 8.3, status: 'critical' }], totalSku: 847 } }],
+  states: {
+    loading: 'InventoryTrackerLoading',
+    error: 'InventoryTrackerError',
+    empty: 'InventoryTrackerEmpty',
+    ready: 'InventoryTracker',
+  },
+  examples: [
+    {
+      intent: 'Show inventory status for ARC Store warehouse',
+      props: {
+        title: 'Inventory Status',
+        items: [
+          {
+            name: 'ARC Runner Pro',
+            sku: 'ARC-RP-001',
+            currentStock: 342,
+            reorderPoint: 100,
+            dailyVelocity: 12.5,
+            status: 'healthy',
+          },
+          {
+            name: 'ARC Heritage Tee',
+            sku: 'ARC-HT-012',
+            currentStock: 18,
+            reorderPoint: 50,
+            dailyVelocity: 8.3,
+            status: 'critical',
+          },
+        ],
+        totalSku: 847,
+      },
+    },
+  ],
 });
 
 // ---------------------------------------------------------------------------
@@ -148,7 +269,8 @@ export const InventoryTracker = defineComponent({
  */
 export const CustomerSegment = defineComponent({
   name: 'CustomerSegment',
-  description: 'Customer cohort analysis card with LTV, purchase frequency, churn risk, and acquisition channel.',
+  description:
+    'Customer cohort analysis card with LTV, purchase frequency, churn risk, and acquisition channel.',
   category: 'data-display',
   tags: ['commerce', 'customer', 'segment', 'cohort', 'retention'],
   props: z.object({
@@ -161,7 +283,9 @@ export const CustomerSegment = defineComponent({
       churnRisk: z.number().min(0).max(100),
       retentionRate: z.number().min(0).max(100),
     }),
-    acquisitionChannel: z.enum(['organic', 'paid-search', 'social', 'email', 'referral', 'direct']).optional(),
+    acquisitionChannel: z
+      .enum(['organic', 'paid-search', 'social', 'email', 'referral', 'direct'])
+      .optional(),
     trend: z.enum(['growing', 'stable', 'declining']),
     currency: z.string().default('USD'),
   }),
@@ -193,9 +317,9 @@ export const CustomerSegment = defineComponent({
         segmentName: 'Premium Loyalists',
         cohortSize: 2840,
         metrics: {
-          averageLtv: 1247.00,
+          averageLtv: 1247.0,
           purchaseFrequency: 4.2,
-          averageOrderValue: 296.90,
+          averageOrderValue: 296.9,
           churnRisk: 12,
           retentionRate: 88,
         },
@@ -226,7 +350,8 @@ export const CustomerSegment = defineComponent({
  */
 export const ShippingTracker = defineComponent({
   name: 'ShippingTracker',
-  description: 'Multi-carrier shipment tracker with fulfillment milestones, ETA, and current location.',
+  description:
+    'Multi-carrier shipment tracker with fulfillment milestones, ETA, and current location.',
   category: 'data-display',
   tags: ['commerce', 'shipping', 'tracking', 'logistics', 'fulfillment'],
   props: z.object({
@@ -235,12 +360,25 @@ export const ShippingTracker = defineComponent({
     trackingNumber: z.string(),
     estimatedDelivery: z.string(),
     currentLocation: z.string().optional(),
-    milestones: z.array(z.object({
-      stage: z.enum(['confirmed', 'picked', 'packed', 'shipped', 'in-transit', 'out-for-delivery', 'delivered', 'exception']),
-      timestamp: z.string().min(1),
-      location: z.string().optional(),
-      completed: z.boolean(),
-    })).min(1, 'At least one milestone is required.'),
+    milestones: z
+      .array(
+        z.object({
+          stage: z.enum([
+            'confirmed',
+            'picked',
+            'packed',
+            'shipped',
+            'in-transit',
+            'out-for-delivery',
+            'delivered',
+            'exception',
+          ]),
+          timestamp: z.string().min(1),
+          location: z.string().optional(),
+          completed: z.boolean(),
+        }),
+      )
+      .min(1, 'At least one milestone is required.'),
     status: z.enum(['on-track', 'delayed', 'delivered', 'exception']),
   }),
   tokens: {
@@ -275,10 +413,30 @@ export const ShippingTracker = defineComponent({
         currentLocation: 'Memphis, TN — FedEx Hub',
         milestones: [
           { stage: 'confirmed', timestamp: '2024-03-14T09:00:00Z', completed: true },
-          { stage: 'picked', timestamp: '2024-03-14T14:30:00Z', location: 'Warehouse A', completed: true },
-          { stage: 'packed', timestamp: '2024-03-14T16:45:00Z', location: 'Warehouse A', completed: true },
-          { stage: 'shipped', timestamp: '2024-03-15T08:00:00Z', location: 'Portland, OR', completed: true },
-          { stage: 'in-transit', timestamp: '2024-03-16T03:20:00Z', location: 'Memphis, TN', completed: true },
+          {
+            stage: 'picked',
+            timestamp: '2024-03-14T14:30:00Z',
+            location: 'Warehouse A',
+            completed: true,
+          },
+          {
+            stage: 'packed',
+            timestamp: '2024-03-14T16:45:00Z',
+            location: 'Warehouse A',
+            completed: true,
+          },
+          {
+            stage: 'shipped',
+            timestamp: '2024-03-15T08:00:00Z',
+            location: 'Portland, OR',
+            completed: true,
+          },
+          {
+            stage: 'in-transit',
+            timestamp: '2024-03-16T03:20:00Z',
+            location: 'Memphis, TN',
+            completed: true,
+          },
           { stage: 'out-for-delivery', timestamp: '', completed: false },
           { stage: 'delivered', timestamp: '', completed: false },
         ],
@@ -306,7 +464,8 @@ export const ShippingTracker = defineComponent({
  */
 export const ReturnsDashboard = defineComponent({
   name: 'ReturnsDashboard',
-  description: 'Returns analytics dashboard with reason codes, resolution rates, and refund totals.',
+  description:
+    'Returns analytics dashboard with reason codes, resolution rates, and refund totals.',
   category: 'data-display',
   tags: ['commerce', 'returns', 'refunds', 'analytics', 'operations'],
   props: z.object({
@@ -316,16 +475,32 @@ export const ReturnsDashboard = defineComponent({
     totalRefundAmount: z.number().min(0),
     returnRate: z.number().min(0).max(100),
     averageProcessingDays: z.number().min(0),
-    reasonBreakdown: z.array(z.object({
-      reason: z.enum(['defective', 'wrong-item', 'not-as-described', 'changed-mind', 'damaged-in-transit', 'late-delivery', 'other']),
-      count: z.number().int().min(0),
-      percentage: z.number().min(0).max(100),
-    })).min(1, 'At least one return reason is required.'),
-    resolutionBreakdown: z.array(z.object({
-      type: z.enum(['full-refund', 'partial-refund', 'exchange', 'store-credit', 'denied']),
-      count: z.number().int().min(0),
-      percentage: z.number().min(0).max(100),
-    })).optional(),
+    reasonBreakdown: z
+      .array(
+        z.object({
+          reason: z.enum([
+            'defective',
+            'wrong-item',
+            'not-as-described',
+            'changed-mind',
+            'damaged-in-transit',
+            'late-delivery',
+            'other',
+          ]),
+          count: z.number().int().min(0),
+          percentage: z.number().min(0).max(100),
+        }),
+      )
+      .min(1, 'At least one return reason is required.'),
+    resolutionBreakdown: z
+      .array(
+        z.object({
+          type: z.enum(['full-refund', 'partial-refund', 'exchange', 'store-credit', 'denied']),
+          count: z.number().int().min(0),
+          percentage: z.number().min(0).max(100),
+        }),
+      )
+      .optional(),
     currency: z.string().default('USD'),
   }),
   tokens: {
@@ -355,7 +530,7 @@ export const ReturnsDashboard = defineComponent({
         title: 'Returns & Refunds',
         period: 'March 2024',
         totalReturns: 187,
-        totalRefundAmount: 28450.00,
+        totalRefundAmount: 28450.0,
         returnRate: 3.4,
         averageProcessingDays: 2.8,
         reasonBreakdown: [

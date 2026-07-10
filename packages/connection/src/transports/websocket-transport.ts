@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/connection/transports/websocket-transport
+ * @module @enterstellar/connection/transports/websocket-transport
  * @description WebSocket implementation of the internal `Transport` interface.
  *
  * Uses the Web `WebSocket` API (available in browsers, Deno, Bun, and Node 22+).
@@ -15,13 +15,13 @@
  * @see L15 — Zero framework imports; Web API only
  */
 
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import type {
-    Transport,
-    TransportCloseHandler,
-    TransportErrorHandler,
-    TransportMessageHandler,
+  Transport,
+  TransportCloseHandler,
+  TransportErrorHandler,
+  TransportMessageHandler,
 } from './transport.js';
 
 // ---------------------------------------------------------------------------
@@ -45,159 +45,156 @@ import type {
  * ws.disconnect();
  * ```
  */
-export function createWebSocketTransport(
-    url: string,
-    timeoutMs: number = 5_000,
-): Transport {
-    // Internal state
-    let socket: WebSocket | null = null;
-    let isConnected = false;
-    let isIntentionalClose = false;
+export function createWebSocketTransport(url: string, timeoutMs: number = 5_000): Transport {
+  // Internal state
+  let socket: WebSocket | null = null;
+  let isConnected = false;
+  let isIntentionalClose = false;
 
-    // Handler registries — accumulate, not overwrite.
-    const messageHandlers: TransportMessageHandler[] = [];
-    const errorHandlers: TransportErrorHandler[] = [];
-    const closeHandlers: TransportCloseHandler[] = [];
+  // Handler registries — accumulate, not overwrite.
+  const messageHandlers: TransportMessageHandler[] = [];
+  const errorHandlers: TransportErrorHandler[] = [];
+  const closeHandlers: TransportCloseHandler[] = [];
 
-    // -----------------------------------------------------------------------
-    // Transport Implementation
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Transport Implementation
+  // -----------------------------------------------------------------------
 
-    const transport: Transport = {
-        connect(): Promise<void> {
-            return new Promise<void>((resolve, reject) => {
-                isIntentionalClose = false;
+  const transport: Transport = {
+    connect(): Promise<void> {
+      return new Promise<void>((resolve, reject) => {
+        isIntentionalClose = false;
 
-                try {
-                    socket = new WebSocket(url);
-                } catch (error: unknown) {
-                    reject(
-                        new EnterstellarError(
-                            'ENS-3003',
-                            'connection',
-                            `Failed to create WebSocket for URL "${url}".`,
-                            true,
-                            error,
-                        ),
-                    );
-                    return;
-                }
+        try {
+          socket = new WebSocket(url);
+        } catch (error: unknown) {
+          reject(
+            new EnterstellarError(
+              'ENS-3003',
+              'connection',
+              `Failed to create WebSocket for URL "${url}".`,
+              true,
+              error,
+            ),
+          );
+          return;
+        }
 
-                // Race: connection open vs timeout.
-                const timer = setTimeout(() => {
-                    if (socket !== null && socket.readyState !== WebSocket.OPEN) {
-                        socket.close();
-                        socket = null;
-                        reject(
-                            new EnterstellarError(
-                                'ENS-3003',
-                                'connection',
-                                `WebSocket connection to "${url}" timed out after ${String(timeoutMs)}ms.`,
-                                true,
-                            ),
-                        );
-                    }
-                }, timeoutMs);
+        // Race: connection open vs timeout.
+        const timer = setTimeout(() => {
+          if (socket !== null && socket.readyState !== WebSocket.OPEN) {
+            socket.close();
+            socket = null;
+            reject(
+              new EnterstellarError(
+                'ENS-3003',
+                'connection',
+                `WebSocket connection to "${url}" timed out after ${String(timeoutMs)}ms.`,
+                true,
+              ),
+            );
+          }
+        }, timeoutMs);
 
-                socket.onopen = (): void => {
-                    clearTimeout(timer);
-                    isConnected = true;
-                    resolve();
-                };
+        socket.onopen = (): void => {
+          clearTimeout(timer);
+          isConnected = true;
+          resolve();
+        };
 
-                socket.onerror = (event: Event): void => {
-                    // WebSocket error events carry no useful info beyond "error occurred".
-                    // Propagate to registered error handlers.
-                    for (const handler of errorHandlers) {
-                        handler(event);
-                    }
-                };
+        socket.onerror = (event: Event): void => {
+          // WebSocket error events carry no useful info beyond "error occurred".
+          // Propagate to registered error handlers.
+          for (const handler of errorHandlers) {
+            handler(event);
+          }
+        };
 
-                socket.onmessage = (event: MessageEvent<unknown>): void => {
-                    let parsed: unknown;
-                    try {
-                        // MessageEvent.data is typically a string for text frames.
-                        parsed = JSON.parse(String(event.data)) as unknown;
-                    } catch (error: unknown) {
-                        // Malformed JSON — route to error handlers, not message handlers.
-                        for (const handler of errorHandlers) {
-                            handler(
-                                new EnterstellarError(
-                                    'ENS-3005',
-                                    'connection',
-                                    'Failed to parse inbound WebSocket message as JSON.',
-                                    true,
-                                    error,
-                                ),
-                            );
-                        }
-                        return;
-                    }
-
-                    for (const handler of messageHandlers) {
-                        handler(parsed);
-                    }
-                };
-
-                socket.onclose = (): void => {
-                    isConnected = false;
-                    // Only fire close handlers for unexpected closures.
-                    // Intentional disconnect() does NOT trigger onClose callbacks.
-                    if (!isIntentionalClose) {
-                        for (const handler of closeHandlers) {
-                            handler();
-                        }
-                    }
-                    socket = null;
-                };
-            });
-        },
-
-        send(data: string): void {
-            if (socket === null || !isConnected) {
-                throw new EnterstellarError(
-                    'ENS-3004',
-                    'connection',
-                    'Cannot send: WebSocket is not connected.',
-                    false,
-                );
+        socket.onmessage = (event: MessageEvent<unknown>): void => {
+          let parsed: unknown;
+          try {
+            // MessageEvent.data is typically a string for text frames.
+            parsed = JSON.parse(String(event.data)) as unknown;
+          } catch (error: unknown) {
+            // Malformed JSON — route to error handlers, not message handlers.
+            for (const handler of errorHandlers) {
+              handler(
+                new EnterstellarError(
+                  'ENS-3005',
+                  'connection',
+                  'Failed to parse inbound WebSocket message as JSON.',
+                  true,
+                  error,
+                ),
+              );
             }
+            return;
+          }
 
-            socket.send(data);
-        },
+          for (const handler of messageHandlers) {
+            handler(parsed);
+          }
+        };
 
-        onMessage(handler: TransportMessageHandler): void {
-            messageHandlers.push(handler);
-        },
-
-        onError(handler: TransportErrorHandler): void {
-            errorHandlers.push(handler);
-        },
-
-        onClose(handler: TransportCloseHandler): void {
-            closeHandlers.push(handler);
-        },
-
-        disconnect(): void {
-            isIntentionalClose = true;
-            isConnected = false;
-
-            if (socket !== null) {
-                // Close with normal closure code (1000).
-                socket.close(1000, 'Enterstellar disconnect');
-                socket = null;
+        socket.onclose = (): void => {
+          isConnected = false;
+          // Only fire close handlers for unexpected closures.
+          // Intentional disconnect() does NOT trigger onClose callbacks.
+          if (!isIntentionalClose) {
+            for (const handler of closeHandlers) {
+              handler();
             }
+          }
+          socket = null;
+        };
+      });
+    },
 
-            // Clear all handler registries to prevent memory leaks.
-            messageHandlers.length = 0;
-            errorHandlers.length = 0;
-            closeHandlers.length = 0;
-        },
+    send(data: string): void {
+      if (socket === null || !isConnected) {
+        throw new EnterstellarError(
+          'ENS-3004',
+          'connection',
+          'Cannot send: WebSocket is not connected.',
+          false,
+        );
+      }
 
-        get connected(): boolean {
-            return isConnected;
-        },
-    };
+      socket.send(data);
+    },
 
-    return transport;
+    onMessage(handler: TransportMessageHandler): void {
+      messageHandlers.push(handler);
+    },
+
+    onError(handler: TransportErrorHandler): void {
+      errorHandlers.push(handler);
+    },
+
+    onClose(handler: TransportCloseHandler): void {
+      closeHandlers.push(handler);
+    },
+
+    disconnect(): void {
+      isIntentionalClose = true;
+      isConnected = false;
+
+      if (socket !== null) {
+        // Close with normal closure code (1000).
+        socket.close(1000, 'Enterstellar disconnect');
+        socket = null;
+      }
+
+      // Clear all handler registries to prevent memory leaks.
+      messageHandlers.length = 0;
+      errorHandlers.length = 0;
+      closeHandlers.length = 0;
+    },
+
+    get connected(): boolean {
+      return isConnected;
+    },
+  };
+
+  return transport;
 }

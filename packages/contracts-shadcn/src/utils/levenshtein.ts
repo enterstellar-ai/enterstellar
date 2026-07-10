@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/contracts-shadcn/utils/levenshtein
+ * @module @enterstellar/contracts-shadcn/utils/levenshtein
  * @description Pure-function Levenshtein distance implementation for fuzzy
  * contract name validation.
  *
@@ -61,52 +61,52 @@ const MATCH_THRESHOLD = 3;
  * ```
  */
 export function levenshteinDistance(a: string, b: string): number {
-    // Early exit: identical strings.
-    if (a === b) {
-        return 0;
+  // Early exit: identical strings.
+  if (a === b) {
+    return 0;
+  }
+
+  const m = a.length;
+  const n = b.length;
+
+  // Edge cases: one string is empty.
+  if (m === 0) {
+    return n;
+  }
+  if (n === 0) {
+    return m;
+  }
+
+  // Two-row DP: prev = row (i-1), curr = row i.
+  // Each row has (n + 1) entries.
+  let prev: number[] = Array.from({ length: n + 1 }, (_, j) => j);
+  let curr: number[] = new Array<number>(n + 1);
+
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i;
+
+    for (let j = 1; j <= n; j++) {
+      // Cost is 0 if characters match, 1 otherwise.
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+      // Minimum of insertion, deletion, or substitution.
+      // prev[j] + 1:       deletion  (remove from a)
+      // (curr[j - 1] ?? 0) + 1: insertion (add to a)
+      // (prev[j - 1] ?? 0) + cost: substitution
+      const deletion = (prev[j] ?? 0) + 1;
+      const insertion = (curr[j - 1] ?? 0) + 1;
+      const substitution = (prev[j - 1] ?? 0) + cost;
+
+      curr[j] = Math.min(deletion, insertion, substitution);
     }
 
-    const m = a.length;
-    const n = b.length;
+    // Swap rows: curr becomes prev for next iteration.
+    [prev, curr] = [curr, prev];
+  }
 
-    // Edge cases: one string is empty.
-    if (m === 0) {
-        return n;
-    }
-    if (n === 0) {
-        return m;
-    }
-
-    // Two-row DP: prev = row (i-1), curr = row i.
-    // Each row has (n + 1) entries.
-    let prev: number[] = Array.from({ length: n + 1 }, (_, j) => j);
-    let curr: number[] = new Array<number>(n + 1);
-
-    for (let i = 1; i <= m; i++) {
-        curr[0] = i;
-
-        for (let j = 1; j <= n; j++) {
-            // Cost is 0 if characters match, 1 otherwise.
-            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-
-            // Minimum of insertion, deletion, or substitution.
-            // prev[j] + 1:       deletion  (remove from a)
-            // (curr[j - 1] ?? 0) + 1: insertion (add to a)
-            // (prev[j - 1] ?? 0) + cost: substitution
-            const deletion = (prev[j] ?? 0) + 1;
-            const insertion = (curr[j - 1] ?? 0) + 1;
-            const substitution = (prev[j - 1] ?? 0) + cost;
-
-            curr[j] = Math.min(deletion, insertion, substitution);
-        }
-
-        // Swap rows: curr becomes prev for next iteration.
-        [prev, curr] = [curr, prev];
-    }
-
-    // After the loop, prev contains the last computed row.
-    // The answer is in prev[n].
-    return prev[n] ?? 0;
+  // After the loop, prev contains the last computed row.
+  // The answer is in prev[n].
+  return prev[n] ?? 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -138,27 +138,24 @@ export function levenshteinDistance(a: string, b: string): number {
  * findClosestMatch('Xyz', names);     // → undefined (no close match)
  * ```
  */
-export function findClosestMatch(
-    input: string,
-    candidates: readonly string[],
-): string | undefined {
-    let bestMatch: string | undefined;
-    let bestDistance = MATCH_THRESHOLD + 1; // Start above threshold.
+export function findClosestMatch(input: string, candidates: readonly string[]): string | undefined {
+  let bestMatch: string | undefined;
+  let bestDistance = MATCH_THRESHOLD + 1; // Start above threshold.
 
-    for (const candidate of candidates) {
-        const distance = levenshteinDistance(input, candidate);
+  for (const candidate of candidates) {
+    const distance = levenshteinDistance(input, candidate);
 
-        if (distance < bestDistance) {
-            bestDistance = distance;
-            bestMatch = candidate;
-        }
-
-        // Perfect match — can't do better.
-        if (distance === 0) {
-            break;
-        }
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestMatch = candidate;
     }
 
-    // Only return if within threshold.
-    return bestDistance <= MATCH_THRESHOLD ? bestMatch : undefined;
+    // Perfect match — can't do better.
+    if (distance === 0) {
+      break;
+    }
+  }
+
+  // Only return if within threshold.
+  return bestDistance <= MATCH_THRESHOLD ? bestMatch : undefined;
 }

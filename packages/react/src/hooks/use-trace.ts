@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/hooks/use-enterstellar-trace
+ * @module @enterstellar/react/hooks/use-enterstellar-trace
  * @description Hook to access the latest `ZoneTrace` for a given zone.
  *
  * Returns the most recent trace only — for full trace history, use
@@ -25,7 +25,7 @@
  *
  * @example
  * ```tsx
- * import { useEnterstellarTrace } from '@enterstellar-ai/react';
+ * import { useEnterstellarTrace } from '@enterstellar/react';
  *
  * function ZoneDebug({ zoneName }: { zoneName: string }) {
  *   const trace = useEnterstellarTrace(zoneName);
@@ -46,8 +46,8 @@
 
 import { useCallback, useContext, useRef, useSyncExternalStore } from 'react';
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { EnterstellarContext, Enterstellar_CONTEXT_NONE } from '../provider.js';
 
@@ -98,91 +98,88 @@ const EMPTY_TRACES: readonly ZoneTrace[] = [];
  * @see Principle L4 — every render is traceable
  */
 export function useEnterstellarTrace(zoneName: string): ZoneTrace | null {
-    const context = useContext(EnterstellarContext);
+  const context = useContext(EnterstellarContext);
 
-    if (context === null || context === Enterstellar_CONTEXT_NONE) {
-        throw new EnterstellarError(
-            'ENS-3001',
-            'react',
-            'useEnterstellarTrace() must be used within an <Provider>. No EnterstellarContext found.',
-            false,
-        );
-    }
-
-    const { store } = context;
-
-    /**
-     * `subscribe` for `useSyncExternalStore`.
-     * Wraps `store.subscribe()` which fires on actual value changes (S4).
-     *
-     * @see Design Choice RE11 — `useSyncExternalStore` subscription
-     */
-    const subscribe = useCallback(
-        (onStoreChange: () => void): (() => void) => {
-            return store.subscribe(onStoreChange);
-        },
-        [store],
+  if (context === null || context === Enterstellar_CONTEXT_NONE) {
+    throw new EnterstellarError(
+      'ENS-3001',
+      'react',
+      'useEnterstellarTrace() must be used within an <Provider>. No EnterstellarContext found.',
+      false,
     );
+  }
 
-    /**
-     * `getSnapshot` for `useSyncExternalStore`.
-     *
-     * Reads traces via `store.get<ZoneTrace[]>('traces')` rather than
-     * `store.getSnapshot().traces` because `SerializedState` stores only
-     * trace IDs (`traceIds: string[]`), not full `ZoneTrace` objects.
-     * The full trace objects are stored under the `'traces'` key by
-     * `Zone` as store extension data.
-     *
-     * Returns `EMPTY_TRACES` (module-level constant) when no traces exist
-     * to maintain referential stability for `useSyncExternalStore`.
-     *
-     * @see Design Choice RE11
-     */
-    const getSnapshot = useCallback(
-        (): readonly ZoneTrace[] => {
-            return store.get<readonly ZoneTrace[]>('traces') ?? EMPTY_TRACES;
-        },
-        [store],
-    );
+  const { store } = context;
 
-    // Subscribe to store changes via useSyncExternalStore (RE11).
-    // The snapshot is the full traces array — zone filtering is applied after.
-    const traces = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  /**
+   * `subscribe` for `useSyncExternalStore`.
+   * Wraps `store.subscribe()` which fires on actual value changes (S4).
+   *
+   * @see Design Choice RE11 — `useSyncExternalStore` subscription
+   */
+  const subscribe = useCallback(
+    (onStoreChange: () => void): (() => void) => {
+      return store.subscribe(onStoreChange);
+    },
+    [store],
+  );
 
-    /**
-     * Previous trace reference for referential stability.
-     * Prevents unnecessary re-renders when the latest trace for this
-     * zone hasn't actually changed (same trace ID).
-     */
-    const prevTraceRef = useRef<ZoneTrace | null>(null);
+  /**
+   * `getSnapshot` for `useSyncExternalStore`.
+   *
+   * Reads traces via `store.get<ZoneTrace[]>('traces')` rather than
+   * `store.getSnapshot().traces` because `SerializedState` stores only
+   * trace IDs (`traceIds: string[]`), not full `ZoneTrace` objects.
+   * The full trace objects are stored under the `'traces'` key by
+   * `Zone` as store extension data.
+   *
+   * Returns `EMPTY_TRACES` (module-level constant) when no traces exist
+   * to maintain referential stability for `useSyncExternalStore`.
+   *
+   * @see Design Choice RE11
+   */
+  const getSnapshot = useCallback((): readonly ZoneTrace[] => {
+    return store.get<readonly ZoneTrace[]>('traces') ?? EMPTY_TRACES;
+  }, [store]);
 
-    /**
-     * Select the latest trace for this zone from the traces array.
-     *
-     * Zone association is determined by trace ID prefix convention:
-     * `"zoneName-..."` — set by `Zone` when storing the trace.
-     *
-     * Iterates in reverse to find the most recent match (RE10).
-     */
-    let latestTrace: ZoneTrace | null = null;
-    for (let i = traces.length - 1; i >= 0; i--) {
-        const trace = traces[i];
-        if (trace?.id.startsWith(`${zoneName}-`) === true) {
-            latestTrace = trace;
-            break;
-        }
+  // Subscribe to store changes via useSyncExternalStore (RE11).
+  // The snapshot is the full traces array — zone filtering is applied after.
+  const traces = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+  /**
+   * Previous trace reference for referential stability.
+   * Prevents unnecessary re-renders when the latest trace for this
+   * zone hasn't actually changed (same trace ID).
+   */
+  const prevTraceRef = useRef<ZoneTrace | null>(null);
+
+  /**
+   * Select the latest trace for this zone from the traces array.
+   *
+   * Zone association is determined by trace ID prefix convention:
+   * `"zoneName-..."` — set by `Zone` when storing the trace.
+   *
+   * Iterates in reverse to find the most recent match (RE10).
+   */
+  let latestTrace: ZoneTrace | null = null;
+  for (let i = traces.length - 1; i >= 0; i--) {
+    const trace = traces[i];
+    if (trace?.id.startsWith(`${zoneName}-`) === true) {
+      latestTrace = trace;
+      break;
     }
+  }
 
-    // Referential stability: return the same reference if the trace ID
-    // hasn't changed, preventing unnecessary consumer re-renders.
-    if (
-        prevTraceRef.current !== null &&
-        latestTrace !== null &&
-        prevTraceRef.current.id === latestTrace.id
-    ) {
-        return prevTraceRef.current;
-    }
+  // Referential stability: return the same reference if the trace ID
+  // hasn't changed, preventing unnecessary consumer re-renders.
+  if (
+    prevTraceRef.current !== null &&
+    latestTrace !== null &&
+    prevTraceRef.current.id === latestTrace.id
+  ) {
+    return prevTraceRef.current;
+  }
 
-    prevTraceRef.current = latestTrace;
-    return latestTrace;
+  prevTraceRef.current = latestTrace;
+  return latestTrace;
 }

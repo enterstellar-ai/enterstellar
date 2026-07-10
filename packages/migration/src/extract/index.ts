@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/extract
+ * @module @enterstellar/migration/extract
  * @description Phase 1 — AST extraction entry point.
  *
  * Re-exports `extractManifest` as the public API for Phase 1.
@@ -10,7 +10,4 @@
  * @see Correction 4 — Server-Side Extraction (shared function)
  */
 
-export {
-    extractManifest,
-    createExtractionProject
-} from './extract-manifest.js';
+export { extractManifest, createExtractionProject } from './extract-manifest.js';

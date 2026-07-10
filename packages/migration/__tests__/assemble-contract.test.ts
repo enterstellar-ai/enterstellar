@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/migration/__tests__/assemble-contract
+ * @module @enterstellar/migration/__tests__/assemble-contract
  * @description Tests for Phase 3 `assembleContract()` — contract source
  * string generation from `StructuralManifest`.
  *
@@ -10,7 +10,6 @@ import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import { assembleContract } from '../src/assembly/assemble-contract.js';
 
-
 // ---------------------------------------------------------------------------
 // Test Fixtures
 // ---------------------------------------------------------------------------
@@ -20,24 +19,27 @@ import { assembleContract } from '../src/assembly/assemble-contract.js';
  * Override specific fields via `overrides` parameter.
  */
 function createManifest(
-    overrides?: Partial<Parameters<typeof assembleContract>[0]>,
+  overrides?: Partial<Parameters<typeof assembleContract>[0]>,
 ): Parameters<typeof assembleContract>[0] {
-    return {
-        name: 'PatientCard',
-        props: z.object({ name: z.string(), age: z.number() }),
-        defaultProps: { name: 'John' },
-        generics: [],
-        existingZodSchemas: [],
-        eventHandlers: [],
-        description: { value: 'A patient summary card', source: 'ast-determined' },
-        tags: { value: ['clinical', 'card'], source: 'ast-determined' },
-        category: { value: 'clinical', source: 'ast-determined' },
-        intent: { value: 'Show patient summary', source: 'ast-determined' },
-        ariaAttributes: { value: { 'role': 'region', 'aria-label': 'Patient Card' }, source: 'ast-determined' },
-        designTokenRefs: { value: [], source: 'ast-determined' },
-        lifecycleStates: { value: ['loading', 'error', 'empty'], source: 'ast-determined' },
-        ...overrides,
-    };
+  return {
+    name: 'PatientCard',
+    props: z.object({ name: z.string(), age: z.number() }),
+    defaultProps: { name: 'John' },
+    generics: [],
+    existingZodSchemas: [],
+    eventHandlers: [],
+    description: { value: 'A patient summary card', source: 'ast-determined' },
+    tags: { value: ['clinical', 'card'], source: 'ast-determined' },
+    category: { value: 'clinical', source: 'ast-determined' },
+    intent: { value: 'Show patient summary', source: 'ast-determined' },
+    ariaAttributes: {
+      value: { role: 'region', 'aria-label': 'Patient Card' },
+      source: 'ast-determined',
+    },
+    designTokenRefs: { value: [], source: 'ast-determined' },
+    lifecycleStates: { value: ['loading', 'error', 'empty'], source: 'ast-determined' },
+    ...overrides,
+  };
 }
 
 const SOURCE_PATH = 'src/components/PatientCard.tsx';
@@ -48,41 +50,44 @@ const PIPELINE_VERSION = '1.0.0';
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — provenance header', () => {
-    it('includes @enterstellar-generated tag', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('@enterstellar-generated');
-    });
+  it('includes @enterstellar-generated tag', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('@enterstellar-generated');
+  });
 
-    it('includes @source with the file path', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain(`@source ${SOURCE_PATH}`);
-    });
+  it('includes @source with the file path', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain(`@source ${SOURCE_PATH}`);
+  });
 
-    it('includes @generated-at with ISO timestamp', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toMatch(/@generated-at \d{4}-\d{2}-\d{2}T/);
-    });
+  it('includes @generated-at with ISO timestamp', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toMatch(/@generated-at \d{4}-\d{2}-\d{2}T/);
+  });
 
-    it('includes @pipeline-version', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain(`@pipeline-version ${PIPELINE_VERSION}`);
-    });
+  it('includes @pipeline-version', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain(`@pipeline-version ${PIPELINE_VERSION}`);
+  });
 
-    it('includes @phases ast when no enrichment', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('@phases ast');
-    });
+  it('includes @phases ast when no enrichment', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('@phases ast');
+  });
 
-    it('includes @phases ast,enrichment when enriched', () => {
-        const options: { readonly enrichedFields?: readonly string[]; readonly enrichmentProvider?: string } = {
-            enrichedFields: ['description', 'tags'],
-            enrichmentProvider: 'openai',
-        };
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION, options);
-        expect(result.content).toContain('@phases ast,enrichment');
-        expect(result.content).toContain('@enrichment-provider openai');
-        expect(result.content).toContain('@enriched-fields description,tags');
-    });
+  it('includes @phases ast,enrichment when enriched', () => {
+    const options: {
+      readonly enrichedFields?: readonly string[];
+      readonly enrichmentProvider?: string;
+    } = {
+      enrichedFields: ['description', 'tags'],
+      enrichmentProvider: 'openai',
+    };
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION, options);
+    expect(result.content).toContain('@phases ast,enrichment');
+    expect(result.content).toContain('@enrichment-provider openai');
+    expect(result.content).toContain('@enriched-fields description,tags');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -90,35 +95,35 @@ describe('assembleContract — provenance header', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — defineComponent structure', () => {
-    it('generates valid defineComponent call with component name', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("export const PatientCardContract = defineComponent({");
-        expect(result.content).toContain("name: 'PatientCard'");
-    });
+  it('generates valid defineComponent call with component name', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('export const PatientCardContract = defineComponent({');
+    expect(result.content).toContain("name: 'PatientCard'");
+  });
 
-    it('includes import statements', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("import { defineComponent } from '@enterstellar-ai/registry';");
-        expect(result.content).toContain("import { z } from 'zod';");
-    });
+  it('includes import statements', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("import { defineComponent } from '@enterstellar/registry';");
+    expect(result.content).toContain("import { z } from 'zod';");
+  });
 
-    it('does NOT include id field (E1 — auto-generated by defineComponent)', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        // The word "id" can appear in other contexts — check specifically for id: or id :
-        const defineBlock = result.content.split('defineComponent({')[1] ?? '';
-        expect(defineBlock).not.toMatch(/^\s+id\s*:/m);
-    });
+  it('does NOT include id field (E1 — auto-generated by defineComponent)', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    // The word "id" can appear in other contexts — check specifically for id: or id :
+    const defineBlock = result.content.split('defineComponent({')[1] ?? '';
+    expect(defineBlock).not.toMatch(/^\s+id\s*:/m);
+  });
 
-    it('does NOT include _meta field (E1 — auto-generated by defineComponent)', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).not.toContain('_meta');
-    });
+  it('does NOT include _meta field (E1 — auto-generated by defineComponent)', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).not.toContain('_meta');
+  });
 
-    it('does NOT include outcome in result (E3 — CLI responsibility)', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect((result as Record<string, unknown>)['outcome']).toBeUndefined();
-    });
+  it('does NOT include outcome in result (E3 — CLI responsibility)', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((result as Record<string, unknown>)['outcome']).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -126,23 +131,21 @@ describe('assembleContract — defineComponent structure', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — tags (M6)', () => {
-    it('uses manifest tags when present', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("tags: ['clinical', 'card']");
-    });
+  it('uses manifest tags when present', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("tags: ['clinical', 'card']");
+  });
 
-    it('falls back to [category] when tags are empty', () => {
-        const manifest = createManifest({
-            tags: { value: [], source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("tags: ['clinical']");
-        expect(result.warnAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=tags'),
-            ]),
-        );
+  it('falls back to [category] when tags are empty', () => {
+    const manifest = createManifest({
+      tags: { value: [], source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("tags: ['clinical']");
+    expect(result.warnAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=tags')]),
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -150,33 +153,34 @@ describe('assembleContract — tags (M6)', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — tokens (E4)', () => {
-    it('always generates tokens: {}', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('tokens: {},');
-    });
+  it('always generates tokens: {}', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('tokens: {},');
+  });
 
-    it('adds @enterstellar-warn when CSS variables were detected', () => {
-        const manifest = createManifest({
-            designTokenRefs: { value: ['var(--enterstellar-primary)', '--enterstellar-danger'], source: 'ast-determined' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('tokens: {},');
-        expect(result.warnAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=tokens'),
-            ]),
-        );
-        expect(result.content).toContain('var(--enterstellar-primary)');
+  it('adds @enterstellar-warn when CSS variables were detected', () => {
+    const manifest = createManifest({
+      designTokenRefs: {
+        value: ['var(--enterstellar-primary)', '--enterstellar-danger'],
+        source: 'ast-determined',
+      },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('tokens: {},');
+    expect(result.warnAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=tokens')]),
+    );
+    expect(result.content).toContain('var(--enterstellar-primary)');
+  });
 
-    it('does NOT add @enterstellar-warn when no CSS vars detected', () => {
-        const manifest = createManifest({
-            designTokenRefs: { value: [], source: 'ast-determined' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        const tokenWarn = result.warnAnnotations.filter((a) => a.includes('field=tokens'));
-        expect(tokenWarn).toHaveLength(0);
+  it('does NOT add @enterstellar-warn when no CSS vars detected', () => {
+    const manifest = createManifest({
+      designTokenRefs: { value: [], source: 'ast-determined' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    const tokenWarn = result.warnAnnotations.filter((a) => a.includes('field=tokens'));
+    expect(tokenWarn).toHaveLength(0);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -184,29 +188,29 @@ describe('assembleContract — tokens (E4)', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — accessibility', () => {
-    it('uses manifest ARIA attributes when present', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("role: 'region'");
-        expect(result.content).toContain("ariaLabel: 'Patient Card'");
-    });
+  it('uses manifest ARIA attributes when present', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("role: 'region'");
+    expect(result.content).toContain("ariaLabel: 'Patient Card'");
+  });
 
-    it('derives role from category defaults when no ARIA attrs', () => {
-        const manifest = createManifest({
-            category: { value: 'form', source: 'ast-determined' },
-            ariaAttributes: { value: {}, source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("role: 'form'");
+  it('derives role from category defaults when no ARIA attrs', () => {
+    const manifest = createManifest({
+      category: { value: 'form', source: 'ast-determined' },
+      ariaAttributes: { value: {}, source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("role: 'form'");
+  });
 
-    it('falls back to region for unknown category', () => {
-        const manifest = createManifest({
-            category: { value: 'custom:dashboard', source: 'ast-determined' },
-            ariaAttributes: { value: {}, source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("role: 'region'");
+  it('falls back to region for unknown category', () => {
+    const manifest = createManifest({
+      category: { value: 'custom:dashboard', source: 'ast-determined' },
+      ariaAttributes: { value: {}, source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("role: 'region'");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -214,25 +218,23 @@ describe('assembleContract — accessibility', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — states', () => {
-    it('generates all 4 lifecycle state fields', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('loading:');
-        expect(result.content).toContain('error:');
-        expect(result.content).toContain('empty:');
-        expect(result.content).toContain('ready:');
-    });
+  it('generates all 4 lifecycle state fields', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('loading:');
+    expect(result.content).toContain('error:');
+    expect(result.content).toContain('empty:');
+    expect(result.content).toContain('ready:');
+  });
 
-    it('adds @enterstellar-warn for heuristic lifecycle states', () => {
-        const manifest = createManifest({
-            lifecycleStates: { value: [], source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.warnAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=states'),
-            ]),
-        );
+  it('adds @enterstellar-warn for heuristic lifecycle states', () => {
+    const manifest = createManifest({
+      lifecycleStates: { value: [], source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.warnAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=states')]),
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -240,11 +242,11 @@ describe('assembleContract — states', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — examples', () => {
-    it('generates examples array with intent and props', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain("intent: 'Show patient summary'");
-        expect(result.content).toContain('"name":"John"');
-    });
+  it('generates examples array with intent and props', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain("intent: 'Show patient summary'");
+    expect(result.content).toContain('"name":"John"');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -252,61 +254,53 @@ describe('assembleContract — examples', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — annotations', () => {
-    it('adds @enterstellar-review for generic components', () => {
-        const manifest = createManifest({
-            generics: [{ name: 'T' }, { name: 'TData', constraint: 'Record<string, unknown>' }],
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.reviewAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=props'),
-            ]),
-        );
-        expect(result.content).toContain('@enterstellar-review');
-        expect(result.content).toContain('T, TData');
+  it('adds @enterstellar-review for generic components', () => {
+    const manifest = createManifest({
+      generics: [{ name: 'T' }, { name: 'TData', constraint: 'Record<string, unknown>' }],
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.reviewAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=props')]),
+    );
+    expect(result.content).toContain('@enterstellar-review');
+    expect(result.content).toContain('T, TData');
+  });
 
-    it('adds @enterstellar-warn for heuristic description', () => {
-        const manifest = createManifest({
-            description: { value: 'A card', source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.warnAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=description'),
-            ]),
-        );
+  it('adds @enterstellar-warn for heuristic description', () => {
+    const manifest = createManifest({
+      description: { value: 'A card', source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.warnAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=description')]),
+    );
+  });
 
-    it('adds @enterstellar-warn for heuristic category', () => {
-        const manifest = createManifest({
-            category: { value: 'utility', source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.warnAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=category'),
-            ]),
-        );
+  it('adds @enterstellar-warn for heuristic category', () => {
+    const manifest = createManifest({
+      category: { value: 'utility', source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.warnAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=category')]),
+    );
+  });
 
-    it('adds @enterstellar-warn for heuristic intent', () => {
-        const manifest = createManifest({
-            intent: { value: 'Render PatientCard', source: 'heuristic-fallback' },
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.warnAnnotations).toEqual(
-            expect.arrayContaining([
-                expect.stringContaining('field=intent'),
-            ]),
-        );
+  it('adds @enterstellar-warn for heuristic intent', () => {
+    const manifest = createManifest({
+      intent: { value: 'Render PatientCard', source: 'heuristic-fallback' },
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.warnAnnotations).toEqual(
+      expect.arrayContaining([expect.stringContaining('field=intent')]),
+    );
+  });
 
-    it('has no annotations for fully ast-determined manifest', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.reviewAnnotations).toHaveLength(0);
-        expect(result.warnAnnotations).toHaveLength(0);
-    });
+  it('has no annotations for fully ast-determined manifest', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.reviewAnnotations).toHaveLength(0);
+    expect(result.warnAnnotations).toHaveLength(0);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -314,20 +308,20 @@ describe('assembleContract — annotations', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — existingZodSchemas', () => {
-    it('adds provenance comment when existing schemas detected', () => {
-        const manifest = createManifest({
-            existingZodSchemas: ['PatientSchema', 'propsSchema'],
-        });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('PatientSchema');
-        expect(result.content).toContain('propsSchema');
-        expect(result.content).toContain('existing Zod schemas detected');
+  it('adds provenance comment when existing schemas detected', () => {
+    const manifest = createManifest({
+      existingZodSchemas: ['PatientSchema', 'propsSchema'],
     });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('PatientSchema');
+    expect(result.content).toContain('propsSchema');
+    expect(result.content).toContain('existing Zod schemas detected');
+  });
 
-    it('does not add comment when no schemas', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).not.toContain('existing Zod schemas detected');
-    });
+  it('does not add comment when no schemas', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).not.toContain('existing Zod schemas detected');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -335,18 +329,18 @@ describe('assembleContract — existingZodSchemas', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — props serialization', () => {
-    it('serializes z.object schema to source code', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('z.object({');
-        expect(result.content).toContain('name: z.string()');
-        expect(result.content).toContain('age: z.number()');
-    });
+  it('serializes z.object schema to source code', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('z.object({');
+    expect(result.content).toContain('name: z.string()');
+    expect(result.content).toContain('age: z.number()');
+  });
 
-    it('handles empty props schema', () => {
-        const manifest = createManifest({ props: z.object({}) });
-        const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.content).toContain('props: z.object({})');
-    });
+  it('handles empty props schema', () => {
+    const manifest = createManifest({ props: z.object({}) });
+    const result = assembleContract(manifest, SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.content).toContain('props: z.object({})');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -354,22 +348,25 @@ describe('assembleContract — props serialization', () => {
 // ---------------------------------------------------------------------------
 
 describe('assembleContract — result provenance', () => {
-    it('returns provenance metadata in result', () => {
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
-        expect(result.provenance.source).toBe(SOURCE_PATH);
-        expect(result.provenance.pipelineVersion).toBe(PIPELINE_VERSION);
-        expect(result.provenance.phases).toContain('ast');
-        expect(result.provenance.generatedAt).toBeTruthy();
-    });
+  it('returns provenance metadata in result', () => {
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION);
+    expect(result.provenance.source).toBe(SOURCE_PATH);
+    expect(result.provenance.pipelineVersion).toBe(PIPELINE_VERSION);
+    expect(result.provenance.phases).toContain('ast');
+    expect(result.provenance.generatedAt).toBeTruthy();
+  });
 
-    it('includes enrichment in provenance when options provided', () => {
-        const options: { readonly enrichedFields?: readonly string[]; readonly enrichmentProvider?: string } = {
-            enrichedFields: ['description'],
-            enrichmentProvider: 'enterstellar-cloud',
-        };
-        const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION, options);
-        expect(result.provenance.phases).toContain('enrichment');
-        expect(result.provenance.enrichmentProvider).toBe('enterstellar-cloud');
-        expect(result.provenance.enrichedFields).toContain('description');
-    });
+  it('includes enrichment in provenance when options provided', () => {
+    const options: {
+      readonly enrichedFields?: readonly string[];
+      readonly enrichmentProvider?: string;
+    } = {
+      enrichedFields: ['description'],
+      enrichmentProvider: 'enterstellar-cloud',
+    };
+    const result = assembleContract(createManifest(), SOURCE_PATH, PIPELINE_VERSION, options);
+    expect(result.provenance.phases).toContain('enrichment');
+    expect(result.provenance.enrichmentProvider).toBe('enterstellar-cloud');
+    expect(result.provenance.enrichedFields).toContain('description');
+  });
 });

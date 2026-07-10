@@ -1,17 +1,17 @@
 ---
-title: "@enterstellar-ai/compiler"
+title: "@enterstellar/compiler"
 description: The Enterstellar UI Compiler — schema validation, design token enforcement, accessibility auditing, 3-tier self-correction, and middleware extensibility. The M1 moat.
 icon: ShieldCheck
 ---
 
 ## Purpose
 
-`@enterstellar-ai/compiler` is the M1 moat. Every `ComponentIntent` — whether from the registry, the Forge, or a test harness — passes through the compiler before rendering. No bypass, no escape hatch (L3). It is the type checker of GenUI.
+`@enterstellar/compiler` is the M1 moat. Every `ComponentIntent` — whether from the registry, the Forge, or a test harness — passes through the compiler before rendering. No bypass, no escape hatch (L3). It is the type checker of GenUI.
 
 No framework imports. Pure TypeScript (L15).
 
 ```bash
-npm install @enterstellar-ai/compiler @enterstellar-ai/registry @enterstellar-ai/types zod
+npm install @enterstellar/compiler @enterstellar/registry @enterstellar/types zod
 ```
 
 ---
@@ -19,8 +19,8 @@ npm install @enterstellar-ai/compiler @enterstellar-ai/registry @enterstellar-ai
 ## Quick Start
 
 ```ts
-import { createCompiler } from '@enterstellar-ai/compiler';
-import { createRegistry } from '@enterstellar-ai/registry';
+import { createCompiler } from '@enterstellar/compiler';
+import { createRegistry } from '@enterstellar/registry';
 
 const registry = createRegistry({ components: [...] });
 
@@ -126,7 +126,7 @@ Used by the migration pipeline to determine outcomes:
 Registers a custom middleware step in the pipeline. Custom steps are inserted after the built-in steps (resolve, parse, token, accessibility) and before the trace step.
 
 ```ts
-import type { CompilationStep } from '@enterstellar-ai/compiler';
+import type { CompilationStep } from '@enterstellar/compiler';
 
 const hipaaCheck: CompilationStep = async (context, next) => {
   if (containsPHI(context.props)) {

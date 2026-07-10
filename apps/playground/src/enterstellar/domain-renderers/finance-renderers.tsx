@@ -12,7 +12,7 @@
 'use client';
 
 import type { JSX } from 'react';
-import { registerRenderer } from '@enterstellar-ai/react';
+import { registerRenderer } from '@enterstellar/react';
 
 // ---------------------------------------------------------------------------
 // Type-safe prop extraction (re-imported from renderers)
@@ -75,15 +75,26 @@ export function registerFinanceRenderers(): void {
               reversed: 'bg-playground-muted',
             };
             return (
-              <div key={i} className="flex items-center justify-between px-5 py-2.5 hover:bg-[var(--token-surface,theme(colors.playground-panel))] transition-colors">
+              <div
+                key={i}
+                className="flex items-center justify-between px-5 py-2.5 hover:bg-[var(--token-surface,theme(colors.playground-panel))] transition-colors"
+              >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className={`size-2 rounded-full ${statusDot[status] ?? 'bg-playground-muted'} shrink-0`} />
+                  <span
+                    className={`size-2 rounded-full ${statusDot[status] ?? 'bg-playground-muted'} shrink-0`}
+                  />
                   <div className="min-w-0">
-                    <p className="text-sm text-[var(--token-text-primary,theme(colors.neutral-200))] truncate">{str(txn['description'])}</p>
-                    <p className="text-[10px] text-[var(--token-text-secondary,theme(colors.playground-muted))]">{str(txn['counterparty'])} · {str(txn['date'])}</p>
+                    <p className="text-sm text-[var(--token-text-primary,theme(colors.neutral-200))] truncate">
+                      {str(txn['description'])}
+                    </p>
+                    <p className="text-[10px] text-[var(--token-text-secondary,theme(colors.playground-muted))]">
+                      {str(txn['counterparty'])} · {str(txn['date'])}
+                    </p>
                   </div>
                 </div>
-                <span className={`text-sm font-semibold tabular-nums ${type === 'credit' ? 'text-success' : 'text-[var(--token-text-primary,theme(colors.neutral-100))]'}`}>
+                <span
+                  className={`text-sm font-semibold tabular-nums ${type === 'credit' ? 'text-success' : 'text-[var(--token-text-primary,theme(colors.neutral-100))]'}`}
+                >
                   {type === 'credit' ? '+' : '−'}${amount.toLocaleString()}
                 </span>
               </div>
@@ -105,11 +116,15 @@ export function registerFinanceRenderers(): void {
     const trend = str(props['trend']);
     const breakdown = arr(props['breakdown']).map(rec);
 
-    const changePercent = previousValue > 0
-      ? (((currentValue - previousValue) / previousValue) * 100).toFixed(1)
-      : '0';
+    const changePercent =
+      previousValue > 0 ? (((currentValue - previousValue) / previousValue) * 100).toFixed(1) : '0';
 
-    const formatted = new Intl.NumberFormat('en-US', { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 }).format(currentValue);
+    const formatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(currentValue);
 
     return (
       <div className="rounded-xl border border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))] p-5">
@@ -117,8 +132,12 @@ export function registerFinanceRenderers(): void {
           {title} · {period}
         </p>
         <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-3xl font-bold text-[var(--token-text-primary,theme(colors.neutral-100))]">{formatted}</span>
-          <span className={`text-sm font-semibold ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-error' : 'text-playground-muted'}`}>
+          <span className="text-3xl font-bold text-[var(--token-text-primary,theme(colors.neutral-100))]">
+            {formatted}
+          </span>
+          <span
+            className={`text-sm font-semibold ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-error' : 'text-playground-muted'}`}
+          >
             {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'} {changePercent}%
           </span>
         </div>
@@ -130,11 +149,18 @@ export function registerFinanceRenderers(): void {
               return (
                 <div key={i}>
                   <div className="flex justify-between text-xs mb-0.5">
-                    <span className="text-[var(--token-text-secondary,theme(colors.playground-muted))]">{str(item['category'])}</span>
-                    <span className="text-[var(--token-text-primary,theme(colors.neutral-200))] tabular-nums">{pct}%</span>
+                    <span className="text-[var(--token-text-secondary,theme(colors.playground-muted))]">
+                      {str(item['category'])}
+                    </span>
+                    <span className="text-[var(--token-text-primary,theme(colors.neutral-200))] tabular-nums">
+                      {pct}%
+                    </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-[var(--token-surface,theme(colors.playground-panel))]">
-                    <div className="h-full rounded-full bg-[var(--token-accent,oklch(0.65_0.15_250))] transition-all" style={{ width: `${String(pct)}%` }} />
+                    <div
+                      className="h-full rounded-full bg-[var(--token-accent,oklch(0.65_0.15_250))] transition-all"
+                      style={{ width: `${String(pct)}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -159,7 +185,12 @@ export function registerFinanceRenderers(): void {
       warning: { border: 'border-warning/30', icon: '⚠️', bg: 'bg-warning/10' },
       critical: { border: 'border-error/50', icon: '🚨', bg: 'bg-error/15' },
     };
-    const style = severityStyles[severity] ?? severityStyles['info'] ?? { border: 'border-primary-500/30', icon: 'ℹ️', bg: 'bg-primary-500/10' };
+    const style = severityStyles[severity] ??
+      severityStyles['info'] ?? {
+        border: 'border-primary-500/30',
+        icon: 'ℹ️',
+        bg: 'bg-primary-500/10',
+      };
 
     return (
       <div className={`rounded-xl border ${style.border} ${style.bg} p-4`}>
@@ -167,16 +198,18 @@ export function registerFinanceRenderers(): void {
           <span className="text-lg shrink-0">{style.icon}</span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">{title}</h4>
+              <h4 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">
+                {title}
+              </h4>
               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--token-surface,theme(colors.playground-panel))] text-playground-muted border border-[var(--token-card-border,theme(colors.playground-border))]">
                 {regulation}
               </span>
             </div>
-            <p className="text-xs text-[var(--token-text-secondary,theme(colors.neutral-300))] leading-relaxed">{message}</p>
+            <p className="text-xs text-[var(--token-text-secondary,theme(colors.neutral-300))] leading-relaxed">
+              {message}
+            </p>
             {deadline !== '' && (
-              <p className="text-[10px] text-warning mt-2 font-medium">
-                ⏰ Deadline: {deadline}
-              </p>
+              <p className="text-[10px] text-warning mt-2 font-medium">⏰ Deadline: {deadline}</p>
             )}
           </div>
         </div>
@@ -195,10 +228,16 @@ export function registerFinanceRenderers(): void {
     const evaluatedAt = str(props['evaluatedAt']);
 
     const riskColor: Record<string, string> = {
-      low: 'text-success', medium: 'text-warning', high: 'text-error', critical: 'text-error',
+      low: 'text-success',
+      medium: 'text-warning',
+      high: 'text-error',
+      critical: 'text-error',
     };
     const riskBg: Record<string, string> = {
-      low: 'bg-success', medium: 'bg-warning', high: 'bg-error', critical: 'bg-error',
+      low: 'bg-success',
+      medium: 'bg-warning',
+      high: 'bg-error',
+      critical: 'bg-error',
     };
     const statusChip: Record<string, { cls: string; label: string }> = {
       pass: { cls: 'bg-success/20 text-success', label: 'PASS' },
@@ -211,18 +250,31 @@ export function registerFinanceRenderers(): void {
       decline: { cls: 'bg-error/20 text-error', label: 'Decline' },
       block: { cls: 'bg-error/30 text-error', label: 'Block' },
     };
-    const badge = recBadge[recommendation] ?? recBadge['review'] ?? { cls: '', label: recommendation };
+    const badge = recBadge[recommendation] ??
+      recBadge['review'] ?? { cls: '', label: recommendation };
 
     return (
       <div className="rounded-xl border border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))] p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">Risk Assessment</h3>
-            <p className="text-[10px] text-playground-muted">{txnId} &middot; {evaluatedAt}</p>
+            <h3 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">
+              Risk Assessment
+            </h3>
+            <p className="text-[10px] text-playground-muted">
+              {txnId} &middot; {evaluatedAt}
+            </p>
           </div>
           <div className="text-center">
-            <div className={`text-2xl font-bold tabular-nums ${riskColor[riskLevel] ?? 'text-warning'}`}>{overall}</div>
-            <div className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full ${riskBg[riskLevel] ?? 'bg-warning'}/20 ${riskColor[riskLevel] ?? 'text-warning'}`}>{riskLevel}</div>
+            <div
+              className={`text-2xl font-bold tabular-nums ${riskColor[riskLevel] ?? 'text-warning'}`}
+            >
+              {overall}
+            </div>
+            <div
+              className={`text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full ${riskBg[riskLevel] ?? 'bg-warning'}/20 ${riskColor[riskLevel] ?? 'text-warning'}`}
+            >
+              {riskLevel}
+            </div>
           </div>
         </div>
 
@@ -235,16 +287,29 @@ export function registerFinanceRenderers(): void {
             return (
               <div key={i}>
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs text-[var(--token-text-primary,theme(colors.neutral-200))]">{str(factor['name'])}</span>
+                  <span className="text-xs text-[var(--token-text-primary,theme(colors.neutral-200))]">
+                    {str(factor['name'])}
+                  </span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-playground-muted tabular-nums">{(weight * 100).toFixed(0)}%w</span>
-                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${chip.cls}`}>{chip.label}</span>
+                    <span className="text-[10px] text-playground-muted tabular-nums">
+                      {(weight * 100).toFixed(0)}%w
+                    </span>
+                    <span
+                      className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${chip.cls}`}
+                    >
+                      {chip.label}
+                    </span>
                   </div>
                 </div>
                 <div className="h-1.5 rounded-full bg-[var(--token-surface,theme(colors.playground-panel))]">
-                  <div className={`h-full rounded-full transition-all ${status === 'fail' ? 'bg-error' : status === 'warn' ? 'bg-warning' : 'bg-success'}`} style={{ width: `${String(score)}%` }} />
+                  <div
+                    className={`h-full rounded-full transition-all ${status === 'fail' ? 'bg-error' : status === 'warn' ? 'bg-warning' : 'bg-success'}`}
+                    style={{ width: `${String(score)}%` }}
+                  />
                 </div>
-                <p className="text-[10px] text-playground-muted mt-0.5 leading-tight">{str(factor['detail'])}</p>
+                <p className="text-[10px] text-playground-muted mt-0.5 leading-tight">
+                  {str(factor['detail'])}
+                </p>
               </div>
             );
           })}
@@ -252,7 +317,9 @@ export function registerFinanceRenderers(): void {
 
         <div className="pt-3 border-t border-[var(--token-card-border,theme(colors.playground-border))] flex items-center justify-between">
           <span className="text-xs text-playground-muted">Recommendation</span>
-          <span className={`text-xs font-bold px-3 py-1 rounded-full ${badge.cls}`}>{badge.label}</span>
+          <span className={`text-xs font-bold px-3 py-1 rounded-full ${badge.cls}`}>
+            {badge.label}
+          </span>
         </div>
       </div>
     );
@@ -265,22 +332,36 @@ export function registerFinanceRenderers(): void {
     const currency = str(props['currency'], 'USD');
     const currentBalance = num(props['currentBalance']);
     const periods = arr(props['periods']).map(rec);
-    const runwayMonths = props['runwayMonths'] !== undefined ? num(props['runwayMonths']) : undefined;
+    const runwayMonths =
+      props['runwayMonths'] !== undefined ? num(props['runwayMonths']) : undefined;
     const burnRate = props['burnRate'] !== undefined ? num(props['burnRate']) : undefined;
 
-    const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 });
-    const maxValue = Math.max(...periods.map((p) => Math.max(num(p['inflow']), num(p['outflow']))), 1);
+    const fmt = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    });
+    const maxValue = Math.max(
+      ...periods.map((p) => Math.max(num(p['inflow']), num(p['outflow']))),
+      1,
+    );
 
     return (
       <div className="rounded-xl border border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))] p-5">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">{title}</h3>
-          <span className="text-xs text-playground-muted">Balance: {fmt.format(currentBalance)}</span>
+          <h3 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">
+            {title}
+          </h3>
+          <span className="text-xs text-playground-muted">
+            Balance: {fmt.format(currentBalance)}
+          </span>
         </div>
 
         {runwayMonths !== undefined && (
           <p className="text-[10px] text-success mb-3">
-            {runwayMonths.toFixed(1)} months runway{burnRate !== undefined ? ` / ${fmt.format(burnRate)}/mo burn` : ''}
+            {runwayMonths.toFixed(1)} months runway
+            {burnRate !== undefined ? ` / ${fmt.format(burnRate)}/mo burn` : ''}
           </p>
         )}
 
@@ -293,10 +374,20 @@ export function registerFinanceRenderers(): void {
             return (
               <div key={i} className="flex-1 text-center">
                 <div className="flex items-end justify-center gap-0.5" style={{ height: '80px' }}>
-                  <div className="w-2 rounded-t bg-success/70 transition-all" style={{ height: `${String(inflowH)}px` }} title={`In: ${fmt.format(inflow)}`} />
-                  <div className="w-2 rounded-t bg-error/60 transition-all" style={{ height: `${String(outflowH)}px` }} title={`Out: ${fmt.format(outflow)}`} />
+                  <div
+                    className="w-2 rounded-t bg-success/70 transition-all"
+                    style={{ height: `${String(inflowH)}px` }}
+                    title={`In: ${fmt.format(inflow)}`}
+                  />
+                  <div
+                    className="w-2 rounded-t bg-error/60 transition-all"
+                    style={{ height: `${String(outflowH)}px` }}
+                    title={`Out: ${fmt.format(outflow)}`}
+                  />
                 </div>
-                <p className="text-[9px] text-playground-muted mt-1 leading-tight">{str(period['label'])}</p>
+                <p className="text-[9px] text-playground-muted mt-1 leading-tight">
+                  {str(period['label'])}
+                </p>
               </div>
             );
           })}
@@ -321,36 +412,60 @@ export function registerFinanceRenderers(): void {
     const tiers = arr(props['tiers']).map(rec);
     const currentIdx = num(props['currentTierIndex']);
     const volume = num(props['currentMonthlyVolume']);
-    const estCost = props['estimatedMonthlyCost'] !== undefined ? num(props['estimatedMonthlyCost']) : undefined;
+    const estCost =
+      props['estimatedMonthlyCost'] !== undefined ? num(props['estimatedMonthlyCost']) : undefined;
 
     return (
       <div className="rounded-xl border border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-card-bg,theme(colors.playground-surface))] overflow-hidden">
         <div className="px-5 py-3 border-b border-[var(--token-card-border,theme(colors.playground-border))] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">{title}</h3>
-          <span className="text-[10px] text-playground-muted tabular-nums">{volume.toLocaleString()} txns/mo</span>
+          <h3 className="text-sm font-semibold text-[var(--token-text-primary,theme(colors.neutral-100))]">
+            {title}
+          </h3>
+          <span className="text-[10px] text-playground-muted tabular-nums">
+            {volume.toLocaleString()} txns/mo
+          </span>
         </div>
 
         <div className="divide-y divide-[var(--token-card-border,theme(colors.playground-border))]">
           {tiers.map((tier, i) => {
             const isCurrent = i === currentIdx;
             const volMin = num(tier['volumeMin']);
-            const volMax = tier['volumeMax'] !== null && tier['volumeMax'] !== undefined ? num(tier['volumeMax']) : null;
+            const volMax =
+              tier['volumeMax'] !== null && tier['volumeMax'] !== undefined
+                ? num(tier['volumeMax'])
+                : null;
             const rate = num(tier['ratePercentage']);
             const flat = num(tier['flatFee']);
             return (
-              <div key={i} className={`px-5 py-2.5 flex items-center justify-between ${isCurrent ? 'bg-[var(--token-accent,oklch(0.65_0.15_250))]/8 border-l-2 border-l-[var(--token-accent,oklch(0.65_0.15_250))]' : ''}`}>
+              <div
+                key={i}
+                className={`px-5 py-2.5 flex items-center justify-between ${isCurrent ? 'bg-[var(--token-accent,oklch(0.65_0.15_250))]/8 border-l-2 border-l-[var(--token-accent,oklch(0.65_0.15_250))]' : ''}`}
+              >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className={`text-sm font-medium ${isCurrent ? 'text-[var(--token-accent,oklch(0.65_0.15_250))]' : 'text-[var(--token-text-primary,theme(colors.neutral-200))]'}`}>{str(tier['name'])}</p>
-                    {isCurrent && <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--token-accent,oklch(0.65_0.15_250))]/20 text-[var(--token-accent,oklch(0.65_0.15_250))]">Current</span>}
+                    <p
+                      className={`text-sm font-medium ${isCurrent ? 'text-[var(--token-accent,oklch(0.65_0.15_250))]' : 'text-[var(--token-text-primary,theme(colors.neutral-200))]'}`}
+                    >
+                      {str(tier['name'])}
+                    </p>
+                    {isCurrent && (
+                      <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--token-accent,oklch(0.65_0.15_250))]/20 text-[var(--token-accent,oklch(0.65_0.15_250))]">
+                        Current
+                      </span>
+                    )}
                   </div>
                   <p className="text-[10px] text-playground-muted tabular-nums">
-                    {volMin.toLocaleString()}&ndash;{volMax !== null ? volMax.toLocaleString() : 'Unlimited'} txns
+                    {volMin.toLocaleString()}&ndash;
+                    {volMax !== null ? volMax.toLocaleString() : 'Unlimited'} txns
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-[var(--token-text-primary,theme(colors.neutral-100))] tabular-nums">{rate}%</p>
-                  <p className="text-[10px] text-playground-muted tabular-nums">+ ${flat.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-[var(--token-text-primary,theme(colors.neutral-100))] tabular-nums">
+                    {rate}%
+                  </p>
+                  <p className="text-[10px] text-playground-muted tabular-nums">
+                    + ${flat.toFixed(2)}
+                  </p>
                 </div>
               </div>
             );
@@ -360,7 +475,13 @@ export function registerFinanceRenderers(): void {
         {estCost !== undefined && (
           <div className="px-5 py-2.5 border-t border-[var(--token-card-border,theme(colors.playground-border))] bg-[var(--token-surface,theme(colors.playground-panel))] flex items-center justify-between">
             <span className="text-xs text-playground-muted">Est. monthly cost</span>
-            <span className="text-sm font-bold text-[var(--token-text-primary,theme(colors.neutral-100))] tabular-nums">${estCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-sm font-bold text-[var(--token-text-primary,theme(colors.neutral-100))] tabular-nums">
+              $
+              {estCost.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/compiler/self-correction
+ * @module @enterstellar/compiler/self-correction
  * @description Self-Correction Loop Orchestration.
  *
  * When compilation fails and the strategy is `'self-correct'`, this module
@@ -22,17 +22,10 @@
  * @see Design Choice C7 — track token usage in trace (observability first).
  */
 
-import type { CompilationError, ComponentIntent } from '@enterstellar-ai/types';
+import type { CompilationError, ComponentIntent } from '@enterstellar/types';
 
-import type {
-    CompilerConfig,
-    CorrectionContext,
-    CorrectionResult,
-} from './types.js';
-import {
-    selfCorrectionExhaustedError,
-    correctionCallbackError,
-} from './errors.js';
+import type { CompilerConfig, CorrectionContext, CorrectionResult } from './types.js';
+import { selfCorrectionExhaustedError, correctionCallbackError } from './errors.js';
 
 // ---------------------------------------------------------------------------
 // Self-Correction Result
@@ -42,17 +35,17 @@ import {
  * Result of the self-correction loop.
  */
 export type SelfCorrectionResult = {
-    /** Whether self-correction resolved all errors. */
-    readonly corrected: boolean;
-    /** Number of correction attempts made. */
-    readonly attempts: number;
-    /** The corrected intent (if successful), or `undefined` if exhausted. */
-    readonly correctedIntent?: {
-        readonly component: string;
-        readonly props: Readonly<Record<string, unknown>>;
-    };
-    /** Additional errors produced during the correction loop. */
-    readonly errors: readonly CompilationError[];
+  /** Whether self-correction resolved all errors. */
+  readonly corrected: boolean;
+  /** Number of correction attempts made. */
+  readonly attempts: number;
+  /** The corrected intent (if successful), or `undefined` if exhausted. */
+  readonly correctedIntent?: {
+    readonly component: string;
+    readonly props: Readonly<Record<string, unknown>>;
+  };
+  /** Additional errors produced during the correction loop. */
+  readonly errors: readonly CompilationError[];
 };
 
 // ---------------------------------------------------------------------------
@@ -69,41 +62,31 @@ export type SelfCorrectionResult = {
  * @param contract - The component contract with the Zod schema.
  * @returns A plain object representing the schema shape.
  */
-function extractSchemaDescription(
-    contractProps: unknown,
-): Record<string, unknown> {
-    // Attempt to extract the schema shape for the correction callback.
-    // Zod schemas expose `.shape` on ZodObject instances.
-    if (
-        typeof contractProps === 'object' &&
-        contractProps !== null &&
-        'shape' in contractProps
-    ) {
-        const shape = (contractProps as { shape: Record<string, unknown> }).shape;
-        const description: Record<string, unknown> = {};
+function extractSchemaDescription(contractProps: unknown): Record<string, unknown> {
+  // Attempt to extract the schema shape for the correction callback.
+  // Zod schemas expose `.shape` on ZodObject instances.
+  if (typeof contractProps === 'object' && contractProps !== null && 'shape' in contractProps) {
+    const shape = (contractProps as { shape: Record<string, unknown> }).shape;
+    const description: Record<string, unknown> = {};
 
-        for (const [key, value] of Object.entries(shape)) {
-            // Extract basic type info from each Zod field
-            if (
-                typeof value === 'object' &&
-                value !== null &&
-                '_def' in value
-            ) {
-                const def = (value as { _def: Record<string, unknown> })._def;
-                description[key] = {
-                    type: def['typeName'] ?? 'unknown',
-                    description: def['description'] ?? undefined,
-                };
-            } else {
-                description[key] = { type: 'unknown' };
-            }
-        }
-
-        return description;
+    for (const [key, value] of Object.entries(shape)) {
+      // Extract basic type info from each Zod field
+      if (typeof value === 'object' && value !== null && '_def' in value) {
+        const def = (value as { _def: Record<string, unknown> })._def;
+        description[key] = {
+          type: def['typeName'] ?? 'unknown',
+          description: def['description'] ?? undefined,
+        };
+      } else {
+        description[key] = { type: 'unknown' };
+      }
     }
 
-    // Fallback: return empty schema description
-    return {};
+    return description;
+  }
+
+  // Fallback: return empty schema description
+  return {};
 }
 
 // ---------------------------------------------------------------------------
@@ -145,73 +128,71 @@ function extractSchemaDescription(
  * ```
  */
 export async function executeSelfCorrection(
-    errors: readonly CompilationError[],
-    intent: ComponentIntent,
-    contractProps: unknown,
-    config: CompilerConfig,
+  errors: readonly CompilationError[],
+  intent: ComponentIntent,
+  contractProps: unknown,
+  config: CompilerConfig,
 ): Promise<SelfCorrectionResult> {
-    const { maxRetries } = config.onValidationFailure;
+  const { maxRetries } = config.onValidationFailure;
 
-    // SC-09: Resolve LLM callback from new or deprecated config path.
-    // selfCorrection.llm takes precedence over the deprecated onCorrection.
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- SC-09: deliberate fallback to deprecated onCorrection
-    const llmCallback = config.selfCorrection?.llm ?? config.onCorrection;
+  // SC-09: Resolve LLM callback from new or deprecated config path.
+  // selfCorrection.llm takes precedence over the deprecated onCorrection.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- SC-09: deliberate fallback to deprecated onCorrection
+  const llmCallback = config.selfCorrection?.llm ?? config.onCorrection;
 
-    // If no LLM correction callback is provided, skip Tier 3 entirely.
-    // Deterministic correction (Tier 1 + 2) runs independently in compile.ts.
-    if (llmCallback === undefined) {
-        return {
-            corrected: false,
-            attempts: 0,
-            errors: [selfCorrectionExhaustedError(0, maxRetries)],
-        };
-    }
-
-    const accumulatedErrors: CompilationError[] = [];
-    let currentErrors: readonly CompilationError[] = errors;
-    let lastResult: CorrectionResult | undefined;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        // Build the correction context (C5: all three)
-        const correctionContext: CorrectionContext = {
-            intent,
-            schema: extractSchemaDescription(contractProps),
-            errors: currentErrors,
-        };
-
-        try {
-            // Invoke the consumer's LLM correction callback (C4 / SC-09)
-            lastResult = await llmCallback(currentErrors, correctionContext);
-
-            // Return successful correction for re-validation by the orchestrator
-            return {
-                corrected: true,
-                attempts: attempt,
-                correctedIntent: {
-                    component: lastResult.component,
-                    props: lastResult.props,
-                },
-                errors: [],
-            };
-        } catch (err: unknown) {
-            // Correction callback failed (network error, agent error, etc.)
-            const errorMessage = err instanceof Error
-                ? err.message
-                : String(err);
-
-            accumulatedErrors.push(correctionCallbackError(errorMessage));
-
-            // Update current errors for next retry attempt
-            currentErrors = [...errors, ...accumulatedErrors];
-        }
-    }
-
-    // Exhausted all retries
-    accumulatedErrors.push(selfCorrectionExhaustedError(maxRetries, maxRetries));
-
+  // If no LLM correction callback is provided, skip Tier 3 entirely.
+  // Deterministic correction (Tier 1 + 2) runs independently in compile.ts.
+  if (llmCallback === undefined) {
     return {
-        corrected: false,
-        attempts: maxRetries,
-        errors: accumulatedErrors,
+      corrected: false,
+      attempts: 0,
+      errors: [selfCorrectionExhaustedError(0, maxRetries)],
     };
+  }
+
+  const accumulatedErrors: CompilationError[] = [];
+  let currentErrors: readonly CompilationError[] = errors;
+  let lastResult: CorrectionResult | undefined;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    // Build the correction context (C5: all three)
+    const correctionContext: CorrectionContext = {
+      intent,
+      schema: extractSchemaDescription(contractProps),
+      errors: currentErrors,
+    };
+
+    try {
+      // Invoke the consumer's LLM correction callback (C4 / SC-09)
+      lastResult = await llmCallback(currentErrors, correctionContext);
+
+      // Return successful correction for re-validation by the orchestrator
+      return {
+        corrected: true,
+        attempts: attempt,
+        correctedIntent: {
+          component: lastResult.component,
+          props: lastResult.props,
+        },
+        errors: [],
+      };
+    } catch (err: unknown) {
+      // Correction callback failed (network error, agent error, etc.)
+      const errorMessage = err instanceof Error ? err.message : String(err);
+
+      accumulatedErrors.push(correctionCallbackError(errorMessage));
+
+      // Update current errors for next retry attempt
+      currentErrors = [...errors, ...accumulatedErrors];
+    }
+  }
+
+  // Exhausted all retries
+  accumulatedErrors.push(selfCorrectionExhaustedError(maxRetries, maxRetries));
+
+  return {
+    corrected: false,
+    attempts: maxRetries,
+    errors: accumulatedErrors,
+  };
 }

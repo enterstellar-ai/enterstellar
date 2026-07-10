@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/create-auth-adapter
+ * @module @enterstellar/adapters/create-auth-adapter
  * @description Factory functions for creating validated `AuthAdapter` instances.
  *
  * - `createAuthAdapter(config)` — wraps a consumer-provided implementation,
@@ -17,7 +17,7 @@
  * @see Design Choice AD5 — wrap into EnterstellarError
  */
 
-import type { AuthAdapter } from '@enterstellar-ai/types';
+import type { AuthAdapter } from '@enterstellar/types';
 
 import { adapterAuthError, adapterMethodError } from './errors.js';
 import type { AuthAdapterConfig } from './types.js';
@@ -43,7 +43,7 @@ import { validateAdapterConfig } from './validate-adapter.js';
  *
  * @example
  * ```ts
- * import { createAuthAdapter } from '@enterstellar-ai/adapters';
+ * import { createAuthAdapter } from '@enterstellar/adapters';
  *
  * const auth = createAuthAdapter({
  *   name: 'supabase-auth',
@@ -66,59 +66,59 @@ import { validateAdapterConfig } from './validate-adapter.js';
  * ```
  */
 export function createAuthAdapter(config: AuthAdapterConfig): AuthAdapter {
-    // -----------------------------------------------------------------------
-    // Step 1: Validate config — throws ENS-7001 on failure
-    // -----------------------------------------------------------------------
-    validateAdapterConfig('auth', config);
+  // -----------------------------------------------------------------------
+  // Step 1: Validate config — throws ENS-7001 on failure
+  // -----------------------------------------------------------------------
+  validateAdapterConfig('auth', config);
 
-    const adapterName = config.name;
+  const adapterName = config.name;
 
-    // -----------------------------------------------------------------------
-    // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
-    // -----------------------------------------------------------------------
-    const adapter: AuthAdapter = {
-        /**
-         * Wrapped `getSession()` — catches vendor errors → `ENS-7005`.
-         */
-        async getSession(): Promise<{ userId: string; roles: string[] } | null> {
-            try {
-                return await config.getSession();
-            } catch (error: unknown) {
-                throw adapterAuthError(adapterName, 'getSession', error);
-            }
-        },
+  // -----------------------------------------------------------------------
+  // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
+  // -----------------------------------------------------------------------
+  const adapter: AuthAdapter = {
+    /**
+     * Wrapped `getSession()` — catches vendor errors → `ENS-7005`.
+     */
+    async getSession(): Promise<{ userId: string; roles: string[] } | null> {
+      try {
+        return await config.getSession();
+      } catch (error: unknown) {
+        throw adapterAuthError(adapterName, 'getSession', error);
+      }
+    },
 
-        /**
-         * Wrapped `hasRole()` — catches vendor errors → `ENS-7005`.
-         */
-        async hasRole(role: string): Promise<boolean> {
-            try {
-                return await config.hasRole(role);
-            } catch (error: unknown) {
-                throw adapterAuthError(adapterName, 'hasRole', error);
-            }
-        },
+    /**
+     * Wrapped `hasRole()` — catches vendor errors → `ENS-7005`.
+     */
+    async hasRole(role: string): Promise<boolean> {
+      try {
+        return await config.hasRole(role);
+      } catch (error: unknown) {
+        throw adapterAuthError(adapterName, 'hasRole', error);
+      }
+    },
 
-        /**
-         * Wrapped `onAuthChange()` — catches subscription setup errors → `ENS-7002`.
-         * Uses generic method error (not auth-specific) because `onAuthChange` is
-         * subscription management, not auth state retrieval.
-         */
-        onAuthChange(
-            callback: (session: { userId: string; roles: string[] } | null) => void,
-        ): () => void {
-            try {
-                return config.onAuthChange(callback);
-            } catch (error: unknown) {
-                throw adapterMethodError(adapterName, 'onAuthChange', error);
-            }
-        },
-    };
+    /**
+     * Wrapped `onAuthChange()` — catches subscription setup errors → `ENS-7002`.
+     * Uses generic method error (not auth-specific) because `onAuthChange` is
+     * subscription management, not auth state retrieval.
+     */
+    onAuthChange(
+      callback: (session: { userId: string; roles: string[] } | null) => void,
+    ): () => void {
+      try {
+        return config.onAuthChange(callback);
+      } catch (error: unknown) {
+        throw adapterMethodError(adapterName, 'onAuthChange', error);
+      }
+    },
+  };
 
-    // -----------------------------------------------------------------------
-    // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
-    // -----------------------------------------------------------------------
-    return Object.freeze(adapter);
+  // -----------------------------------------------------------------------
+  // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
+  // -----------------------------------------------------------------------
+  return Object.freeze(adapter);
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ export function createAuthAdapter(config: AuthAdapterConfig): AuthAdapter {
  *
  * @example
  * ```ts
- * import { createNoopAuthAdapter } from '@enterstellar-ai/adapters';
+ * import { createNoopAuthAdapter } from '@enterstellar/adapters';
  *
  * const auth = createNoopAuthAdapter();
  * await auth.getSession(); // null
@@ -147,25 +147,27 @@ export function createAuthAdapter(config: AuthAdapterConfig): AuthAdapter {
  * ```
  */
 export function createNoopAuthAdapter(): AuthAdapter {
-    const adapter: AuthAdapter = {
-        /** Returns `null` — no active session in noop mode. */
-        getSession(): Promise<{ userId: string; roles: string[] } | null> {
-            return Promise.resolve(null);
-        },
+  const adapter: AuthAdapter = {
+    /** Returns `null` — no active session in noop mode. */
+    getSession(): Promise<{ userId: string; roles: string[] } | null> {
+      return Promise.resolve(null);
+    },
 
-        /** Returns `false` — no permissions in noop mode. */
-        hasRole(_role: string): Promise<boolean> {
-            return Promise.resolve(false);
-        },
+    /** Returns `false` — no permissions in noop mode. */
+    hasRole(_role: string): Promise<boolean> {
+      return Promise.resolve(false);
+    },
 
-        /** Returns a no-op unsubscribe function — never fires a callback. */
-        onAuthChange(
-            _callback: (session: { userId: string; roles: string[] } | null) => void,
-        ): () => void {
-            // No-op — no auth state changes to subscribe to.
-            return () => { /* noop unsubscribe */ };
-        },
-    };
+    /** Returns a no-op unsubscribe function — never fires a callback. */
+    onAuthChange(
+      _callback: (session: { userId: string; roles: string[] } | null) => void,
+    ): () => void {
+      // No-op — no auth state changes to subscribe to.
+      return () => {
+        /* noop unsubscribe */
+      };
+    },
+  };
 
-    return Object.freeze(adapter);
+  return Object.freeze(adapter);
 }

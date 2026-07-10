@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/forge/version
+ * @module @enterstellar/forge/version
  * @description Forge version constant.
  *
  * Embedded in `ForgeResult` metadata and `ForgeSignal` telemetry records
@@ -9,7 +9,7 @@
  */
 
 /**
- * Semantic version of the `@enterstellar-ai/forge` package.
+ * Semantic version of the `@enterstellar/forge` package.
  * Updated via Changesets on every release.
  */
 export const FORGE_VERSION = '0.0.0';

@@ -9,7 +9,7 @@ icon: Box
 This is the minimum viable Enterstellar setup:
 
 ```tsx
-import { Provider } from '@enterstellar-ai/react';
+import { Provider } from '@enterstellar/react';
 import { registry } from './enterstellar/registry';
 
 export default function App() {
@@ -80,13 +80,13 @@ A `Zone` rendered with no `Provider` above it receives a sentinel value and thro
 
 **RE2 — Auto-create store and telemetry:** Both are async (IndexedDB connections). `Provider` initializes them in `useEffect` and sets context to `null` while waiting. Zones handle the `null` case by rendering their `fallback`.
 
-**RE3 — Consumer manages connection:** The agent transport is not auto-created. You provide an `EnterstellarAgentConnection` (e.g., from `createAgentConnection()` in `@enterstellar-ai/connection`) — or you don't, and the zones stay static.
+**RE3 — Consumer manages connection:** The agent transport is not auto-created. You provide an `EnterstellarAgentConnection` (e.g., from `createAgentConnection()` in `@enterstellar/connection`) — or you don't, and the zones stay static.
 
 ## With a Connection
 
 ```tsx
-import { Provider } from '@enterstellar-ai/react';
-import { createAgentConnection } from '@enterstellar-ai/connection';
+import { Provider } from '@enterstellar/react';
+import { createAgentConnection } from '@enterstellar/connection';
 import { registry } from './enterstellar/registry';
 
 const connection = createAgentConnection({

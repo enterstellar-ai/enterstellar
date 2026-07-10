@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/state/persistence/indexed-db
+ * @module @enterstellar/state/persistence/indexed-db
  * @description IndexedDB persistence adapter via `idb-keyval`.
  *
  * Stores serialized state in an IndexedDB database named `enterstellar-store`.
@@ -14,8 +14,8 @@
  * @see Design Choice S6 — `idb-keyval`, DB name `enterstellar-store`.
  */
 
-import type { SerializedState } from '@enterstellar-ai/types';
-import { SerializedStateSchema } from '@enterstellar-ai/types';
+import type { SerializedState } from '@enterstellar/types';
+import { SerializedStateSchema } from '@enterstellar/types';
 import { createStore, get, set, del } from 'idb-keyval';
 import type { UseStore } from 'idb-keyval';
 import type { PersistenceAdapter } from '../types.js';
@@ -62,46 +62,46 @@ const STATE_KEY = 'current';
  * ```
  */
 export function createIndexedDbAdapter(customStore?: UseStore): PersistenceAdapter {
-    // Create a dedicated idb-keyval store instance bound to our DB + object store.
-    // This ensures complete isolation from other IndexedDB databases.
-    const idbStore: UseStore = customStore ?? createStore(DB_NAME, STORE_NAME);
+  // Create a dedicated idb-keyval store instance bound to our DB + object store.
+  // This ensures complete isolation from other IndexedDB databases.
+  const idbStore: UseStore = customStore ?? createStore(DB_NAME, STORE_NAME);
 
-    return {
-        async load(): Promise<SerializedState | undefined> {
-            try {
-                const raw: unknown = await get(STATE_KEY, idbStore);
-                if (raw === undefined) {
-                    return undefined;
-                }
+  return {
+    async load(): Promise<SerializedState | undefined> {
+      try {
+        const raw: unknown = await get(STATE_KEY, idbStore);
+        if (raw === undefined) {
+          return undefined;
+        }
 
-                const result = SerializedStateSchema.safeParse(raw);
-                if (result.success) {
-                    return result.data as SerializedState;
-                }
+        const result = SerializedStateSchema.safeParse(raw);
+        if (result.success) {
+          return result.data as SerializedState;
+        }
 
-                // Corrupted or incompatible data — treat as no persisted state.
-                return undefined;
-            } catch (error: unknown) {
-                // IndexedDB failure (e.g., browser in private mode with IDB disabled).
-                // Log and return undefined — store will initialize with empty state.
-                throw persistenceError('indexed-db', error);
-            }
-        },
+        // Corrupted or incompatible data — treat as no persisted state.
+        return undefined;
+      } catch (error: unknown) {
+        // IndexedDB failure (e.g., browser in private mode with IDB disabled).
+        // Log and return undefined — store will initialize with empty state.
+        throw persistenceError('indexed-db', error);
+      }
+    },
 
-        async save(state: SerializedState): Promise<void> {
-            try {
-                await set(STATE_KEY, state, idbStore);
-            } catch (error: unknown) {
-                throw persistenceError('indexed-db', error);
-            }
-        },
+    async save(state: SerializedState): Promise<void> {
+      try {
+        await set(STATE_KEY, state, idbStore);
+      } catch (error: unknown) {
+        throw persistenceError('indexed-db', error);
+      }
+    },
 
-        async clear(): Promise<void> {
-            try {
-                await del(STATE_KEY, idbStore);
-            } catch (error: unknown) {
-                throw persistenceError('indexed-db', error);
-            }
-        },
-    };
+    async clear(): Promise<void> {
+      try {
+        await del(STATE_KEY, idbStore);
+      } catch (error: unknown) {
+        throw persistenceError('indexed-db', error);
+      }
+    },
+  };
 }

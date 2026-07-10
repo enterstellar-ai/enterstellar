@@ -1,10 +1,10 @@
 /**
- * @module @enterstellar-ai/adapter-supabase
+ * @module @enterstellar/adapter-supabase
  * @description Supabase adapter — Auth + Data adapters for Supabase.
  *
  * This package provides factory functions that map Supabase SDK calls to
  * Enterstellar adapter interfaces. Each factory delegates to `createAuthAdapter()`
- * or `createDataAdapter()` from `@enterstellar-ai/adapters` for validation and
+ * or `createDataAdapter()` from `@enterstellar/adapters` for validation and
  * AD5 error wrapping.
  *
  * ## Quick Start
@@ -14,7 +14,7 @@
  * import {
  *   createSupabaseAuthAdapter,
  *   createSupabaseDataAdapter,
- * } from '@enterstellar-ai/adapter-supabase';
+ * } from '@enterstellar/adapter-supabase';
  *
  * const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  *

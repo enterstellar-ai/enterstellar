@@ -1,7 +1,7 @@
 {
-  "name": "@enterstellar-ai/compiler",
+  "name": "@enterstellar/compiler",
   "description": "Deterministic GenUI compiler — schema validation, design token enforcement, accessibility audits, and self-correction.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",
@@ -55,13 +55,13 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@enterstellar-ai/types": "workspace:*",
-    "@enterstellar-ai/registry": "workspace:*",
+    "@enterstellar/types": "workspace:*",
+    "@enterstellar/registry": "workspace:*",
     "zod": "^4.3.6"
   }
 }

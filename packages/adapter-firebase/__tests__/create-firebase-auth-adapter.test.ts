@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapter-firebase/__tests__/create-firebase-auth-adapter
+ * @module @enterstellar/adapter-firebase/__tests__/create-firebase-auth-adapter
  * @description Unit tests for `createFirebaseAuthAdapter()`.
  *
  * Tests run against **mock Firebase Auth** (`vi.fn()` stubs — no real Firebase project).
@@ -24,7 +24,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { createFirebaseAuthAdapter } from '../src/create-firebase-auth-adapter.js';
 
@@ -36,24 +36,22 @@ import { createFirebaseAuthAdapter } from '../src/create-firebase-auth-adapter.j
 // ---------------------------------------------------------------------------
 
 const { authState, unsubscribeSpy } = vi.hoisted(() => {
-    return {
-        /** Mutable state container for the auth mock. */
-        authState: {
-            /** Captured callback from `onAuthStateChanged()`. */
-            capturedAuthCallback: null as ((user: unknown) => void) | null,
-        },
-        /** Spy for the unsubscribe function returned by `onAuthStateChanged`. */
-        unsubscribeSpy: vi.fn(),
-    };
+  return {
+    /** Mutable state container for the auth mock. */
+    authState: {
+      /** Captured callback from `onAuthStateChanged()`. */
+      capturedAuthCallback: null as ((user: unknown) => void) | null,
+    },
+    /** Spy for the unsubscribe function returned by `onAuthStateChanged`. */
+    unsubscribeSpy: vi.fn(),
+  };
 });
 
 vi.mock('firebase/auth', () => ({
-    onAuthStateChanged: vi.fn().mockImplementation(
-        (_auth: unknown, cb: (user: unknown) => void) => {
-            authState.capturedAuthCallback = cb;
-            return unsubscribeSpy;
-        },
-    ),
+  onAuthStateChanged: vi.fn().mockImplementation((_auth: unknown, cb: (user: unknown) => void) => {
+    authState.capturedAuthCallback = cb;
+    return unsubscribeSpy;
+  }),
 }));
 
 // ---------------------------------------------------------------------------
@@ -67,20 +65,20 @@ vi.mock('firebase/auth', () => ({
  * @returns A mock User with `uid` and `getIdTokenResult()`.
  */
 function createMockUser(overrides?: {
-    uid?: string;
-    claimRoles?: unknown[];
-    customData?: Record<string, unknown>;
+  uid?: string;
+  claimRoles?: unknown[];
+  customData?: Record<string, unknown>;
 }) {
-    return {
-        uid: overrides?.uid ?? 'firebase-user-123',
-        getIdTokenResult: vi.fn().mockResolvedValue({
-            claims: {
-                roles: overrides?.claimRoles ?? ['clinician'],
-                ...overrides?.customData,
-            },
-        }),
+  return {
+    uid: overrides?.uid ?? 'firebase-user-123',
+    getIdTokenResult: vi.fn().mockResolvedValue({
+      claims: {
+        roles: overrides?.claimRoles ?? ['clinician'],
         ...overrides?.customData,
-    };
+      },
+    }),
+    ...overrides?.customData,
+  };
 }
 
 /**
@@ -90,9 +88,9 @@ function createMockUser(overrides?: {
  * @returns A mock Auth instance.
  */
 function createMockAuth(currentUser: ReturnType<typeof createMockUser> | null = createMockUser()) {
-    return {
-        currentUser,
-    } as unknown as Parameters<typeof createFirebaseAuthAdapter>[0]['auth'];
+  return {
+    currentUser,
+  } as unknown as Parameters<typeof createFirebaseAuthAdapter>[0]['auth'];
 }
 
 // ---------------------------------------------------------------------------
@@ -100,8 +98,8 @@ function createMockAuth(currentUser: ReturnType<typeof createMockUser> | null = 
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-    authState.capturedAuthCallback = null;
-    unsubscribeSpy.mockClear();
+  authState.capturedAuthCallback = null;
+  unsubscribeSpy.mockClear();
 });
 
 // ---------------------------------------------------------------------------
@@ -109,30 +107,30 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('createFirebaseAuthAdapter — valid creation', () => {
-    it('creates an adapter from a valid Firebase Auth instance', () => {
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('creates an adapter from a valid Firebase Auth instance', () => {
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        expect(adapter).toBeDefined();
-        expect(typeof adapter.getSession).toBe('function');
-        expect(typeof adapter.hasRole).toBe('function');
-        expect(typeof adapter.onAuthChange).toBe('function');
-    });
+    expect(adapter).toBeDefined();
+    expect(typeof adapter.getSession).toBe('function');
+    expect(typeof adapter.hasRole).toBe('function');
+    expect(typeof adapter.onAuthChange).toBe('function');
+  });
 
-    it('returns a frozen object (R4 pattern)', () => {
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('returns a frozen object (R4 pattern)', () => {
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        expect(Object.isFrozen(adapter)).toBe(true);
-    });
+    expect(Object.isFrozen(adapter)).toBe(true);
+  });
 
-    it('accepts a custom adapter name', () => {
-        const auth = createMockAuth();
+  it('accepts a custom adapter name', () => {
+    const auth = createMockAuth();
 
-        expect(() => {
-            createFirebaseAuthAdapter({ auth, name: 'custom-firebase-auth' });
-        }).not.toThrow();
-    });
+    expect(() => {
+      createFirebaseAuthAdapter({ auth, name: 'custom-firebase-auth' });
+    }).not.toThrow();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -140,65 +138,65 @@ describe('createFirebaseAuthAdapter — valid creation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createFirebaseAuthAdapter — getSession() delegation', () => {
-    it('returns Enterstellar session shape from valid Firebase user (default extractor)', async () => {
-        const user = createMockUser({
-            uid: 'user-456',
-            claimRoles: ['clinician', 'admin'],
-        });
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
-
-        const session = await adapter.getSession();
-
-        expect(session).toEqual({
-            userId: 'user-456',
-            roles: ['clinician', 'admin'],
-        });
+  it('returns Enterstellar session shape from valid Firebase user (default extractor)', async () => {
+    const user = createMockUser({
+      uid: 'user-456',
+      claimRoles: ['clinician', 'admin'],
     });
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-    it('calls getIdTokenResult() to extract roles (default extractor)', async () => {
-        const user = createMockUser();
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+    const session = await adapter.getSession();
 
-        await adapter.getSession();
-
-        expect(user.getIdTokenResult).toHaveBeenCalledOnce();
+    expect(session).toEqual({
+      userId: 'user-456',
+      roles: ['clinician', 'admin'],
     });
+  });
 
-    it('returns null when currentUser is null (unauthenticated)', async () => {
-        const auth = createMockAuth(null);
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('calls getIdTokenResult() to extract roles (default extractor)', async () => {
+    const user = createMockUser();
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        const session = await adapter.getSession();
+    await adapter.getSession();
 
-        expect(session).toBeNull();
+    expect(user.getIdTokenResult).toHaveBeenCalledOnce();
+  });
+
+  it('returns null when currentUser is null (unauthenticated)', async () => {
+    const auth = createMockAuth(null);
+    const adapter = createFirebaseAuthAdapter({ auth });
+
+    const session = await adapter.getSession();
+
+    expect(session).toBeNull();
+  });
+
+  it('returns empty roles when claims.roles is missing', async () => {
+    const user = createMockUser({ claimRoles: undefined as unknown as unknown[] });
+    (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockResolvedValue({
+      claims: {},
     });
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-    it('returns empty roles when claims.roles is missing', async () => {
-        const user = createMockUser({ claimRoles: undefined as unknown as unknown[] });
-        (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockResolvedValue({
-            claims: {},
-        });
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+    const session = await adapter.getSession();
 
-        const session = await adapter.getSession();
+    expect(session?.roles).toEqual([]);
+  });
 
-        expect(session?.roles).toEqual([]);
+  it('filters non-string values from claims.roles', async () => {
+    const user = createMockUser({
+      claimRoles: ['clinician', 42, null, 'admin', undefined],
     });
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-    it('filters non-string values from claims.roles', async () => {
-        const user = createMockUser({
-            claimRoles: ['clinician', 42, null, 'admin', undefined],
-        });
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+    const session = await adapter.getSession();
 
-        const session = await adapter.getSession();
-
-        expect(session?.roles).toEqual(['clinician', 'admin']);
-    });
+    expect(session?.roles).toEqual(['clinician', 'admin']);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -206,37 +204,37 @@ describe('createFirebaseAuthAdapter — getSession() delegation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createFirebaseAuthAdapter — custom roleExtractor in getSession()', () => {
-    it('uses custom roleExtractor instead of getIdTokenResult()', async () => {
-        const user = createMockUser({ uid: 'user-custom' });
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({
-            auth,
-            roleExtractor: () => ['custom-role'],
-        });
-
-        const session = await adapter.getSession();
-
-        expect(session).toEqual({
-            userId: 'user-custom',
-            roles: ['custom-role'],
-        });
-        // Should NOT call getIdTokenResult when custom extractor is provided
-        expect(user.getIdTokenResult).not.toHaveBeenCalled();
+  it('uses custom roleExtractor instead of getIdTokenResult()', async () => {
+    const user = createMockUser({ uid: 'user-custom' });
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({
+      auth,
+      roleExtractor: () => ['custom-role'],
     });
 
-    it('passes the raw Firebase user to the custom extractor', async () => {
-        const user = createMockUser({ uid: 'user-789' });
-        const auth = createMockAuth(user);
-        const extractorSpy = vi.fn().mockReturnValue(['admin']);
-        const adapter = createFirebaseAuthAdapter({
-            auth,
-            roleExtractor: extractorSpy,
-        });
+    const session = await adapter.getSession();
 
-        await adapter.getSession();
-
-        expect(extractorSpy).toHaveBeenCalledWith(user);
+    expect(session).toEqual({
+      userId: 'user-custom',
+      roles: ['custom-role'],
     });
+    // Should NOT call getIdTokenResult when custom extractor is provided
+    expect(user.getIdTokenResult).not.toHaveBeenCalled();
+  });
+
+  it('passes the raw Firebase user to the custom extractor', async () => {
+    const user = createMockUser({ uid: 'user-789' });
+    const auth = createMockAuth(user);
+    const extractorSpy = vi.fn().mockReturnValue(['admin']);
+    const adapter = createFirebaseAuthAdapter({
+      auth,
+      roleExtractor: extractorSpy,
+    });
+
+    await adapter.getSession();
+
+    expect(extractorSpy).toHaveBeenCalledWith(user);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -244,41 +242,41 @@ describe('createFirebaseAuthAdapter — custom roleExtractor in getSession()', (
 // ---------------------------------------------------------------------------
 
 describe('createFirebaseAuthAdapter — hasRole() delegation', () => {
-    it('returns true when user has the requested role (default extractor)', async () => {
-        const user = createMockUser({ claimRoles: ['clinician', 'admin'] });
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('returns true when user has the requested role (default extractor)', async () => {
+    const user = createMockUser({ claimRoles: ['clinician', 'admin'] });
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        expect(await adapter.hasRole('clinician')).toBe(true);
-        expect(await adapter.hasRole('admin')).toBe(true);
+    expect(await adapter.hasRole('clinician')).toBe(true);
+    expect(await adapter.hasRole('admin')).toBe(true);
+  });
+
+  it('returns false when user does not have the requested role', async () => {
+    const user = createMockUser({ claimRoles: ['clinician'] });
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
+
+    expect(await adapter.hasRole('admin')).toBe(false);
+  });
+
+  it('returns false when currentUser is null (unauthenticated)', async () => {
+    const auth = createMockAuth(null);
+    const adapter = createFirebaseAuthAdapter({ auth });
+
+    expect(await adapter.hasRole('clinician')).toBe(false);
+  });
+
+  it('uses custom roleExtractor for hasRole() when provided', async () => {
+    const user = createMockUser();
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({
+      auth,
+      roleExtractor: () => ['injected-role'],
     });
 
-    it('returns false when user does not have the requested role', async () => {
-        const user = createMockUser({ claimRoles: ['clinician'] });
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
-
-        expect(await adapter.hasRole('admin')).toBe(false);
-    });
-
-    it('returns false when currentUser is null (unauthenticated)', async () => {
-        const auth = createMockAuth(null);
-        const adapter = createFirebaseAuthAdapter({ auth });
-
-        expect(await adapter.hasRole('clinician')).toBe(false);
-    });
-
-    it('uses custom roleExtractor for hasRole() when provided', async () => {
-        const user = createMockUser();
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({
-            auth,
-            roleExtractor: () => ['injected-role'],
-        });
-
-        expect(await adapter.hasRole('injected-role')).toBe(true);
-        expect(await adapter.hasRole('other-role')).toBe(false);
-    });
+    expect(await adapter.hasRole('injected-role')).toBe(true);
+    expect(await adapter.hasRole('other-role')).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -286,71 +284,71 @@ describe('createFirebaseAuthAdapter — hasRole() delegation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createFirebaseAuthAdapter — onAuthChange() delegation', () => {
-    it('registers via onAuthStateChanged from firebase/auth', async () => {
-        const { onAuthStateChanged } = await import('firebase/auth');
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('registers via onAuthStateChanged from firebase/auth', async () => {
+    const { onAuthStateChanged } = await import('firebase/auth');
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        adapter.onAuthChange(vi.fn());
+    adapter.onAuthChange(vi.fn());
 
-        expect(onAuthStateChanged).toHaveBeenCalled();
+    expect(onAuthStateChanged).toHaveBeenCalled();
+  });
+
+  it('returns a working unsubscribe function', () => {
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({ auth });
+
+    const unsubscribe = adapter.onAuthChange(vi.fn());
+
+    expect(typeof unsubscribe).toBe('function');
+    unsubscribe();
+    expect(unsubscribeSpy).toHaveBeenCalledOnce();
+  });
+
+  it('calls callback with null on sign-out (no custom extractor)', () => {
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({ auth });
+    const callback = vi.fn();
+
+    adapter.onAuthChange(callback);
+    // Simulate sign-out: user is null
+    authState.capturedAuthCallback?.(null);
+
+    expect(callback).toHaveBeenCalledWith(null);
+  });
+
+  it('calls callback with userId and empty roles when no custom extractor', () => {
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({ auth });
+    const callback = vi.fn();
+
+    adapter.onAuthChange(callback);
+
+    // Simulate sign-in with a user (no custom extractor → roles = [])
+    authState.capturedAuthCallback?.({ uid: 'user-new' });
+
+    expect(callback).toHaveBeenCalledWith({
+      userId: 'user-new',
+      roles: [], // documented tradeoff — async getIdTokenResult cannot be called here
     });
+  });
 
-    it('returns a working unsubscribe function', () => {
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({ auth });
-
-        const unsubscribe = adapter.onAuthChange(vi.fn());
-
-        expect(typeof unsubscribe).toBe('function');
-        unsubscribe();
-        expect(unsubscribeSpy).toHaveBeenCalledOnce();
+  it('calls callback with roles from custom extractor when provided', () => {
+    const auth = createMockAuth();
+    const adapter = createFirebaseAuthAdapter({
+      auth,
+      roleExtractor: () => ['custom-role-from-extractor'],
     });
+    const callback = vi.fn();
 
-    it('calls callback with null on sign-out (no custom extractor)', () => {
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({ auth });
-        const callback = vi.fn();
+    adapter.onAuthChange(callback);
+    authState.capturedAuthCallback?.({ uid: 'user-sync' });
 
-        adapter.onAuthChange(callback);
-        // Simulate sign-out: user is null
-        authState.capturedAuthCallback?.(null);
-
-        expect(callback).toHaveBeenCalledWith(null);
+    expect(callback).toHaveBeenCalledWith({
+      userId: 'user-sync',
+      roles: ['custom-role-from-extractor'],
     });
-
-    it('calls callback with userId and empty roles when no custom extractor', () => {
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({ auth });
-        const callback = vi.fn();
-
-        adapter.onAuthChange(callback);
-
-        // Simulate sign-in with a user (no custom extractor → roles = [])
-        authState.capturedAuthCallback?.({ uid: 'user-new' });
-
-        expect(callback).toHaveBeenCalledWith({
-            userId: 'user-new',
-            roles: [], // documented tradeoff — async getIdTokenResult cannot be called here
-        });
-    });
-
-    it('calls callback with roles from custom extractor when provided', () => {
-        const auth = createMockAuth();
-        const adapter = createFirebaseAuthAdapter({
-            auth,
-            roleExtractor: () => ['custom-role-from-extractor'],
-        });
-        const callback = vi.fn();
-
-        adapter.onAuthChange(callback);
-        authState.capturedAuthCallback?.({ uid: 'user-sync' });
-
-        expect(callback).toHaveBeenCalledWith({
-            userId: 'user-sync',
-            roles: ['custom-role-from-extractor'],
-        });
-    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -358,57 +356,57 @@ describe('createFirebaseAuthAdapter — onAuthChange() delegation', () => {
 // ---------------------------------------------------------------------------
 
 describe('createFirebaseAuthAdapter — AD5 error wrapping', () => {
-    it('wraps getSession() errors as EnterstellarError (ENS-7005)', async () => {
-        const user = createMockUser();
-        (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockRejectedValue(
-            new Error('Firebase token error'),
-        );
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('wraps getSession() errors as EnterstellarError (ENS-7005)', async () => {
+    const user = createMockUser();
+    (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Firebase token error'),
+    );
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        try {
-            await adapter.getSession();
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7005');
-            expect(error.module).toBe('adapters');
-            expect(error.recoverable).toBe(true);
-        }
-    });
+    try {
+      await adapter.getSession();
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7005');
+      expect(error.module).toBe('adapters');
+      expect(error.recoverable).toBe(true);
+    }
+  });
 
-    it('wraps hasRole() errors as EnterstellarError (ENS-7005)', async () => {
-        const user = createMockUser();
-        (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockRejectedValue(
-            new Error('Firebase network error'),
-        );
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('wraps hasRole() errors as EnterstellarError (ENS-7005)', async () => {
+    const user = createMockUser();
+    (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Firebase network error'),
+    );
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        try {
-            await adapter.hasRole('admin');
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error).toBeInstanceOf(EnterstellarError);
-            expect(error.code).toBe('ENS-7005');
-        }
-    });
+    try {
+      await adapter.hasRole('admin');
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error).toBeInstanceOf(EnterstellarError);
+      expect(error.code).toBe('ENS-7005');
+    }
+  });
 
-    it('preserves original error in cause', async () => {
-        const originalError = new TypeError('Firebase auth not initialized');
-        const user = createMockUser();
-        (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockRejectedValue(originalError);
-        const auth = createMockAuth(user);
-        const adapter = createFirebaseAuthAdapter({ auth });
+  it('preserves original error in cause', async () => {
+    const originalError = new TypeError('Firebase auth not initialized');
+    const user = createMockUser();
+    (user.getIdTokenResult as ReturnType<typeof vi.fn>).mockRejectedValue(originalError);
+    const auth = createMockAuth(user);
+    const adapter = createFirebaseAuthAdapter({ auth });
 
-        try {
-            await adapter.getSession();
-            expect.unreachable('should have thrown');
-        } catch (e: unknown) {
-            const error = e as EnterstellarError;
-            expect(error.cause).toBe(originalError);
-        }
-    });
+    try {
+      await adapter.getSession();
+      expect.unreachable('should have thrown');
+    } catch (e: unknown) {
+      const error = e as EnterstellarError;
+      expect(error.cause).toBe(originalError);
+    }
+  });
 });

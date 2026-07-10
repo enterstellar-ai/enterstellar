@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/devtools/utils/percentiles
+ * @module @enterstellar/devtools/utils/percentiles
  * @description Pure utility functions for computing percentile statistics.
  *
  * Used by the Performance Profiler panel to aggregate latency data
@@ -45,26 +45,26 @@ import type { LatencyStats } from '../types.js';
  * @internal
  */
 export function percentile(sorted: readonly number[], p: number): number {
-    const length = sorted.length;
+  const length = sorted.length;
 
-    // Guard: empty array (should not happen — callers check first)
-    if (length === 0) {
-        return 0;
-    }
+  // Guard: empty array (should not happen — callers check first)
+  if (length === 0) {
+    return 0;
+  }
 
-    // Guard: single value — all percentiles equal this value
-    if (length === 1) {
-        return sorted[0] ?? 0;
-    }
+  // Guard: single value — all percentiles equal this value
+  if (length === 1) {
+    return sorted[0] ?? 0;
+  }
 
-    // Clamp percentile to valid range
-    const clamped = Math.max(0, Math.min(100, p));
+  // Clamp percentile to valid range
+  const clamped = Math.max(0, Math.min(100, p));
 
-    // Nearest-rank index (0-based)
-    const rank = Math.ceil(clamped / 100 * length) - 1;
-    const index = Math.max(0, Math.min(length - 1, rank));
+  // Nearest-rank index (0-based)
+  const rank = Math.ceil((clamped / 100) * length) - 1;
+  const index = Math.max(0, Math.min(length - 1, rank));
 
-    return sorted[index] ?? 0;
+  return sorted[index] ?? 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,31 +102,31 @@ export function percentile(sorted: readonly number[], p: number): number {
  * @internal
  */
 export function computeLatencyStats(values: readonly number[]): LatencyStats | null {
-    // Empty dataset — no meaningful statistics
-    if (values.length === 0) {
-        return null;
-    }
+  // Empty dataset — no meaningful statistics
+  if (values.length === 0) {
+    return null;
+  }
 
-    // Sort ascending for percentile computation (copy to avoid mutation)
-    const sorted = [...values].sort((a, b) => a - b);
+  // Sort ascending for percentile computation (copy to avoid mutation)
+  const sorted = [...values].sort((a, b) => a - b);
 
-    // Compute sum for mean calculation
-    let sum = 0;
-    for (const value of sorted) {
-        sum += value;
-    }
+  // Compute sum for mean calculation
+  let sum = 0;
+  for (const value of sorted) {
+    sum += value;
+  }
 
-    // Min/max from sorted endpoints (guaranteed defined by length > 0 check)
-    const min = sorted[0] ?? 0;
-    const max = sorted[sorted.length - 1] ?? 0;
+  // Min/max from sorted endpoints (guaranteed defined by length > 0 check)
+  const min = sorted[0] ?? 0;
+  const max = sorted[sorted.length - 1] ?? 0;
 
-    return {
-        p50: percentile(sorted, 50),
-        p95: percentile(sorted, 95),
-        p99: percentile(sorted, 99),
-        mean: Math.round((sum / values.length) * 100) / 100,
-        min,
-        max,
-        count: values.length,
-    };
+  return {
+    p50: percentile(sorted, 50),
+    p95: percentile(sorted, 95),
+    p99: percentile(sorted, 99),
+    mean: Math.round((sum / values.length) * 100) / 100,
+    min,
+    max,
+    count: values.length,
+  };
 }

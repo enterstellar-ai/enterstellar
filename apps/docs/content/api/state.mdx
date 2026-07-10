@@ -1,17 +1,17 @@
 ---
-title: "@enterstellar-ai/state"
+title: "@enterstellar/state"
 description: Framework-agnostic persistent state management for Enterstellar OS — createEnterstellarStore(), snapshot/restore, AES-GCM encryption, semver migrations, and cross-device sync.
 icon: Database
 ---
 
 ## Purpose
 
-`@enterstellar-ai/state` provides the `createEnterstellarStore()` factory that implements the `EnterstellarStore` interface. It is the OS's memory — persistent zone state, trace ID history, session metadata, and typed extension points. No framework imports (L15).
+`@enterstellar/state` provides the `createEnterstellarStore()` factory that implements the `EnterstellarStore` interface. It is the OS's memory — persistent zone state, trace ID history, session metadata, and typed extension points. No framework imports (L15).
 
 The store's async factory model is deliberate — `indexed-db` initialization is async. The `<Provider>` renders a fallback during init.
 
 ```bash
-npm install @enterstellar-ai/state @enterstellar-ai/types
+npm install @enterstellar/state @enterstellar/types
 ```
 
 ## Key Behaviors
@@ -35,7 +35,7 @@ npm install @enterstellar-ai/state @enterstellar-ai/types
 Creates an `EnterstellarStore` instance. Returns a `Promise<EnterstellarStore>`.
 
 ```ts
-import { createEnterstellarStore } from '@enterstellar-ai/state';
+import { createEnterstellarStore } from '@enterstellar/state';
 
 const store = await createEnterstellarStore({
   persistence: 'indexed-db',
@@ -230,7 +230,7 @@ const store = await createEnterstellarStore({
 Returns a fresh `SerializedState` with all fields at their zero values. Useful for test setup and store initialization.
 
 ```ts
-import { createEmptyState } from '@enterstellar-ai/state';
+import { createEmptyState } from '@enterstellar/state';
 const fresh = createEmptyState();
 ```
 
@@ -240,7 +240,7 @@ const fresh = createEmptyState();
 
 | Type | Description |
 |:---|:---|
-| `EnterstellarStore` | Store interface (from `@enterstellar-ai/types`) |
+| `EnterstellarStore` | Store interface (from `@enterstellar/types`) |
 | `SerializedState` | Snapshot format |
 | `ZoneState` | Per-zone state shape |
 | `SessionState` | Session metadata |

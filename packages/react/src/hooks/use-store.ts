@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/react/hooks/use-enterstellar-store
+ * @module @enterstellar/react/hooks/use-enterstellar-store
  * @description Hook to subscribe to `EnterstellarStore` state with optional selector.
  *
  * Uses React 18+ `useSyncExternalStore` for tear-free reads (RE11).
@@ -18,7 +18,7 @@
  *
  * @example
  * ```tsx
- * import { useEnterstellarStore } from '@enterstellar-ai/react';
+ * import { useEnterstellarStore } from '@enterstellar/react';
  *
  * // Full state
  * function DebugPanel() {
@@ -39,8 +39,8 @@
 
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 
-import type { SerializedState } from '@enterstellar-ai/types';
-import { EnterstellarError } from '@enterstellar-ai/types';
+import type { SerializedState } from '@enterstellar/types';
+import { EnterstellarError } from '@enterstellar/types';
 
 import { EnterstellarContext, Enterstellar_CONTEXT_NONE } from '../provider.js';
 import { useContext } from 'react';
@@ -64,48 +64,45 @@ import { useContext } from 'react';
  * @internal
  */
 function shallowEqual(a: unknown, b: unknown): boolean {
-    if (Object.is(a, b)) {
-        return true;
-    }
-
-    if (
-        typeof a !== 'object' || a === null ||
-        typeof b !== 'object' || b === null
-    ) {
-        return false;
-    }
-
-    // Array comparison
-    if (Array.isArray(a) && Array.isArray(b)) {
-        if (a.length !== b.length) {
-            return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-            if (!Object.is(a[i], b[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Plain object comparison (one level deep)
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-
-    if (keysA.length !== keysB.length) {
-        return false;
-    }
-
-    const objA = a as Record<string, unknown>;
-    const objB = b as Record<string, unknown>;
-
-    for (const key of keysA) {
-        if (!Object.prototype.hasOwnProperty.call(objB, key) || !Object.is(objA[key], objB[key])) {
-            return false;
-        }
-    }
-
+  if (Object.is(a, b)) {
     return true;
+  }
+
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+    return false;
+  }
+
+  // Array comparison
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!Object.is(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Plain object comparison (one level deep)
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  const objA = a as Record<string, unknown>;
+  const objB = b as Record<string, unknown>;
+
+  for (const key of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(objB, key) || !Object.is(objA[key], objB[key])) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -152,60 +149,57 @@ export function useEnterstellarStore<T>(selector: (state: SerializedState) => T)
  * @see Design Choice S4 — shallow equality
  */
 export function useEnterstellarStore<T = SerializedState>(
-    selector?: (state: SerializedState) => T,
+  selector?: (state: SerializedState) => T,
 ): T {
-    const context = useContext(EnterstellarContext);
+  const context = useContext(EnterstellarContext);
 
-    if (context === null || context === Enterstellar_CONTEXT_NONE) {
-        throw new EnterstellarError(
-            'ENS-3001',
-            'react',
-            'useEnterstellarStore() must be used within an <Provider>. No EnterstellarContext found.',
-            false,
-        );
-    }
-
-    const { store } = context;
-
-    /**
-     * `subscribe` for `useSyncExternalStore`.
-     * Wraps `store.subscribe()` which fires on actual value changes (S4).
-     */
-    const subscribe = useCallback(
-        (onStoreChange: () => void): (() => void) => {
-            return store.subscribe(onStoreChange);
-        },
-        [store],
+  if (context === null || context === Enterstellar_CONTEXT_NONE) {
+    throw new EnterstellarError(
+      'ENS-3001',
+      'react',
+      'useEnterstellarStore() must be used within an <Provider>. No EnterstellarContext found.',
+      false,
     );
+  }
 
-    /**
-     * `getSnapshot` for `useSyncExternalStore`.
-     * Returns the full serialized state.
-     */
-    const getSnapshot = useCallback(
-        (): SerializedState => {
-            return store.getSnapshot();
-        },
-        [store],
-    );
+  const { store } = context;
 
-    // Full state (no selector)
-    const fullState = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  /**
+   * `subscribe` for `useSyncExternalStore`.
+   * Wraps `store.subscribe()` which fires on actual value changes (S4).
+   */
+  const subscribe = useCallback(
+    (onStoreChange: () => void): (() => void) => {
+      return store.subscribe(onStoreChange);
+    },
+    [store],
+  );
 
-    // With selector: apply selector + shallow equality memoization
-    const prevRef = useRef<T | undefined>(undefined);
+  /**
+   * `getSnapshot` for `useSyncExternalStore`.
+   * Returns the full serialized state.
+   */
+  const getSnapshot = useCallback((): SerializedState => {
+    return store.getSnapshot();
+  }, [store]);
 
-    if (selector === undefined) {
-        return fullState as unknown as T;
-    }
+  // Full state (no selector)
+  const fullState = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
-    const nextValue = selector(fullState);
+  // With selector: apply selector + shallow equality memoization
+  const prevRef = useRef<T | undefined>(undefined);
 
-    // Shallow equality check — reuse previous reference if unchanged
-    if (prevRef.current !== undefined && shallowEqual(prevRef.current, nextValue)) {
-        return prevRef.current;
-    }
+  if (selector === undefined) {
+    return fullState as unknown as T;
+  }
 
-    prevRef.current = nextValue;
-    return nextValue;
+  const nextValue = selector(fullState);
+
+  // Shallow equality check — reuse previous reference if unchanged
+  if (prevRef.current !== undefined && shallowEqual(prevRef.current, nextValue)) {
+    return prevRef.current;
+  }
+
+  prevRef.current = nextValue;
+  return nextValue;
 }

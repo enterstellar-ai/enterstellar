@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * @module @enterstellar-ai/devtools/panels/trace-timeline
+ * @module @enterstellar/devtools/panels/trace-timeline
  * @description P0 Tab 1 — Chronological list of all `ZoneTrace` events.
  *
  * The Trace Timeline is the primary observation surface for Enterstellar DevTools.
@@ -30,7 +30,7 @@
 
 import { useState, useCallback } from 'react';
 
-import type { ZoneTrace } from '@enterstellar-ai/types';
+import type { ZoneTrace } from '@enterstellar/types';
 
 import type { TraceFilter } from '../types.js';
 import { useDevtoolsTraces } from '../use-devtools-traces.js';
@@ -50,27 +50,27 @@ import { DEVTOOLS_MAX_TRACES } from '../constants.js';
  * @internal
  */
 type TraceTimelineProps = {
-    /**
-     * Maximum traces retained in the DevTools buffer.
-     * Passed through from `<EnterstellarDevTools />` config.
-     *
-     * @default 500
-     */
-    readonly maxTraces: number;
+  /**
+   * Maximum traces retained in the DevTools buffer.
+   * Passed through from `<EnterstellarDevTools />` config.
+   *
+   * @default 500
+   */
+  readonly maxTraces: number;
 
-    /**
-     * Callback fired when a trace is selected by clicking a row.
-     * The parent component uses this to populate the Component Inspector.
-     *
-     * @param trace - The selected trace, or `null` to deselect.
-     */
-    readonly onSelectTrace: (trace: ZoneTrace | null) => void;
+  /**
+   * Callback fired when a trace is selected by clicking a row.
+   * The parent component uses this to populate the Component Inspector.
+   *
+   * @param trace - The selected trace, or `null` to deselect.
+   */
+  readonly onSelectTrace: (trace: ZoneTrace | null) => void;
 
-    /**
-     * Currently selected trace ID, if any.
-     * Used to highlight the selected row.
-     */
-    readonly selectedTraceId: string | null;
+  /**
+   * Currently selected trace ID, if any.
+   * Used to highlight the selected row.
+   */
+  readonly selectedTraceId: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -94,123 +94,108 @@ type TraceTimelineProps = {
  * @internal
  */
 export function TraceTimeline(props: TraceTimelineProps): React.JSX.Element {
-    const { maxTraces, onSelectTrace, selectedTraceId } = props;
+  const { maxTraces, onSelectTrace, selectedTraceId } = props;
 
-    // -----------------------------------------------------------------------
-    // Filter State
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Filter State
+  // -----------------------------------------------------------------------
 
-    const [filter, setFilter] = useState<TraceFilter>({});
+  const [filter, setFilter] = useState<TraceFilter>({});
 
-    // -----------------------------------------------------------------------
-    // Data Subscription
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Data Subscription
+  // -----------------------------------------------------------------------
 
-    const {
-        allTraces,
-        filteredTraces,
-        availableZones,
-        availableComponents,
-    } = useDevtoolsTraces(filter, maxTraces);
+  const { allTraces, filteredTraces, availableZones, availableComponents } = useDevtoolsTraces(
+    filter,
+    maxTraces,
+  );
 
-    // -----------------------------------------------------------------------
-    // Handlers
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Handlers
+  // -----------------------------------------------------------------------
 
-    /**
-     * Handles trace row selection.
-     * Toggles selection if the same trace is clicked again.
-     */
-    const handleSelect = useCallback(
-        (traceId: string) => {
-            if (traceId === selectedTraceId) {
-                // Deselect on second click
-                onSelectTrace(null);
-                return;
-            }
+  /**
+   * Handles trace row selection.
+   * Toggles selection if the same trace is clicked again.
+   */
+  const handleSelect = useCallback(
+    (traceId: string) => {
+      if (traceId === selectedTraceId) {
+        // Deselect on second click
+        onSelectTrace(null);
+        return;
+      }
 
-            const trace = allTraces.find((t) => t.id === traceId);
-            if (trace !== undefined) {
-                onSelectTrace(trace);
-            }
-        },
-        [selectedTraceId, onSelectTrace, allTraces],
-    );
+      const trace = allTraces.find((t) => t.id === traceId);
+      if (trace !== undefined) {
+        onSelectTrace(trace);
+      }
+    },
+    [selectedTraceId, onSelectTrace, allTraces],
+  );
 
-    /**
-     * Handles the export button click.
-     * Exports all traces (not just filtered) with an empty zone config
-     * snapshot (zone configs are not directly accessible from this panel).
-     */
-    const handleExport = useCallback(() => {
-        exportTraces(allTraces, {});
-    }, [allTraces]);
+  /**
+   * Handles the export button click.
+   * Exports all traces (not just filtered) with an empty zone config
+   * snapshot (zone configs are not directly accessible from this panel).
+   */
+  const handleExport = useCallback(() => {
+    exportTraces(allTraces, {});
+  }, [allTraces]);
 
-    // -----------------------------------------------------------------------
-    // Render
-    // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------------
 
-    return (
-        <div
-            style={sharedPanelStyles['panelRoot']}
-            data-enterstellar-devtools-panel="trace-timeline"
+  return (
+    <div style={sharedPanelStyles['panelRoot']} data-enterstellar-devtools-panel="trace-timeline">
+      {/* Header */}
+      <div style={sharedPanelStyles['header']}>
+        <span style={sharedPanelStyles['headerMeta']}>
+          {filteredTraces.length} / {allTraces.length} traces
+          {allTraces.length >= (maxTraces > 0 ? maxTraces : DEVTOOLS_MAX_TRACES) && (
+            <span title="Buffer is full — oldest traces are being evicted"> (buffer full)</span>
+          )}
+        </span>
+        <button
+          type="button"
+          onClick={handleExport}
+          style={exportButtonStyles['button']}
+          aria-label="Export traces as JSON"
+          disabled={allTraces.length === 0}
         >
-            {/* Header */}
-            <div
-                style={sharedPanelStyles['header']}
-            >
-                <span style={sharedPanelStyles['headerMeta']}>
-                    {filteredTraces.length} / {allTraces.length} traces
-                    {allTraces.length >= (maxTraces > 0 ? maxTraces : DEVTOOLS_MAX_TRACES) && (
-                        <span title="Buffer is full — oldest traces are being evicted">
-                            {' '}(buffer full)
-                        </span>
-                    )}
-                </span>
-                <button
-                    type="button"
-                    onClick={handleExport}
-                    style={exportButtonStyles['button']}
-                    aria-label="Export traces as JSON"
-                    disabled={allTraces.length === 0}
-                >
-                    ↓ Export
-                </button>
-            </div>
+          ↓ Export
+        </button>
+      </div>
 
-            {/* Filter Bar */}
-            <FilterBar
-                filter={filter}
-                onFilterChange={setFilter}
-                availableZones={availableZones}
-                availableComponents={availableComponents}
+      {/* Filter Bar */}
+      <FilterBar
+        filter={filter}
+        onFilterChange={setFilter}
+        availableZones={availableZones}
+        availableComponents={availableComponents}
+      />
+
+      {/* Trace List */}
+      <div style={panelStyles['content']} role="table" aria-label="Trace timeline">
+        {filteredTraces.length === 0 ? (
+          <div style={sharedPanelStyles['emptyState']}>
+            {allTraces.length === 0
+              ? 'No traces yet. Trigger an intent in an Zone to start.'
+              : 'No traces match the current filters.'}
+          </div>
+        ) : (
+          filteredTraces.map((trace) => (
+            <TraceRow
+              key={trace.id}
+              trace={trace}
+              isSelected={trace.id === selectedTraceId}
+              onSelect={handleSelect}
             />
-
-            {/* Trace List */}
-            <div
-                style={panelStyles['content']}
-                role="table"
-                aria-label="Trace timeline"
-            >
-                {filteredTraces.length === 0 ? (
-                    <div
-                        style={sharedPanelStyles['emptyState']}
-                    >
-                        {allTraces.length === 0
-                            ? 'No traces yet. Trigger an intent in an Zone to start.'
-                            : 'No traces match the current filters.'}
-                    </div>
-                ) : (
-                    filteredTraces.map((trace) => (
-                        <TraceRow
-                            key={trace.id}
-                            trace={trace}
-                            isSelected={trace.id === selectedTraceId}
-                            onSelect={handleSelect}
-                        />
-                    ))
-                )}
-            </div>
-        </div>
-    );
+          ))
+        )}
+      </div>
+    </div>
+  );
 }

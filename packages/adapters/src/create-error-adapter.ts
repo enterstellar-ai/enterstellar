@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/adapters/create-error-adapter
+ * @module @enterstellar/adapters/create-error-adapter
  * @description Factory functions for creating validated `ErrorAdapter` instances.
  *
  * - `createErrorAdapter(config)` — wraps a consumer-provided implementation,
@@ -16,7 +16,7 @@
  * @see Design Choice AD5 — wrap into EnterstellarError
  */
 
-import type { ErrorAdapter } from '@enterstellar-ai/types';
+import type { ErrorAdapter } from '@enterstellar/types';
 
 import { adapterMethodError } from './errors.js';
 import type { ErrorAdapterConfig } from './types.js';
@@ -48,7 +48,7 @@ import { validateAdapterConfig } from './validate-adapter.js';
  *
  * @example
  * ```ts
- * import { createErrorAdapter } from '@enterstellar-ai/adapters';
+ * import { createErrorAdapter } from '@enterstellar/adapters';
  *
  * const errors = createErrorAdapter({
  *   name: 'sentry-error',
@@ -65,63 +65,60 @@ import { validateAdapterConfig } from './validate-adapter.js';
  * ```
  */
 export function createErrorAdapter(config: ErrorAdapterConfig): ErrorAdapter {
-    // -----------------------------------------------------------------------
-    // Step 1: Validate config — throws ENS-7001 on failure
-    // -----------------------------------------------------------------------
-    validateAdapterConfig('error', config);
+  // -----------------------------------------------------------------------
+  // Step 1: Validate config — throws ENS-7001 on failure
+  // -----------------------------------------------------------------------
+  validateAdapterConfig('error', config);
 
-    const adapterName = config.name;
+  const adapterName = config.name;
 
-    // -----------------------------------------------------------------------
-    // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
-    // -----------------------------------------------------------------------
-    const adapter: ErrorAdapter = {
-        /**
-         * Wrapped `report()` — catches vendor errors → `ENS-7002`.
-         * If the error reporting service itself fails, the caller must know.
-         */
-        async report(
-            error: Error,
-            context?: Readonly<Record<string, unknown>>,
-        ): Promise<void> {
-            try {
-                await config.report(error, context);
-            } catch (reportError: unknown) {
-                throw adapterMethodError(adapterName, 'report', reportError);
-            }
-        },
+  // -----------------------------------------------------------------------
+  // Step 2: Build wrapped adapter (plain object with closures — R1 pattern)
+  // -----------------------------------------------------------------------
+  const adapter: ErrorAdapter = {
+    /**
+     * Wrapped `report()` — catches vendor errors → `ENS-7002`.
+     * If the error reporting service itself fails, the caller must know.
+     */
+    async report(error: Error, context?: Readonly<Record<string, unknown>>): Promise<void> {
+      try {
+        await config.report(error, context);
+      } catch (reportError: unknown) {
+        throw adapterMethodError(adapterName, 'report', reportError);
+      }
+    },
 
-        /**
-         * Wrapped `shouldRetry()` — catches vendor errors → `ENS-7002`.
-         * Async per AD2: production implementations may consult remote
-         * circuit breakers (LaunchDarkly, Unleash) before deciding.
-         */
-        async shouldRetry(error: Error, attemptNumber: number): Promise<boolean> {
-            try {
-                return await config.shouldRetry(error, attemptNumber);
-            } catch (retryError: unknown) {
-                throw adapterMethodError(adapterName, 'shouldRetry', retryError);
-            }
-        },
+    /**
+     * Wrapped `shouldRetry()` — catches vendor errors → `ENS-7002`.
+     * Async per AD2: production implementations may consult remote
+     * circuit breakers (LaunchDarkly, Unleash) before deciding.
+     */
+    async shouldRetry(error: Error, attemptNumber: number): Promise<boolean> {
+      try {
+        return await config.shouldRetry(error, attemptNumber);
+      } catch (retryError: unknown) {
+        throw adapterMethodError(adapterName, 'shouldRetry', retryError);
+      }
+    },
 
-        /**
-         * Wrapped `sanitize()` — catches vendor errors → `ENS-7002`.
-         * Async per AD2: production implementations may call external
-         * PII detection services (Google DLP, AWS Comprehend Medical).
-         */
-        async sanitize(error: Error): Promise<Error> {
-            try {
-                return await config.sanitize(error);
-            } catch (sanitizeError: unknown) {
-                throw adapterMethodError(adapterName, 'sanitize', sanitizeError);
-            }
-        },
-    };
+    /**
+     * Wrapped `sanitize()` — catches vendor errors → `ENS-7002`.
+     * Async per AD2: production implementations may call external
+     * PII detection services (Google DLP, AWS Comprehend Medical).
+     */
+    async sanitize(error: Error): Promise<Error> {
+      try {
+        return await config.sanitize(error);
+      } catch (sanitizeError: unknown) {
+        throw adapterMethodError(adapterName, 'sanitize', sanitizeError);
+      }
+    },
+  };
 
-    // -----------------------------------------------------------------------
-    // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
-    // -----------------------------------------------------------------------
-    return Object.freeze(adapter);
+  // -----------------------------------------------------------------------
+  // Step 3: Freeze and return — prevents accidental mutation (R4 pattern)
+  // -----------------------------------------------------------------------
+  return Object.freeze(adapter);
 }
 
 // ---------------------------------------------------------------------------
@@ -140,7 +137,7 @@ export function createErrorAdapter(config: ErrorAdapterConfig): ErrorAdapter {
  *
  * @example
  * ```ts
- * import { createNoopErrorAdapter } from '@enterstellar-ai/adapters';
+ * import { createNoopErrorAdapter } from '@enterstellar/adapters';
  *
  * const errors = createNoopErrorAdapter();
  * await errors.report(new Error('test')); // no-op
@@ -149,25 +146,22 @@ export function createErrorAdapter(config: ErrorAdapterConfig): ErrorAdapter {
  * ```
  */
 export function createNoopErrorAdapter(): ErrorAdapter {
-    const adapter: ErrorAdapter = {
-        /** No-op — errors silently consumed in noop mode. */
-        async report(
-            _error: Error,
-            _context?: Readonly<Record<string, unknown>>,
-        ): Promise<void> {
-            // No-op — errors silently consumed in noop mode.
-        },
+  const adapter: ErrorAdapter = {
+    /** No-op — errors silently consumed in noop mode. */
+    async report(_error: Error, _context?: Readonly<Record<string, unknown>>): Promise<void> {
+      // No-op — errors silently consumed in noop mode.
+    },
 
-        /** Returns `false` — never retry in noop mode. */
-        shouldRetry(_error: Error, _attemptNumber: number): Promise<boolean> {
-            return Promise.resolve(false);
-        },
+    /** Returns `false` — never retry in noop mode. */
+    shouldRetry(_error: Error, _attemptNumber: number): Promise<boolean> {
+      return Promise.resolve(false);
+    },
 
-        /** Returns the original error unchanged — identity pass-through. */
-        sanitize(error: Error): Promise<Error> {
-            return Promise.resolve(error);
-        },
-    };
+    /** Returns the original error unchanged — identity pass-through. */
+    sanitize(error: Error): Promise<Error> {
+      return Promise.resolve(error);
+    },
+  };
 
-    return Object.freeze(adapter);
+  return Object.freeze(adapter);
 }

@@ -1,5 +1,5 @@
 /**
- * @module @enterstellar-ai/cloud/inference/cloud-index-proxy
+ * @module @enterstellar/cloud/inference/cloud-index-proxy
  * @description Proxies semantic search requests to Enterstellar Cloud.
  *
  * Sends a natural language query to `POST /v1/semantic-search` and
@@ -23,7 +23,7 @@
  * @see Principle L15 — zero framework imports.
  */
 
-import type { SemanticSearchResult } from '@enterstellar-ai/types';
+import type { SemanticSearchResult } from '@enterstellar/types';
 
 import type { IPUTracker } from '../metering/ipu-tracker.js';
 import type { CloudHttpTransport } from '../transport/cloud-http.js';
@@ -53,7 +53,7 @@ const DEFAULT_TOP_K = 5;
  * @internal — used only for typing the transport response.
  */
 type SemanticSearchResponse = {
-    readonly results: readonly SemanticSearchResult[];
+  readonly results: readonly SemanticSearchResult[];
 };
 
 // ---------------------------------------------------------------------------
@@ -66,20 +66,17 @@ type SemanticSearchResponse = {
  * @internal — consumed by `createEnterstellarCloudClient()`, not exported publicly.
  */
 export interface CloudIndexProxy {
-    /**
-     * Search for components via Cloud Semantic Index.
-     *
-     * @param query - Natural language search query (intent string).
-     * @param topK - Maximum number of results. @default 5 (SI5).
-     * @returns Search results wrapped in `CloudResult<T>` with IPU metadata.
-     *
-     * @throws {CloudError} `ENS-C4290` if IPU quota exceeded (SD3).
-     * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
-     */
-    search(
-        query: string,
-        topK?: number,
-    ): Promise<CloudResult<readonly SemanticSearchResult[]>>;
+  /**
+   * Search for components via Cloud Semantic Index.
+   *
+   * @param query - Natural language search query (intent string).
+   * @param topK - Maximum number of results. @default 5 (SI5).
+   * @returns Search results wrapped in `CloudResult<T>` with IPU metadata.
+   *
+   * @throws {CloudError} `ENS-C4290` if IPU quota exceeded (SD3).
+   * @throws {CloudError} `ENS-5005` if all retries fail (SD5).
+   */
+  search(query: string, topK?: number): Promise<CloudResult<readonly SemanticSearchResult[]>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,20 +93,20 @@ export interface CloudIndexProxy {
  * @returns A `CloudIPU` object, or `null`.
  */
 function buildIPU(
-    ipuUsed: number | undefined,
-    ipuRemaining: number | undefined,
-    ipuCost: number | undefined,
-    isAnonymous: boolean,
+  ipuUsed: number | undefined,
+  ipuRemaining: number | undefined,
+  ipuCost: number | undefined,
+  isAnonymous: boolean,
 ): CloudIPU | null {
-    if (isAnonymous) {
-        return null;
-    }
-
-    if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
-        return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
-    }
-
+  if (isAnonymous) {
     return null;
+  }
+
+  if (ipuUsed !== undefined && ipuRemaining !== undefined && ipuCost !== undefined) {
+    return { used: ipuUsed, remaining: ipuRemaining, cost: ipuCost };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,63 +137,58 @@ function buildIPU(
  * @internal
  */
 export function createCloudIndexProxy(
-    transport: CloudHttpTransport,
-    tracker: IPUTracker,
-    isAnonymous: boolean,
+  transport: CloudHttpTransport,
+  tracker: IPUTracker,
+  isAnonymous: boolean,
 ): CloudIndexProxy {
-    return {
-        async search(
-            query: string,
-            topK: number = DEFAULT_TOP_K,
-        ): Promise<CloudResult<readonly SemanticSearchResult[]>> {
-            // ---------------------------------------------------------------
-            // Pre-flight quota check (SD3).
-            // Throws CloudError instead of returning degraded.
-            // ---------------------------------------------------------------
-            if (tracker.isOverQuota()) {
-                throw createQuotaExceededError({
-                    code: 'ENS-C4290',
-                    message: 'IPU quota exceeded (pre-flight check)',
-                });
-            }
+  return {
+    async search(
+      query: string,
+      topK: number = DEFAULT_TOP_K,
+    ): Promise<CloudResult<readonly SemanticSearchResult[]>> {
+      // ---------------------------------------------------------------
+      // Pre-flight quota check (SD3).
+      // Throws CloudError instead of returning degraded.
+      // ---------------------------------------------------------------
+      if (tracker.isOverQuota()) {
+        throw createQuotaExceededError({
+          code: 'ENS-C4290',
+          message: 'IPU quota exceeded (pre-flight check)',
+        });
+      }
 
-            // ---------------------------------------------------------------
-            // Execute the cloud API call.
-            // Transport handles retry (SD5), 429 throw (SD3), timeout (F21).
-            // ---------------------------------------------------------------
-            const response = await transport.request<SemanticSearchResponse>({
-                method: 'POST',
-                path: '/v1/semantic-search',
-                body: { query, topK },
-                ipuCost: IPU_COSTS.SEMANTIC_SEARCH,
-            });
+      // ---------------------------------------------------------------
+      // Execute the cloud API call.
+      // Transport handles retry (SD5), 429 throw (SD3), timeout (F21).
+      // ---------------------------------------------------------------
+      const response = await transport.request<SemanticSearchResponse>({
+        method: 'POST',
+        path: '/v1/semantic-search',
+        body: { query, topK },
+        ipuCost: IPU_COSTS.SEMANTIC_SEARCH,
+      });
 
-            // ---------------------------------------------------------------
-            // Reconcile IPU tracker with server headers (CL1).
-            // ---------------------------------------------------------------
-            if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
-                tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
-            }
+      // ---------------------------------------------------------------
+      // Reconcile IPU tracker with server headers (CL1).
+      // ---------------------------------------------------------------
+      if (response.ipuUsed !== undefined && response.ipuRemaining !== undefined) {
+        tracker.reconcile(response.ipuUsed, response.ipuRemaining, response.ipuCost);
+      }
 
-            // Record local cost estimate.
-            tracker.record(IPU_COSTS.SEMANTIC_SEARCH);
+      // Record local cost estimate.
+      tracker.record(IPU_COSTS.SEMANTIC_SEARCH);
 
-            // ---------------------------------------------------------------
-            // Build CloudResult<readonly SemanticSearchResult[]> (SD7).
-            // ---------------------------------------------------------------
-            const ipu = buildIPU(
-                response.ipuUsed,
-                response.ipuRemaining,
-                response.ipuCost,
-                isAnonymous,
-            );
+      // ---------------------------------------------------------------
+      // Build CloudResult<readonly SemanticSearchResult[]> (SD7).
+      // ---------------------------------------------------------------
+      const ipu = buildIPU(response.ipuUsed, response.ipuRemaining, response.ipuCost, isAnonymous);
 
-            // The transport guarantees `response.ok === true` at this point.
-            // Guard against null data defensively.
-            const data = response.data;
-            const results: readonly SemanticSearchResult[] = data?.results ?? [];
+      // The transport guarantees `response.ok === true` at this point.
+      // Guard against null data defensively.
+      const data = response.data;
+      const results: readonly SemanticSearchResult[] = data?.results ?? [];
 
-            return { data: results, ipu };
-        },
-    };
+      return { data: results, ipu };
+    },
+  };
 }
