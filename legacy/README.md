@@ -19,14 +19,13 @@ CI run and risk re-publishing shim packages indefinitely. Use the explicit scrip
 ## Migration publish sequence (run once)
 
 ```bash
-# 1. Canonical scope — normal Changesets release (GitHub Actions or local)
-pnpm changeset:publish
+# All four steps (requires NODE_AUTH_TOKEN or npm login):
+NODE_AUTH_TOKEN=<token> pnpm migration:publish
 
-# 2–3. Legacy proxy shims (@enterstellar-ai/*@0.1.1)
-pnpm legacy:publish
-
-# 4. Deprecate original @enterstellar-ai/*@0.1.0 releases
-pnpm legacy:deprecate --exec
+# Or step-by-step:
+NODE_AUTH_TOKEN=<token> pnpm changeset:publish   # 1. @enterstellar/*
+pnpm legacy:publish                               # 2–3. @enterstellar-ai/* proxies
+pnpm legacy:deprecate -- --exec                   # 4. deprecate @enterstellar-ai/*@0.1.0
 ```
 
 ## Scripts

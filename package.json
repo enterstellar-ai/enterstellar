@@ -40,6 +40,7 @@
     "legacy:build": "pnpm --filter './legacy/*' run build",
     "legacy:publish": "node scripts/publish-legacy-proxies.mjs",
     "legacy:deprecate": "node scripts/deprecate-legacy-scope.mjs",
+    "migration:publish": "node scripts/publish-scope-migration.mjs",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "turbo run build && changeset publish",
