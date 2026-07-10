@@ -2,7 +2,6 @@ packages:
   - packages/*
   - apps/*
   - examples/*
-  - legacy/*
 
 allowBuilds:
   '@firebase/util': true
