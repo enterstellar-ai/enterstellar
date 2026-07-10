@@ -7,11 +7,11 @@
   "homepage": "https://enterstellar.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/enterstellar-ai/enterstellar.git",
+    "url": "https://github.com/enterstellar/enterstellar.git",
     "directory": "packages/adapter-supabase"
   },
   "bugs": {
-    "url": "https://github.com/enterstellar-ai/enterstellar/issues"
+    "url": "https://github.com/enterstellar/enterstellar/issues"
   },
   "keywords": [
     "supabase",

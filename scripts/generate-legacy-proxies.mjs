@@ -48,6 +48,59 @@ const LEGACY_VERSION = '0.1.1';
 const DEPRECATION =
     'DEPRECATED: This package has moved to @enterstellar. Update imports to the new scope.';
 
+function writePackageReadme(dir, legacyName, canonicalName, variant = 'library') {
+    const npmCanonical = `https://www.npmjs.com/package/${canonicalName}`;
+
+    let extra = '';
+    if (variant === 'cli') {
+        extra = `
+## CLI binaries
+
+The \`enterstellar\`, \`ens\`, and \`create-enterstellar-app\` commands still work via this shim.
+For new projects, install [\`@enterstellar/cli\`](${npmCanonical}) directly:
+
+\`\`\`bash
+npm install -g @enterstellar/cli
+\`\`\`
+`;
+    } else if (variant === 'contract-protocol') {
+        extra = `
+## Schemas & validation CLI
+
+JSON schemas, conformance fixtures, and the \`enterstellar-protocol-validate\` binary are
+bundled from [\`@enterstellar/contract-protocol\`](${npmCanonical}). New projects should
+depend on that package directly.
+`;
+    }
+
+    write(
+        join(dir, 'README.md'),
+        `# \`${legacyName}\` (deprecated)
+
+> **Renamed:** use [\`${canonicalName}\`](${npmCanonical}) instead.
+
+Enterstellar moved its npm scope from \`@enterstellar-ai\` to \`@enterstellar\`.
+This package is a **compatibility shim** that re-exports \`${canonicalName}\` so existing
+installs keep working during the transition.
+
+## Migrate
+
+\`\`\`bash
+npm install ${canonicalName}
+\`\`\`
+
+\`\`\`diff
+- import { ... } from '${legacyName}';
++ import { ... } from '${canonicalName}';
+\`\`\`
+${extra}
+## Documentation
+
+- [enterstellar.dev/docs](https://enterstellar.dev/docs)
+`,
+    );
+}
+
 const TSUP_CONFIG = `import { defineConfig } from 'tsup';
 
 export default defineConfig({
@@ -100,7 +153,7 @@ function libraryProxy(pkgDir, canonicalName) {
                 homepage: 'https://enterstellar.dev',
                 repository: {
                     type: 'git',
-                    url: 'https://github.com/enterstellar-ai/enterstellar.git',
+                    url: 'https://github.com/enterstellar/enterstellar.git',
                     directory: `legacy/${pkgDir}`,
                 },
                 type: 'module',
@@ -122,7 +175,7 @@ function libraryProxy(pkgDir, canonicalName) {
                         },
                     },
                 },
-                files: ['dist'],
+                files: ['dist', 'README.md'],
                 scripts: {
                     build: 'tsup',
                     typecheck: 'tsc --noEmit',
@@ -143,6 +196,7 @@ function libraryProxy(pkgDir, canonicalName) {
     write(join(dir, 'src/index.ts'), `export * from '${canonicalName}';\n`);
     write(join(dir, 'tsup.config.ts'), TSUP_CONFIG);
     write(join(dir, 'tsconfig.json'), TSCONFIG);
+    writePackageReadme(dir, legacyName, canonicalName);
 }
 
 function cliProxy() {
@@ -156,7 +210,7 @@ function cliProxy() {
         homepage: 'https://enterstellar.dev',
         repository: {
             type: 'git',
-            url: 'https://github.com/enterstellar-ai/enterstellar.git',
+            url: 'https://github.com/enterstellar/enterstellar.git',
             directory: 'legacy/cli',
         },
         type: 'module',
@@ -184,7 +238,7 @@ function cliProxy() {
                 },
             },
         },
-        files: ['dist'],
+        files: ['dist', 'README.md'],
         scripts: {
             build: 'tsup',
             typecheck: 'tsc --noEmit',
@@ -202,6 +256,7 @@ function cliProxy() {
     write(join(dir, 'src/index.ts'), `export * from '@enterstellar/cli';\n`);
     write(join(dir, 'tsup.config.ts'), TSUP_CONFIG);
     write(join(dir, 'tsconfig.json'), TSCONFIG);
+    writePackageReadme(dir, '@enterstellar-ai/cli', '@enterstellar/cli', 'cli');
 }
 
 function contractProtocolProxy() {
@@ -219,7 +274,7 @@ function contractProtocolProxy() {
                 homepage: 'https://enterstellar.dev',
                 repository: {
                     type: 'git',
-                    url: 'https://github.com/enterstellar-ai/enterstellar.git',
+                    url: 'https://github.com/enterstellar/enterstellar.git',
                     directory: 'legacy/contract-protocol',
                 },
                 type: 'module',
@@ -229,7 +284,7 @@ function contractProtocolProxy() {
                 bin: {
                     'enterstellar-protocol-validate': './bin/validate.ts',
                 },
-                files: ['schemas', 'examples', 'conformance', 'bin', 'PROTOCOL_VERSION.md'],
+                files: ['schemas', 'examples', 'conformance', 'bin', 'PROTOCOL_VERSION.md', 'README.md'],
                 scripts: {
                     build: 'node scripts/sync-artifacts.mjs',
                     prepublishOnly: 'pnpm run build',
@@ -264,6 +319,13 @@ cpSync(join(sourceRoot, 'PROTOCOL_VERSION.md'), join(legacyRoot, 'PROTOCOL_VERSI
 console.log('Synced contract-protocol artifacts into legacy/contract-protocol');
 `,
     );
+
+    writePackageReadme(
+        dir,
+        '@enterstellar-ai/contract-protocol',
+        '@enterstellar/contract-protocol',
+        'contract-protocol',
+    );
 }
 
 function legacyReadme() {
@@ -274,17 +336,56 @@ function legacyReadme() {
 Thin compatibility packages published under the **old** npm scope after the canonical
 packages moved to \`@enterstellar/*\`.
 
-## Publish order (zero-breakage)
+Each proxy includes its own **\`README.md\`** (listed in \`package.json#files\`) so npm
+shows the deprecation notice instead of "This package does not have a README".
 
-1. Publish all \`@enterstellar/*\` packages at their current versions (e.g. \`0.1.0\`).
-2. Build legacy proxies: \`pnpm legacy:build\`
-3. Publish all \`legacy/*\` packages (patch \`0.1.1\`).
-4. Deprecate old scope: \`pnpm legacy:deprecate\`
+**Retention:** Keep this directory and the \`legacy:*\` scripts for **3–6 months** after
+the migration publish, then delete once \`@enterstellar-ai/*@0.1.0\` is deprecated and
+downstream consumers have migrated.
+
+> **Intentional exception:** \`@enterstellar-ai\` appears **only** under \`legacy/\`, the
+> migration scripts, and \`.changeset/config.json\` \`ignore\` list. Everywhere else in the
+> repo uses \`@enterstellar\` and \`github.com/enterstellar/enterstellar\`.
+
+## Why this is NOT in \`prebuild\` / \`postbuild\`
+
+This is a **one-time migration bridge**, not part of normal development or release:
+
+| Step                                 | Frequency                  | Belongs in every build? |
+| ------------------------------------ | -------------------------- | ----------------------- |
+| Publish \`@enterstellar/*\`            | Every release (Changesets) | No — release CI only    |
+| Build + publish legacy proxies       | Once (migration)           | **No**                  |
+| Deprecate \`@enterstellar-ai/*@0.1.0\` | Once                       | **No**                  |
+
+Hooking legacy build/publish into \`turbo build\` or \`changeset:publish\` would slow every
+CI run and risk re-publishing shim packages indefinitely. Use the explicit scripts below.
+
+## Migration publish sequence (run once)
+
+\`\`\`bash
+# All four steps (requires NODE_AUTH_TOKEN or npm login):
+NODE_AUTH_TOKEN=<token> pnpm migration:publish
+
+# Or step-by-step:
+NODE_AUTH_TOKEN=<token> pnpm changeset:publish   # 1. @enterstellar/*
+pnpm legacy:publish                               # 2–3. @enterstellar-ai/* proxies
+pnpm legacy:deprecate -- --exec                   # 4. deprecate @enterstellar-ai/*@0.1.0
+\`\`\`
+
+## Scripts
+
+| Script                         | Purpose                                                          |
+| ------------------------------ | ---------------------------------------------------------------- |
+| \`pnpm legacy:generate\`         | Regenerate \`legacy/*\` from \`scripts/generate-legacy-proxies.mjs\` |
+| \`pnpm legacy:build\`            | Build all proxy packages                                         |
+| \`pnpm legacy:publish\`          | Build + publish all proxies to npm (migration only)              |
+| \`pnpm legacy:deprecate\`        | Print \`npm deprecate\` commands for v0.1.0                        |
+| \`pnpm legacy:deprecate --exec\` | Run deprecate against npm                                        |
 
 ## Regenerate proxies
 
 \`\`\`bash
-node scripts/generate-legacy-proxies.mjs
+pnpm legacy:generate
 \`\`\`
 
 Do not hand-edit generated library/cli proxies — update the generator instead.

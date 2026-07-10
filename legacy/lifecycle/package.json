@@ -7,7 +7,7 @@
   "homepage": "https://enterstellar.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/enterstellar-ai/enterstellar.git",
+    "url": "https://github.com/enterstellar/enterstellar.git",
     "directory": "legacy/lifecycle"
   },
   "type": "module",
@@ -32,7 +32,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup",

@@ -3,6 +3,17 @@
 Thin compatibility packages published under the **old** npm scope after the canonical
 packages moved to `@enterstellar/*`.
 
+Each proxy includes its own **`README.md`** (listed in `package.json#files`) so npm
+shows the deprecation notice instead of "This package does not have a README".
+
+**Retention:** Keep this directory and the `legacy:*` scripts for **3–6 months** after
+the migration publish, then delete once `@enterstellar-ai/*@0.1.0` is deprecated and
+downstream consumers have migrated.
+
+> **Intentional exception:** `@enterstellar-ai` appears **only** under `legacy/`, the
+> migration scripts, and `.changeset/config.json` `ignore` list. Everywhere else in the
+> repo uses `@enterstellar` and `github.com/enterstellar/enterstellar`.
+
 ## Why this is NOT in `prebuild` / `postbuild`
 
 This is a **one-time migration bridge**, not part of normal development or release:

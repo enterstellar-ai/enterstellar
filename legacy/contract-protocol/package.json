@@ -7,7 +7,7 @@
   "homepage": "https://enterstellar.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/enterstellar-ai/enterstellar.git",
+    "url": "https://github.com/enterstellar/enterstellar.git",
     "directory": "legacy/contract-protocol"
   },
   "type": "module",
@@ -24,7 +24,8 @@
     "examples",
     "conformance",
     "bin",
-    "PROTOCOL_VERSION.md"
+    "PROTOCOL_VERSION.md",
+    "README.md"
   ],
   "scripts": {
     "build": "node scripts/sync-artifacts.mjs",

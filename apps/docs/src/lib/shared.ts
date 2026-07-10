@@ -37,7 +37,7 @@ export const docsContentRoute = '/llms.mdx';
  * \"Edit on GitHub\" / \"View Source\" links in the docs UI.
  */
 export const gitConfig = {
-  user: 'enterstellar-ai',
+  user: 'enterstellar',
   repo: 'enterstellar',
   branch: 'main',
 };
