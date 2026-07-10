@@ -1,7 +1,7 @@
 {
   "name": "@enterstellar-ai/devtools",
   "description": "DEPRECATED: This package has moved to @enterstellar. Update imports to the new scope.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Enterstellar",
   "license": "Apache-2.0",
   "homepage": "https://enterstellar.dev",

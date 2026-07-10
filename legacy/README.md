@@ -27,6 +27,21 @@ This is a **one-time migration bridge**, not part of normal development or relea
 Hooking legacy build/publish into `turbo build` or `changeset:publish` would slow every
 CI run and risk re-publishing shim packages indefinitely. Use the explicit scripts below.
 
+## GitHub Actions (recommended)
+
+Use the repo **Secrets → Actions → `NPM_TOKEN`** (Automation token with publish +
+deprecate access to **both** `@enterstellar/*` and `@enterstellar-ai/*`).
+
+| Workflow                                                                    | When to run                                                                                 |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Migration: Publish legacy proxies** (`legacy-publish.yml`)                | Once, after `@enterstellar/*` is on npm — publishes `@enterstellar-ai/*@0.1.2` with READMEs |
+| **Migration: Deprecate @enterstellar-ai/\*@0.1.0** (`legacy-deprecate.yml`) | Once, after proxies are live — marks original `0.1.0` releases deprecated                   |
+
+Both are `workflow_dispatch` only (manual). Do not wire them to `push`.
+
+**npm version rule:** `0.1.1` proxies cannot be updated (no README). You **must**
+publish **`0.1.2`** for README fixes — npm never allows reusing a published version string.
+
 ## Migration publish sequence (run once)
 
 ```bash

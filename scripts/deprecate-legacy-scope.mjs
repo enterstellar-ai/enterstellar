@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Emits npm deprecate commands for the **original** @enterstellar-ai/* releases (v0.1.0).
- * Run AFTER publishing legacy proxy shims at v0.1.1.
+ * Run AFTER publishing legacy proxy shims (currently v0.1.2 with READMEs).
  *
  * Usage:
  *   node scripts/deprecate-legacy-scope.mjs          # print commands

@@ -44,7 +44,7 @@ const PACKAGES = [
     'types',
 ];
 
-const LEGACY_VERSION = '0.1.1';
+const LEGACY_VERSION = '0.1.2';
 const DEPRECATION =
     'DEPRECATED: This package has moved to @enterstellar. Update imports to the new scope.';
 

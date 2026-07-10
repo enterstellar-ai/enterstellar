@@ -1,1 +1,0 @@
-node scripts/deprecate-legacy-scope.mjs --exec
